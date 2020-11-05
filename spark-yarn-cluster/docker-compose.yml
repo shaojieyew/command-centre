@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  spark-yarn-cluster:
+    build: .
+    image: spark-yarn-cluster:1
+    hostname: localhost
+    tty: true
+    ports:
+      - "9000:9000"
+      - "9001:50070"
+      - "50010:50010"
+      - "8088:8088"
+      - "8080:8080"
+      - "18080:18080"
+      - "4040:4040"
+      - "8032:8032"
+      - "8042:8042"
