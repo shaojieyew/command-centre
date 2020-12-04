@@ -14,32 +14,16 @@
 	<name>command-centre</name>
 	<description>Start stop spark structured streaming app</description>
 
+	<packaging>pom</packaging>
+	<modules>
+		<module>command-centre-core</module>
+		<module>command-centre-api</module>
+	</modules>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.junit.vintage</groupId>
-					<artifactId>junit-vintage-engine</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>com.dkanejs.maven.plugins</groupId>
 			<artifactId>docker-compose-maven-plugin</artifactId>
@@ -50,33 +34,9 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>com.coveo</groupId>
-				<artifactId>fmt-maven-plugin</artifactId>
-				<version>2.9</version>
-				<executions>
-					<execution>
-						<id>format</id>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-					<execution>
-						<phase>
-							prepare-package
-						</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>com.dkanejs.maven.plugins</groupId>
 				<artifactId>docker-compose-maven-plugin</artifactId>
+				<version>4.0.0</version>
 				<executions>
 					<execution>
 						<id>pull</id>
