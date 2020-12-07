@@ -15,3 +15,12 @@ services:
       - "4040:4040"
       - "8032:8032"
       - "8042:8042"
+  database:
+    image: "postgres" # use latest official postgres version
+    env_file:
+      - database.env # configure postgres
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+
+volumes:
+   database-data: # named volumes can be managed easier using docker-compose

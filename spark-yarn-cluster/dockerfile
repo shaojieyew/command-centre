@@ -5,6 +5,7 @@ RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y openssh-serv
 RUN  apt-get -y update
 RUN  apt-get -y install zip 
 RUN  apt-get -y install vim
+RUN  apt-get -y install dos2unix
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 RUN ssh-keygen -t rsa -f $HOME/.ssh/id_rsa -P "" \
@@ -42,7 +43,11 @@ RUN mv /tmp/ssh_config $HOME/.ssh/config \
     && mv /tmp/spark/log4j.properties $SPARK_HOME/conf/log4j.properties \
     && mv /tmp/spark/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf \
     && mkdir -p /tmp/spark-events
-	
+
+RUN dos2unix $SPARK_HOME/conf/spark-env.sh
+
+RUN dos2unix $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+
 RUN $HADOOP_HOME/bin/hdfs namenode -format
 
 EXPOSE 50010 50020 50070 50075 50090 8020 9000
