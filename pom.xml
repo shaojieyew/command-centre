@@ -18,10 +18,22 @@
 	<modules>
 		<module>command-centre-core</module>
 		<module>command-centre-api</module>
-	</modules>
+        <module>spark-app</module>
+    </modules>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
+
+	<distributionManagement>
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+		</repository>
+		<snapshotRepository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 		<dependency>

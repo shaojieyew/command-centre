@@ -1,0 +1,66 @@
+stages:
+  - verify-jars
+  - publish-jars
+
+before_script:
+  - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <settings xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\"
+    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
+    xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">
+    <servers>
+    <server>
+    <id>gitlab-maven</id>
+    <configuration>
+    <httpHeaders>
+    <property>
+    <name>Job-Token</name>
+    <value>\${env.CI_JOB_TOKEN}</value>
+    </property>
+    </httpHeaders>
+    </configuration>
+    </server>
+    </servers>
+    <profiles>
+    <profile>
+    <id>artifactory-local</id>
+    <repositories>
+    <repository>
+    <id>gitlab-maven</id>
+    <url>https://gitlab.com/api/v4/projects/\${env.CI_PROJECT_ID}/packages/maven</url>
+    </repository>
+    </repositories>
+    </profile>
+    <profile>
+    <id>central</id>
+    <repositories>
+    <repository>
+    <id>central</id>
+    <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    </repositories>
+    </profile>
+    </profiles>
+    <activeProfiles>
+    <activeProfile>central</activeProfile>
+    <activeProfile>artifactory-local</activeProfile>
+    </activeProfiles>
+    </settings>" > setting.xml
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - ${CI_PROJECT_DIR}/.m2/
+
+verify_jars:
+  image: maven:3.3.9-jdk-8
+  stage: verify-jars
+  script:
+    - 'mvn --settings setting.xml -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-core,command-centre-api,spark-app verify'
+
+deploy:
+  image: maven:3.3.9-jdk-8
+  stage: publish-jars
+  script:
+    - 'mvn -X -Dmaven.test.skip=true --settings setting.xml -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-core,command-centre-api,spark-app deploy'
+  only:
+    - master

@@ -1,9 +1,10 @@
-package trap.commandcentre;
+package example.commandcentre;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class CommandCentreApplication {
 
   public static void main(String[] args) {

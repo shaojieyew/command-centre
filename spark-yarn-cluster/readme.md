@@ -28,7 +28,7 @@ http://localhost:18080/ | SparkHistory Web UI
 http://localhost:9000/ | Hadoop NameNode
 http://localhost:50010/ | Hadoop DataNode Data Transfer Port
 http://localhost:8032/ | Yarn resource manager
-
+http://localhost:9092/ | Kafka Service
 ### Spark-submit
 
 1. Download and extract: https://archive.apache.org/dist/spark/spark-2.4.1/spark-2.4.1-bin-hadoop2.7.tgz
@@ -39,10 +39,12 @@ http://localhost:8032/ | Yarn resource manager
 \
 `set HADOOP_CONF_DIR=C:/spark-yarn-cluster/config`
 4. copy _command-centre/spark-yarn-cluster/spark/conf/spark-defaults.conf_  into _C:/spark-2.4.1-bin-hadoop2.7/conf_
-5. `spark-submit --master yarn --deploy-mode cluster --executor-memory 1G --total-executor-cores 1 --num-executors 1 --name spark-pi --class org.
-    apache.spark.examples.SparkPi spark-examples_2.11-2.4.1.jar`
+5. `spark-submit --master yarn --deploy-mode cluster --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.1 --executor-memory 1G --total-executor-cores 1 --num-executors 1
+    --files ../src/main/resources/config.yml --class example.data.app.SparkApp spark-app-1.0.0-SNAPSHOT.jar config.yml app1`
 
-Note: spark-shell can only be ran from within the container
+Note:
+ - spark-shell can only be ran from within the container
+ - `--packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.1` is required for spark to read from kafka
 ### Use container's terminal
 1. Get container id using `docker ps` or `docker ps -aqf "name=spark-yarn-cluster"`
 2. Enter terminal using `docker exec -it [containerid]`

@@ -21,10 +21,21 @@ RUN tar xfz spark.tar.gz
 RUN mv /spark-2.4.1-bin-hadoop2.7 /usr/local/spark
 RUN rm /spark.tar.gz
 
+RUN wget -O /apache-zookeeper.tar.gz -q https://downloads.apache.org/zookeeper/zookeeper-3.5.8/apache-zookeeper-3.5.8-bin.tar.gz
+RUN tar xfz /apache-zookeeper.tar.gz --one-top-level=zookeeper --strip-components 1
+RUN mv /zookeeper /usr/local/zookeeper
+RUN rm /apache-zookeeper.tar.gz
+
+RUN wget -O /apache-kafka.tar.gz -q https://downloads.apache.org/kafka/2.6.0/kafka_2.12-2.6.0.tgz
+RUN tar xfz /apache-kafka.tar.gz --one-top-level=kafka --strip-components 1
+RUN mv /kafka /usr/local/kafka
+RUN rm /apache-kafka.tar.gz
 
 ENV HADOOP_HOME=/usr/local/hadoop
 ENV SPARK_HOME=/usr/local/spark
 ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME:sbin
+ENV ZOOKEEPER_HOME=/usr/local/zookeeper
+ENV KAFKA_HOME=/usr/local/kafka
 
 RUN mkdir -p $HADOOP_HOME/hdfs/namenode \
         && mkdir -p $HADOOP_HOME/hdfs/datanode
@@ -42,7 +53,9 @@ RUN mv /tmp/ssh_config $HOME/.ssh/config \
     && mv /tmp/spark/spark-env.sh $SPARK_HOME/conf/spark-env.sh \
     && mv /tmp/spark/log4j.properties $SPARK_HOME/conf/log4j.properties \
     && mv /tmp/spark/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf \
+    && mv /tmp/kafka/server.properties $KAFKA_HOME/config/server.properties \
     && mkdir -p /tmp/spark-events
+RUN cp $ZOOKEEPER_HOME/conf/zoo_sample.cfg $ZOOKEEPER_HOME/conf/zoo.cfg
 
 RUN dos2unix $SPARK_HOME/conf/spark-env.sh
 
@@ -57,6 +70,7 @@ EXPOSE 49707 2122 7001 7002 7003 7004 7005 7006 7007 8888
 EXPOSE 8080
 EXPOSE 4040
 EXPOSE 18080
+EXPOSE 9092 9093
 
 ENTRYPOINT service ssh start \
 && $HADOOP_HOME/sbin/stop-dfs.sh \
@@ -69,4 +83,6 @@ ENTRYPOINT service ssh start \
 && $SPARK_HOME/sbin/start-history-server.sh \
 && hdfs dfs -mkdir -p /user \
 && hdfs dfs -chmod +777 /user \
+&& $ZOOKEEPER_HOME/bin/zkServer.sh start \
+&& nohup $KAFKA_HOME/bin/kafka-server-start.sh -daemon  $KAFKA_HOME/config/server.properties \
 && bash;

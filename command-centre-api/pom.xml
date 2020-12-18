@@ -23,7 +23,7 @@
     <dependencies>
         <dependency>
             <groupId>trap</groupId>
-            <artifactId>command-centre-cli</artifactId>
+            <artifactId>command-centre-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -52,6 +52,17 @@
             <version>4.0.0</version>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>

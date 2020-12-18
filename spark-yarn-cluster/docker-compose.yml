@@ -7,7 +7,7 @@ services:
     tty: true
     ports:
       - "9000:9000"
-      - "9002:50070"
+      - "9001:50070"
       - "50010:50010"
       - "8088:8088"
       - "8080:8080"
@@ -15,6 +15,8 @@ services:
       - "4040:4040"
       - "8032:8032"
       - "8042:8042"
+      - "9092:9092"
+      - "9093:9093"
   database:
     image: "postgres" # use latest official postgres version
     env_file:
