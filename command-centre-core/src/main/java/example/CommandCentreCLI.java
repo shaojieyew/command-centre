@@ -1,8 +1,14 @@
-package example;
+package trap;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import example.trap.protobuf.SimpleMessageProtos.SimpleMessage;
+import com.google.protobuf.Timestamp;
+
+import java.time.Instant;
+
 
 import java.util.concurrent.Callable;
 @Command(name = "command-centre", mixinStandardHelpOptions = true, version = "command-centre 1.0",
@@ -24,6 +30,26 @@ public class CommandCentreCLI implements Callable<Integer> {
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new CommandCentreCLI()).execute(args);
+
+
+        Instant time = Instant.now();
+        Timestamp timestamp = Timestamp.newBuilder().setSeconds(time.getEpochSecond())
+                .setNanos(time.getNano()).build();
+
+        //prepare the message
+        int counter = 0;
+
+        SimpleMessage simpleMessage =
+                SimpleMessage.newBuilder()
+                        .setId(counter)
+                        .setContent("Hello world " + counter)
+                        .setStringDateTime(Instant.now().toString())
+                        .setProtoDataTime(timestamp)
+                        .setChangesContent("Changes " + counter)
+                        .build();
+
+        System.out.println(simpleMessage);
+        // testing for protobuf message here
         System.exit(exitCode);
     }
 }
