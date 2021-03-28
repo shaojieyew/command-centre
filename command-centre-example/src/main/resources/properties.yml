@@ -1,0 +1,19 @@
+hdfsProperties:
+  coreSite: "resources/core-site.xml"
+  hdfsSite: "resources/hdfs-site.xml"
+  hdfsBackupDirectory: "/user/backupManager"
+  hdfsWebHost: "http://localhost:9001"
+  username: "user"
+
+nifiProperties:
+  nifiHost: "http://localhost:8081"
+
+mvnRemoteRepositoryProperties:
+  - host: "https://gitlab.com"
+    privateToken: "B8UxzhjZiBDJK51ZVHxY"
+    projectId: "25216265"
+    type: "gitlab"
+
+gitRemoteRepositoryProperties:
+  - remoteUrl: "https://gitlab.com/mrysj/command-center.git"
+    token: "B8UxzhjZiBDJK51ZVHxY"

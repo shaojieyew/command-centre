@@ -8,7 +8,7 @@
 		<version>2.3.4.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>trap</groupId>
+	<groupId>c2</groupId>
 	<artifactId>command-centre</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>command-centre</name>
@@ -16,22 +16,28 @@
 
 	<packaging>pom</packaging>
 	<modules>
-		<module>command-centre-core</module>
 		<module>command-centre-api</module>
-        <module>spark-app</module>
+		<module>command-centre-core</module>
+		<module>command-centre-example</module>
+		<module>spark-app</module>
     </modules>
 	<properties>
+		<frontend-src-dir>${project.basedir}/command-centre-app</frontend-src-dir>
+		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
+		<node.version>v12.3.1</node.version>
+		<yarn.version>v1.22.4</yarn.version>
 		<java.version>1.8</java.version>
+		<command-centre-app.version>0.1.0</command-centre-app.version>
 	</properties>
 
 	<distributionManagement>
 		<repository>
 			<id>gitlab-maven</id>
-			<url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+			<url>https://gitlab.com/api/v4/projects/25216265/packages/maven</url>
 		</repository>
 		<snapshotRepository>
 			<id>gitlab-maven</id>
-			<url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+			<url>https://gitlab.com/api/v4/projects/25216265/packages/maven</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -43,37 +49,109 @@
 		</dependency>
 	</dependencies>
 
+
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>${frontend-maven-plugin.version}</version>
+
+				<configuration>
+					<nodeVersion>${node.version}</nodeVersion>
+					<yarnVersion>${yarn.version}</yarnVersion>
+					<workingDirectory>${frontend-src-dir}</workingDirectory>
+					<installDirectory>target</installDirectory>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>Install Node and Yarn</id>
+						<goals>
+							<goal>install-node-and-yarn</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>yarn install</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+						<phase>generate-resources</phase>
+					</execution>
+					<execution>
+						<id>yarn build</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>com.dkanejs.maven.plugins</groupId>
 				<artifactId>docker-compose-maven-plugin</artifactId>
 				<version>4.0.0</version>
 				<executions>
 					<execution>
-						<id>pull</id>
-						<phase>compile</phase>
+						<id>build-app</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<composeFiles>
+								<composeFile>${project.basedir}/command-centre-app/docker-compose.yml</composeFile>
+							</composeFiles>
+							<detachedMode>true</detachedMode>
+						</configuration>
+					</execution>
+					<execution>
+						<id>pull-cluster</id>
+						<phase>package</phase>
 						<goals>
 							<goal>pull</goal>
 						</goals>
 						<configuration>
-							<composeFile>${project.basedir}/spark-yarn-cluster/docker-compose.yml</composeFile>
-							<ignorePullFailures>true</ignorePullFailures>
+							<composeFiles>
+								<composeFile>${project.basedir}/command-centre-database/docker-compose.yml</composeFile>
+							</composeFiles>
+							<detachedMode>true</detachedMode>
 						</configuration>
 					</execution>
 					<execution>
-						<id>up</id>
-						<phase>compile</phase>
+						<id>build</id>
+						<phase>package</phase>
 						<goals>
-							<goal>up</goal>
+							<goal>build</goal>
 						</goals>
 						<configuration>
-							<composeFile>${project.basedir}/spark-yarn-cluster/docker-compose.yml</composeFile>
-							<detachedMode>true</detachedMode>
+							<composeFiles>
+								<composeFile>${project.basedir}/yarn-cluster/docker-compose.yml</composeFile>
+							</composeFiles>
+							<ignorePullFailures>true</ignorePullFailures>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>dev</spring.profiles.active>
+			</properties>
+		</profile>
+	</profiles>
 </project>

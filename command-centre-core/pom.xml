@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>trap</groupId>
+    <groupId>c2</groupId>
     <name>command-centre-core</name>
     <artifactId>command-centre-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -15,19 +15,146 @@
             <version>4.5.2</version>
         </dependency>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.12.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>2.4.0</version>
         </dependency>
+        <!--
         <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-protobuf-serializer</artifactId>
-            <version>5.5.0</version>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <!--use by artifact downloader-->
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-api</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-spi</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-impl</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-connector-basic</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-transport-file</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-transport-http</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-aether-provider</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-settings</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-launcher_2.11</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-client</artifactId>
+            <version>2.6.5</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.inject.extensions</groupId>
+                    <artifactId>guice-servlet</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.github.samuel-davis</groupId>
+            <artifactId>nifi-api-client-java</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>3.5.0.201409260305-r</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.7.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.inject.extensions</groupId>
+                    <artifactId>guice-servlet</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -44,16 +171,17 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <aetherVersion>1.1.0</aetherVersion>
+        <mavenVersion>3.3.3</mavenVersion>
     </properties>
-
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>
-            <url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+            <url>https://gitlab.com/api/v4/projects/25216265/packages/maven</url>
         </repository>
         <snapshotRepository>
             <id>gitlab-maven</id>
-            <url>https://gitlab.com/api/v4/projects/22122170/packages/maven</url>
+            <url>https://gitlab.com/api/v4/projects/25216265/packages/maven</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -68,11 +196,6 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <archive>
-                        <manifest>
-                            <mainClass>example.CommandCentreCLI</mainClass>
-                        </manifest>
-                    </archive>
                 </configuration>
                 <executions>
                     <execution>
@@ -84,32 +207,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.11.4</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <includeMavenTypes>direct</includeMavenTypes>
-                            <inputDirectories>
-                                <include>${project.basedir}/src/main/protobuf</include>
-                            </inputDirectories>
-                            <outputTargets>
-                                <outputTarget>
-                                    <type>java</type>
-                                    <addSources>main</addSources>
-                                    <outputDirectory>${project.basedir}/target/generated-sources/protobuf</outputDirectory>
-                                </outputTarget>
-                            </outputTargets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
         </plugins>
     </build>
 </project>

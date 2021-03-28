@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  command-centre-database:
+    image: "postgres:13.2"
+    ports:
+      - "5432:5432"
+    env_file:
+      - ../command-centre-database/config/database.env # configure postgres
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+
+volumes:
+   database-data: # named volumes can be managed easier using docker-compose
