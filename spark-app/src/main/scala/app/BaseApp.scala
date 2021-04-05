@@ -1,8 +1,9 @@
 package app
 
-import io.circe.{Error}
+import io.circe.Error
 import org.apache.spark.sql.SparkSession
-import java.io.InputStreamReader
+import java.io.{File, FileInputStream, InputStreamReader}
+
 import cats.syntax.either._
 import io.circe.generic.auto._
 import io.circe.yaml
@@ -44,7 +45,7 @@ trait BaseApp {
                    startingOffsets: String)
 
     def load(path: String): Config ={
-      val config = getClass.getClassLoader.getResourceAsStream(path)
+      val config = new FileInputStream(path);;
       val yml = yaml.parser.parse(new InputStreamReader(config))
 
       yml.leftMap(err => err: Error)

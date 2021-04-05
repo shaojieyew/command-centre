@@ -4,16 +4,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("app.c2")
 public class C2PlatformProperties {
-    private String spark;
+    private String sparkHome;
     private String tmp;
-    private String yarn;
+    private String yarnHost;
 
-    public String getSpark() {
-        return spark;
+    public String getSparkHome() {
+        return sparkHome;
     }
 
-    public void setSpark(String spark) {
-        this.spark = spark;
+    public void setSparkHome(String sparkHome) {
+        this.sparkHome = sparkHome;
     }
 
     public String getTmp() {
@@ -24,11 +24,11 @@ public class C2PlatformProperties {
         this.tmp = tmp;
     }
 
-    public String getYarn() {
-        return yarn;
+    public String getYarnHost() {
+        return yarnHost;
     }
 
-    public void setYarn(String yarn) {
-        this.yarn = yarn;
+    public void setYarnHost(String yarnHost) {
+        this.yarnHost = yarnHost;
     }
 }

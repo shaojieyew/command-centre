@@ -14,9 +14,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         GitlabRegistrySvc reg = new GitlabRegistrySvc(
                 "https://gitlab.com",
-                "R1dRsTrc6S4eXyWm1tio",
-                "22122170",
-                "tmp/repository");
+                "B8UxzhjZiBDJK51ZVHxY",
+                "25216265",
+                "tmp/project_1/maven/repository");
         List<Package> packages = reg.getPackages("c2","spark-app");
         for(Package p : packages){
             System.out.println(p.getGroup()+":"+p.getArtifact()+":"+p.getVersion());

@@ -30,7 +30,7 @@ public class ArtifactsController {
           @ApiResponse(responseCode = "200", description = "Return list of package, return empty list if none"),
           @ApiResponse(responseCode = "404", description = "Project not found",
                   content = @Content) })
-  @GetMapping(path = {"/project/{projectId}/artifacts","/project/{projectId}/{group}/artifacts"})
+  @GetMapping(path = {"/project/{projectId}/artifacts","/project/{projectId}/artifacts/{group}"})
   public List<Package> findAll(@PathVariable long projectId, @PathVariable Optional<String> group ) throws JsonProcessingException {
     List<Package> packages = new ArrayList<>();
     Project project = projectService.findById(projectId).orElseGet(null);
@@ -54,11 +54,11 @@ public class ArtifactsController {
           @ApiResponse(responseCode = "200", description = "Package found"),
           @ApiResponse(responseCode = "404", description = "Package not found",
                   content = @Content) })
-  @GetMapping(path = "/project/{projectId}/mvn/registry")
+  @GetMapping(path = {"/project/{projectId}/artifacts/{group}/{artifact}/{version}"})
   public Package find(@PathVariable long projectId,
-                      @RequestParam(name = "group") String group,
-                      @RequestParam(name = "artifact") String artifact,
-                      @RequestParam(name = "version") String version) throws JsonProcessingException {
+                      @PathVariable(name = "group") String group,
+                      @PathVariable(name = "artifact") String artifact,
+                      @PathVariable(name = "version") Optional<String> version) throws JsonProcessingException {
 
     Package _package = null;
     Project project = projectService.findById(projectId).orElseGet(null);
@@ -67,14 +67,9 @@ public class ArtifactsController {
         C2Properties prop = (project.getEnv());
         List<AbstractRegistrySvc> services = RegistrySvcFactory.create(prop);
         for (AbstractRegistrySvc svc : services){
-          for (Package pkg : svc.getPackages()){
-            if(pkg.getArtifact().equalsIgnoreCase(artifact)
-                    && pkg.getGroup().equalsIgnoreCase(group)
-                    && pkg.getVersion().equalsIgnoreCase(version)){
-
-              _package = pkg;
-              break;
-            }
+          _package = svc.getPackage(group,artifact,version.orElse(null)).orElse(null);
+          if(_package!=null){
+            break;
           }
         }
     }
@@ -88,11 +83,13 @@ public class ArtifactsController {
   @Operation(summary = "Get list of main class an artifact")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "Return list of mainClass, return empty list if none") })
-  @GetMapping(path = {"/project/{projectId}/analyze/registry"})
-  public List<String> analyzeMainClass(@PathVariable long projectId,  @RequestParam(name = "group") String group
-          ,  @RequestParam(name = "artifact") String artifact
-          ,  @RequestParam(name = "version") String version
-          ,  @RequestParam(name = "filter",required=false ) String filter ) throws Exception {
+
+    @GetMapping(path = {"/project/{projectId}/artifacts/{group}/{artifact}/{version}/analyze"})
+  public List<String> analyzeMainClass(@PathVariable long projectId,
+    @PathVariable(name = "group") String group,
+    @PathVariable(name = "artifact") String artifact,
+    @PathVariable(name = "version") Optional<String> version,
+    @RequestParam(name = "filter",required=false ) String filter ) throws Exception {
 
     Package _package = null;
     AbstractRegistrySvc _svc = null;
@@ -103,17 +100,13 @@ public class ArtifactsController {
 
         List<AbstractRegistrySvc> services = RegistrySvcFactory.create(prop);
         for (AbstractRegistrySvc svc : services){
-          for (Package pkg : svc.getPackages()){
-            if(pkg.getArtifact().equalsIgnoreCase(artifact)
-                    && pkg.getGroup().equalsIgnoreCase(group)
-                    && pkg.getVersion().equalsIgnoreCase(version)){
-              _package = pkg;
-              _svc = svc;
-              File file = _svc.download(_package);
-              mainClass =  c2.services.util.JarAnalyzer.getMainMethods(file.getAbsolutePath());
-              break;
-            }
+          _package = svc.getPackage(group,artifact,version.orElse(null)).orElse(null);
+          if(_package!=null){
+            _svc = svc;
+            File file = _svc.download(_package);
+            mainClass =  c2.services.util.JarAnalyzer.getMainMethods(file.getAbsolutePath());
           }
+          break;
         }
     }
     if(filter==null){

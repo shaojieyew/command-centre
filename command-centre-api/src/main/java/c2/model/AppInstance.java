@@ -168,7 +168,7 @@ public class AppInstance {
   }
 
   public void setSparkArgs(Map<String, String> sparkArg) throws JsonProcessingException {
-    this.jarArgs = new ObjectMapper().writeValueAsString(sparkArg);
+    this.sparkArgs = new ObjectMapper().writeValueAsString(sparkArg);
   }
 
   public String getName() {

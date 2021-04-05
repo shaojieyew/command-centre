@@ -48,7 +48,7 @@ public class ProjectController {
           @ApiResponse(responseCode = "200", description = "Project saved"),
           @ApiResponse(responseCode = "400", description = "Invalid project name or owner name",
                   content = @Content) })
-  @PutMapping("/project/save")
+  @PutMapping("/project")
   public Project save(@RequestBody Project project) throws MissingFieldExceptionResponse {
     if(project.getName()==null || project.getName().length()==0){
       throw new MissingFieldExceptionResponse("name", "project name is required");
@@ -82,10 +82,10 @@ public class ProjectController {
   @Operation(summary = "Add file to a project")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "File added to project") })
-  @PutMapping(path = {"/git/project/{projectId}/file"})
+  @PutMapping(path = {"/project/{projectId}/git/file"})
   public File saveFile(@PathVariable long projectId, @RequestParam(name = "remoteUrl") String remoteUrl, @RequestParam(name = "branch") String branch, @RequestParam(name = "path") String path) throws IOException, GitAPIException {
     c2.model.File file = fileStorageService.addGitFileToProject(remoteUrl,branch,path,projectId);
-    file.setFileBlob(null);
+    // file.setFileBlob(null);
     return file;
   }
 

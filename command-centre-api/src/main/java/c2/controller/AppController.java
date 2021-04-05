@@ -54,11 +54,10 @@ public class AppController {
   @Operation(summary = "Launch App using Spark launcher, creating an AppInstance")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "App submitted")})
-  @PostMapping("/project/{projectId}/app/submit")
+  @PostMapping("/project/{projectId}/app/{appName}/submit")
   public AppInstance submitApp(
-          @PathVariable long projectId, @RequestBody App app) throws Exception {
-    app.setProjectId(projectId);
-    return appService.submitApp(app);
+          @PathVariable long projectId, @PathVariable String appName) throws Exception {
+    return appService.submitApp(projectId, appName);
   }
 
   @Operation(summary = "Get App")

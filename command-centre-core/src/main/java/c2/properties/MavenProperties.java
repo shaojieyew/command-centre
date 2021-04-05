@@ -1,6 +1,6 @@
 package c2.properties;
 
-public class MvnRepoServiceProperties {
+public class MavenProperties {
     private String host;
     private String privateToken;
     private String projectId;

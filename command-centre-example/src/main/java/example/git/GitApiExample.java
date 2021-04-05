@@ -8,7 +8,7 @@ import java.util.List;
 
 public class GitApiExample {
 
-    static String tmpLocalRepository = "tmp/repository";
+    static String tmpLocalRepository = "tmp/project_1/git/repository";
 
     public static void main(String arg[]) throws GitAPIException, IOException {
         String remoteUrl = "https://gitlab.com/mrysj/command-center.git";
@@ -36,7 +36,7 @@ public class GitApiExample {
         selectedBranch ="master2";
         String newUpdatedBranch ="master2";
         String commitMessage ="updated config";
-        gitSvc.updateFile( configFile,  output,  selectedBranch,  newUpdatedBranch,  commitMessage);
+        gitSvc.updateFile( configFile,  output,  selectedBranch,  newUpdatedBranch,  commitMessage, tmpLocalRepository);
     }
 
 }

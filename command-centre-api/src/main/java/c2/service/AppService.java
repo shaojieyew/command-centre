@@ -6,6 +6,7 @@ import c2.model.App;
 import c2.model.AppInstance;
 import c2.model.Project;
 import c2.properties.C2Properties;
+import c2.properties.C2PropertiesLoader;
 import c2.services.mvnRegistry.AbstractRegistrySvc;
 import c2.services.mvnRegistry.RegistrySvcFactory;
 import c2.services.mvnRegistry.model.Package;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -62,18 +64,62 @@ public class AppService {
         appDao.deleteById(createAppId(projectId,name));
     }
 
-    public AppInstance submitApp(App app) throws Exception {
+    protected static void setEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for(Class cl : classes) {
+                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
+        }
+    }
+
+    public AppInstance submitApp(long projectId, String appName) throws Exception {
+
         // launch app
         long launchTime = System.currentTimeMillis();
-        long projectId = app.getProjectId();
+        Optional<App> appOptional = findById(projectId,appName);
+        App app = null;
+        if(!appOptional.isPresent()){
+            throw new Exception("Invalid AppName");
+        }else{
+            app = appOptional.get();
+        }
         Project project = projectService.findById(projectId).orElseGet(null);
         if (project==null) {
             throw new Exception("Project not found.");
         }
 
-        C2Properties properties = (project.getEnv());
+        C2Properties prop = (project.getEnv());
+        String hadoopConfDir = "tmp/project_"+projectId+"/hadoopConf";
+        File hadoopConfDirFile = new File(hadoopConfDir);
+        hadoopConfDirFile.mkdirs();
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/core-site.xml"), prop.getHadoopProperties().getCoreSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/hdfs-site.xml"), prop.getHadoopProperties().getHdfsSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/yarn-site.xml"), prop.getHadoopProperties().getYarnSite(),"UTF-8");
+        Map<String, String> env = new HashMap<>();
+        env.put("HADOOP_CONF_DIR", hadoopConfDirFile.getAbsolutePath());
+        setEnv(env);
+
         File jar = null;
-        for (AbstractRegistrySvc reg: RegistrySvcFactory.create(properties)){
+        for (AbstractRegistrySvc reg: RegistrySvcFactory.create(prop)){
             Optional<Package> optionalPackage = reg.getPackage(app.getJarGroupId(), app.getJarArtifactId(), app.getJarVersion());
             if(optionalPackage.isPresent()){
                 jar = reg.download(optionalPackage.get());
@@ -81,7 +127,8 @@ public class AppService {
             }
         }
 
-        if(new YarnSvc(sparkProperties.getYarn()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING").get().stream().filter(f->f.getName().equalsIgnoreCase(app.getName()))
+        String sparkAppNameToSubmit = project.getName().replaceAll(" ","")+projectId+"_"+app.getName();
+        if(new YarnSvc(sparkProperties.getYarnHost()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING").get().stream().filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
                 .count()>0){
             throw new Exception("App name, "+app.getName()+" has been submitted");
         }
@@ -90,14 +137,13 @@ public class AppService {
         }
         String sparkMaster = "yarn";
         String deployMode = "cluster";
-
         SparkLauncher launcher= new SparkLauncher()
-                .setSparkHome(sparkProperties.getSpark())
+                .setSparkHome(sparkProperties.getSparkHome())
                 .setMaster(sparkMaster)
                 .setDeployMode(deployMode)
                 .setAppResource(jar.getAbsolutePath())
                 .setMainClass(app.getJarMainClass())
-                .setAppName(app.getName());
+                .setAppName(sparkAppNameToSubmit);
 
         // add app args
         for(String arg: app.getJarArgs()){

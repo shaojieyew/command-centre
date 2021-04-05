@@ -25,6 +25,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static c2.service.AppService.setEnv;
+
 
 @Service
 public class AppInstanceService {
@@ -42,7 +44,7 @@ public class AppInstanceService {
 
 
     private String getYarnAppState(String applicationId){
-        Optional<YarnApp> yarnApp = new YarnSvc(sparkProperties.getYarn()).setApplicationId(applicationId).get().stream().findFirst();
+        Optional<YarnApp> yarnApp = new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(applicationId).get().stream().findFirst();
         return yarnApp.map(a->a.getState().toUpperCase()).orElse("UNKNOWN");
     }
 
@@ -125,6 +127,7 @@ public class AppInstanceService {
 
 
     public AppInstance submitApp(String appId) throws Exception {
+        // TODO create a generic method for spark submit App and AppInstance
         // launch app
         long launchTime = System.currentTimeMillis();
         Optional<AppInstance> appInstanceOpt = appInstanceDao.findById(appId);
@@ -143,15 +146,25 @@ public class AppInstanceService {
         if (project == null) {
             throw new Exception("Project not found.");
         }
-        C2Properties properties = (project.getEnv());
+        C2Properties prop = (project.getEnv());
+        String hadoopConfDir = "tmp/project_"+projectId+"/hadoopConf";
+        File hadoopConfDirFile = new File(hadoopConfDir);
+        hadoopConfDirFile.mkdirs();
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/core-site.xml"), prop.getHadoopProperties().getCoreSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/hdfs-site.xml"), prop.getHadoopProperties().getHdfsSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/yarn-site.xml"), prop.getHadoopProperties().getYarnSite(),"UTF-8");
+        Map<String, String> env = new HashMap<>();
+        env.put("HADOOP_CONF_DIR", hadoopConfDirFile.getAbsolutePath());
+        setEnv(env);
 
-        if(new YarnSvc(sparkProperties.getYarn()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING").get().stream().filter(f->f.getName().equalsIgnoreCase(appName))
+        String sparkAppNameToSubmit = project.getName().replaceAll(" ","")+projectId+"_"+appName;
+        if(new YarnSvc(sparkProperties.getYarnHost()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING").get().stream().filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
                 .count()>0){
             throw new Exception("App name, "+appName+" has been submitted");
         }
 
         File jar = null;
-        for (AbstractRegistrySvc reg : RegistrySvcFactory.create(properties)) {
+        for (AbstractRegistrySvc reg : RegistrySvcFactory.create(prop)) {
             Optional<Package> optionalPackage =
                     reg.getPackage(appInstance.getJarGroupId(), appInstance.getJarArtifactId(), appInstance.getJarVersion());
             if (optionalPackage.isPresent()) {
@@ -168,12 +181,12 @@ public class AppInstanceService {
 
     SparkLauncher launcher =
         new SparkLauncher()
-            .setSparkHome(sparkProperties.getSpark())
+            .setSparkHome(sparkProperties.getSparkHome())
             .setMaster(sparkMaster)
             .setDeployMode(deployMode)
             .setAppResource(jar.getAbsolutePath())
             .setMainClass(appInstance.getJarMainClass())
-            .setAppName(appName);
+            .setAppName(sparkAppNameToSubmit);
 
         // add app args
         for (String arg : appInstance.getJarArgs()) {
@@ -243,6 +256,6 @@ public class AppInstanceService {
             throw new Exception("Invalid ProjectId");
         }
         C2Properties prop = (projectOpt.get().getEnv());
-        return new YarnSvc(sparkProperties.getYarn()).setApplicationId(appId).kill();
+        return new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(appId).kill();
     }
 }

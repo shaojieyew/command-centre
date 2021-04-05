@@ -7,7 +7,7 @@ import java.util.List;
 public class RegistrySvcFactory {
     public static List<AbstractRegistrySvc> create(C2Properties props){
         List<AbstractRegistrySvc> svcs = new ArrayList<>();
-        props.getMvnRemoteRepositoryProperties().forEach(mvnProp->{
+        props.getMavenProperties().forEach(mvnProp->{
             switch(mvnProp.getType()){
                 case GitlabRegistrySvc.type:
                     svcs.add(new GitlabRegistrySvc(mvnProp.getHost(),mvnProp.getPrivateToken(),mvnProp.getProjectId(),"tmp/repository"));

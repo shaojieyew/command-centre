@@ -1,6 +1,6 @@
 package c2.properties;
 
-public class GitRepoServiceProperties {
+public class GitProperties {
     private String remoteUrl;
     private String token;
 

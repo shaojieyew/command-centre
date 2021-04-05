@@ -3,6 +3,7 @@ package c2.services.git;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.lang.time.DateUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -25,6 +26,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,8 +36,7 @@ import java.util.stream.Collectors;
  */
 public class GitSvc {
 
-    private String tmpLocalFile = "tmp/file";
-    private String tmpLocalRepository = "tmp/repository";
+    // private String tmpLocalFile = "tmp/file";
     private String token = null;
     private String remoteUrl = null;
 
@@ -50,11 +51,6 @@ public class GitSvc {
     public GitSvc(String remoteUrl, String token){
         this.remoteUrl= remoteUrl;
         this.token= token;
-    }
-
-    public GitSvc setTmpLocalRepository(String tmpLocalRepository) {
-        this.tmpLocalRepository = tmpLocalRepository;
-        return this;
     }
 
     public enum BranchType{
@@ -154,6 +150,8 @@ public class GitSvc {
                 }
             }
         }
+        git.clean();
+        git.close();
         return files;
     }
 
@@ -167,11 +165,25 @@ public class GitSvc {
      * @throws IOException
      * @return false when fails, otherwise true
      */
-    public boolean updateFile(String filePath, String content, String branch, String newBranch, String commitMessage)  {
+    public boolean updateFile(String filePath, String content, String branch, String newBranch, String commitMessage, String tmpLocalRepository)  {
         if(newBranch==null || newBranch.length()==0){
             newBranch = branch;
         }
-        deleteOldFiles(tmpLocalRepository,  3600);
+        new File(tmpLocalRepository).mkdirs();
+
+        // delete folders older than 2hours
+        File targetDir = new File(tmpLocalRepository);
+        Arrays.stream(targetDir.listFiles()).forEach(f->{
+                try {
+                    if(System.currentTimeMillis() - Long.parseLong(f.getName())>1000*60*60*24*2){
+                        FileUtils.deleteDirectory(f);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        );
+
         String tmpRepo = tmpLocalRepository+"/"+System.currentTimeMillis();
         File localRepoDir = new File(tmpRepo);
         Git git = null;
@@ -197,6 +209,11 @@ public class GitSvc {
             Iterable<PushResult> pushCommand = git.push().setRemote("origin").setForce(true)
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("PRIVATE-TOKEN", token))
                     .setRefSpecs(new RefSpec(newBranch+":"+newBranch)).call();
+
+            File[] hiddenFiles = new File(tmpRepo).listFiles();
+            for (File hiddenFile : hiddenFiles) {
+                hiddenFile.delete();
+            }
             return true;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -206,6 +223,11 @@ public class GitSvc {
             e.printStackTrace();
         } catch (GitAPIException e) {
             e.printStackTrace();
+        }finally{
+            if(git!=null){
+                git.clean();
+                git.close();
+            }
         }
         return false;
     }
@@ -258,7 +280,7 @@ public class GitSvc {
      * @throws GitAPIException
      * @throws IOException
      */
-    public File getFile(String branch, String filePath) throws GitAPIException, IOException {
+    public File getFile(String branch, String filePath, String tmpLocalFile) throws GitAPIException, IOException {
         String fileName = filePath.split("/")[filePath.split("/").length-1];
         String content = getFileAsString( branch,  filePath);
         byte[] bytes = content.getBytes();
@@ -274,12 +296,17 @@ public class GitSvc {
         return f;
        }
 
+
     private void deleteOldFiles(String directory, int seconds) {
         Date oldestAllowedFileDate = DateUtils.addSeconds(new Date(), -seconds);
         File targetDir = new File(directory);
         Iterator<File> filesToDelete = FileUtils.iterateFiles(targetDir, new AgeFileFilter(oldestAllowedFileDate), null);
         while (filesToDelete.hasNext()) {
-            FileUtils.deleteQuietly(filesToDelete.next());
+            try {
+                FileUtils.forceDelete(filesToDelete.next());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

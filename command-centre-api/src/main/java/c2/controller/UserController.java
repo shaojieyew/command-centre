@@ -53,7 +53,7 @@ public class UserController {
   @Operation(summary = "Get projects accessible by user as project owner or member")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "Return list of projects")})
-  @GetMapping(value = {"/user/{userId}/project/"})
+  @GetMapping(value = {"/user/{userId}/project"})
   public List<Project> findAll(@PathVariable String userId) {
     return projectService.findByOwner(userId);
   }
