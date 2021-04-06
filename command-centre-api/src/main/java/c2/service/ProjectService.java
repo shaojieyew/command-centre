@@ -43,14 +43,14 @@ public class ProjectService {
     return projectDao.findById(id);
   }
 
-  public File getFile(long projectId, String remoteUrl, String branch, String filePath) throws IOException, GitAPIException {
-    Optional<Project> project = findById(projectId);
-    if(project.isPresent() && project.get().getEnv()!=null) {
-      C2Properties prop = project.get().getEnv();
-      return GitSvcFactory.create(prop, remoteUrl).getFile(branch, filePath);
-    }
-    return null;
-  }
+//  public File getFile(long projectId, String remoteUrl, String branch, String filePath) throws IOException, GitAPIException {
+//    Optional<Project> project = findById(projectId);
+//    if(project.isPresent() && project.get().getEnv()!=null) {
+//      C2Properties prop = project.get().getEnv();
+//      return GitSvcFactory.create(prop, remoteUrl).getFile(branch, filePath);
+//    }
+//    return null;
+//  }
   public String getFileAsString(long projectId, String remoteUrl, String branch, String filePath) throws IOException, GitAPIException {
     Optional<Project> project = findById(projectId);
     if(project.isPresent() && project.get().getEnv()!=null) {

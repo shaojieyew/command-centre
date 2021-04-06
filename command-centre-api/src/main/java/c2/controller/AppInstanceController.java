@@ -4,6 +4,7 @@ import c2.C2PlatformProperties;
 import c2.controller.exception.NotFoundExceptionResponse;
 import c2.model.AppInstance;
 import c2.service.AppInstanceService;
+import c2.service.SparkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class AppInstanceController {
 
   @Autowired private AppInstanceService appInstanceService;
-  @Autowired private C2PlatformProperties sparkProperties;
+  @Autowired private SparkService sparkService;
 
   @Operation(summary = "Launch app instance using Spark launcher")
   @ApiResponses(value = {
@@ -29,7 +30,7 @@ public class AppInstanceController {
   public AppInstance submitApp(
           @PathVariable long projectId,
           @PathVariable String appId) throws Exception {
-    return appInstanceService.submitApp(appId);
+    return sparkService.submitApp(appId);
   }
 
   @Operation(summary = "Get AppInstance by projectId and appId")

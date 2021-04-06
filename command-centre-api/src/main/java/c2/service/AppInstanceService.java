@@ -1,6 +1,7 @@
 package c2.service;
 
 import c2.C2PlatformProperties;
+import c2.common.SystemUtil;
 import c2.dao.AppInstanceDao;
 import c2.model.App;
 import c2.model.AppInstance;
@@ -16,7 +17,9 @@ import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static c2.service.AppService.setEnv;
 
 
 @Service
@@ -87,6 +88,20 @@ public class AppInstanceService {
         return instances;
     }
 
+    public AppInstance convertAppToInstance(App app) throws IOException{
+        AppInstance instance = new AppInstance();
+        instance.setProjectAppId(appService.createAppId(app.getProjectId(), app.getName()));
+        instance.setFileIds(app.getFileIds());
+        instance.setJarGroupId(app.getJarGroupId());
+        instance.setJarArtifactId(app.getJarArtifactId());
+        instance.setJarVersion(app.getJarVersion());
+        instance.setJarMainClass(app.getJarMainClass());
+        instance.setJarArgs(app.getJarArgs());
+        instance.setSparkArgs(app.getSparkArgs());
+        instance.setProjectId(app.getProjectId());
+        instance.setName(app.getName());
+        return instance;
+    }
 
     public AppInstance save(App app, String appId, List<Long> fileIds, String lastState) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -106,149 +121,13 @@ public class AppInstanceService {
         return appInstanceDao.save(instance);
     }
 
+    @Transactional
     public AppInstance save(AppInstance app, String appId, String lastState) throws IOException {
-
-        AppInstance instance = new AppInstance();
-        instance.setAppId(appId);
-        instance.setProjectAppId(app.getProjectAppId());
-        instance.setFileIds(app.getFileIds());
-        instance.setJarGroupId(app.getJarGroupId());
-        instance.setJarArtifactId(app.getJarArtifactId());
-        instance.setJarVersion(app.getJarVersion());
-        instance.setJarMainClass(app.getJarMainClass());
-        instance.setJarArgs(app.getJarArgs());
-        instance.setSparkArgs(app.getSparkArgs());
-        instance.setLastState(lastState);
-        instance.setProjectId(app.getProjectId());
-        instance.setAppId(appId);
-        instance.setLastState(lastState);
-        return appInstanceDao.save(instance);
+        app.setAppId(appId);
+        app.setLastState(lastState);
+        return appInstanceDao.save(app);
     }
 
-
-    public AppInstance submitApp(String appId) throws Exception {
-        // TODO create a generic method for spark submit App and AppInstance
-        // launch app
-        long launchTime = System.currentTimeMillis();
-        Optional<AppInstance> appInstanceOpt = appInstanceDao.findById(appId);
-        if(!appInstanceOpt.isPresent()){
-            throw new Exception("Invalid AppId");
-        }
-        AppInstance appInstance = appInstanceOpt.get();
-
-        Optional<App> appOpt = appService.findById(appInstance.getProjectAppId());
-        if(!appOpt.isPresent()){
-            throw new Exception("Invalid AppId");
-        }
-        String appName = appOpt.get().getName();
-        long projectId = appOpt.get().getProjectId();
-        Project project = projectService.findById(projectId).orElseGet(null);
-        if (project == null) {
-            throw new Exception("Project not found.");
-        }
-        C2Properties prop = (project.getEnv());
-        String hadoopConfDir = "tmp/project_"+projectId+"/hadoopConf";
-        File hadoopConfDirFile = new File(hadoopConfDir);
-        hadoopConfDirFile.mkdirs();
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/core-site.xml"), prop.getHadoopProperties().getCoreSite(),"UTF-8");
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/hdfs-site.xml"), prop.getHadoopProperties().getHdfsSite(),"UTF-8");
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/yarn-site.xml"), prop.getHadoopProperties().getYarnSite(),"UTF-8");
-        Map<String, String> env = new HashMap<>();
-        env.put("HADOOP_CONF_DIR", hadoopConfDirFile.getAbsolutePath());
-        setEnv(env);
-
-        String sparkAppNameToSubmit = project.getName().replaceAll(" ","")+projectId+"_"+appName;
-        if(new YarnSvc(sparkProperties.getYarnHost()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING").get().stream().filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
-                .count()>0){
-            throw new Exception("App name, "+appName+" has been submitted");
-        }
-
-        File jar = null;
-        for (AbstractRegistrySvc reg : RegistrySvcFactory.create(prop)) {
-            Optional<Package> optionalPackage =
-                    reg.getPackage(appInstance.getJarGroupId(), appInstance.getJarArtifactId(), appInstance.getJarVersion());
-            if (optionalPackage.isPresent()) {
-                jar = reg.download(optionalPackage.get());
-                break;
-            }
-        }
-
-        if (jar == null) {
-            throw new Exception("Application artifact not found.");
-        }
-        String sparkMaster = "yarn";
-        String deployMode = "cluster";
-
-    SparkLauncher launcher =
-        new SparkLauncher()
-            .setSparkHome(sparkProperties.getSparkHome())
-            .setMaster(sparkMaster)
-            .setDeployMode(deployMode)
-            .setAppResource(jar.getAbsolutePath())
-            .setMainClass(appInstance.getJarMainClass())
-            .setAppName(sparkAppNameToSubmit);
-
-        // add app args
-        for (String arg : appInstance.getJarArgs()) {
-            launcher = launcher.addAppArgs(arg);
-        }
-
-        // add spark args
-        for (String key : appInstance.getSparkArgs().keySet()) {
-            launcher = launcher.addSparkArg(key, appInstance.getSparkArgs().get(key));
-        }
-
-        // add files
-        String tmpDir =
-                sparkProperties.getTmp()
-                        + "/command-center/"
-                        + projectId
-                        + "/"
-                        + appName
-                        + "/"
-                        + launchTime;
-        Files.createDirectories(Paths.get(tmpDir));
-
-        List<Long> fileIds = appInstance.getFileIds();
-
-        Iterator<c2.model.File> filesItr = fileStorageService.getFiles(fileIds).iterator();
-        while (filesItr.hasNext()) {
-            c2.model.File f = filesItr.next();
-            Files.write(Paths.get(tmpDir).resolve(f.getName()), f.getFileBlob());
-            launcher =
-                    launcher.addFile(Paths.get(tmpDir).resolve(f.getName()).toAbsolutePath().toString());
-        }
-
-        SparkLauncher finalLauncher = launcher;
-        SparkAppHandle handler = null;
-        String applicationId = null;
-        String state = null;
-        try {
-            handler = finalLauncher.startApplication();
-            while (!handler.getState().isFinal()) {
-                applicationId = handler.getAppId();
-                state = handler.getState().name();
-                if (applicationId != null) {
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (applicationId == null) {
-            applicationId = "failed_application_" + launchTime;
-        }
-
-        AppInstance newAppInstance = null;
-        try {
-            newAppInstance = save(appInstance, applicationId, state);
-            FileUtils.deleteDirectory(new File(tmpDir));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return newAppInstance;
-    }
 
     public boolean kill(long projectId, String appId) throws Exception {
         Optional<Project> projectOpt = projectService.findById(projectId);
@@ -258,4 +137,6 @@ public class AppInstanceService {
         C2Properties prop = (projectOpt.get().getEnv());
         return new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(appId).kill();
     }
+
+
 }
