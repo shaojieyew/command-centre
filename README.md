@@ -12,9 +12,9 @@
 
 ##### Check out command-centre-example/src/main/resources/properties.yml for example on service properties  
 
-## Prequiste: To install node.js and npm on windows
+## Prequiste: To install node.js, npm and yarn on windows
 Follow instruction on https://phoenixnap.com/kb/install-node-js-npm-on-windows
-
+For yarn: https://classic.yarnpkg.com/en/docs/install#windows-stable
 
 ## Running on Dev
 #### Run Frontend App
