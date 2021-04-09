@@ -1,4 +1,3 @@
-
 # Command Centre Modules
 
 | Project     | Description |
@@ -12,6 +11,10 @@
 | command-centre-example   |  command centre service examples      |
 
 ##### Check out command-centre-example/src/main/resources/properties.yml for example on service properties  
+
+## Prequiste: To install node.js and npm on windows
+Follow instruction on https://phoenixnap.com/kb/install-node-js-npm-on-windows
+
 
 ## Running on Dev
 #### Run Frontend App
