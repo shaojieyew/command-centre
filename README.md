@@ -16,6 +16,12 @@
 Follow instruction on https://phoenixnap.com/kb/install-node-js-npm-on-windows
 For yarn: https://classic.yarnpkg.com/en/docs/install#windows-stable
 
+Once yarn is install, you will need to pull the following package by:
+1) npm install --global next
+2) npm install --global react
+3) npm install --global react-dom
+
+
 ## Running on Dev
 #### Run Frontend App
 http://localhost:3000
