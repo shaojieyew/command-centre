@@ -1,0 +1,3 @@
+[submodule "command-centre-ui"]
+	path = command-centre-ui
+	url = https://gitlab.com/c2cc1/command-centre-ui.git
