@@ -1,9 +1,0 @@
-version: "3.8"
-services:
-  command-centre-app:
-    build: .
-    image: command-centre-app:0.0.1
-    hostname: localhost
-    tty: true
-    ports:
-      - "3000:3000"
