@@ -3,16 +3,15 @@
 | Project     | Description |
 | ----------- | ----------- |
 | command-centre-api      |  command center api that builds around the command-centre-core |
-| command-centre-app      |  command center frontend app      |
+| command-centre-ui      |  command center frontend app      |
 | command-centre-core   |   a consolidation services that wraps around all the big data services; hadoop, yarn, spark, nifi and etc       |
 | command-centre-database   |  docker project that builds a postgres docker image           |
 | spark-app   | simple spark application for testing job submission to cluster        |
 | spark-yarn-cluster   | docker project that builds a single node cluster with yarn, hadoop, spark, nifi and kafka installed        |
 | command-centre-example   |  command centre service examples      |
 
-##### Check out command-centre-example/src/main/resources/properties.yml for example on service properties  
-
-## Prequiste: To install node.js, npm and yarn on windows
+## Prequsite:
+### install node.js, npm and yarn on windows 
 Follow instruction on https://phoenixnap.com/kb/install-node-js-npm-on-windows
 For yarn: https://classic.yarnpkg.com/en/docs/install#windows-stable
 
@@ -21,13 +20,24 @@ Once yarn is install, you will need to pull the following package by:
 2) npm install --global react
 3) npm install --global react-dom
 
+### Install docker on windows 
+This is required for running docker image as container
+https://hub.docker.com/editions/community/docker-ce-desktop-windows
 
 ## Running on Dev
 #### Run Frontend App
 http://localhost:3000
 ```
-cd command-centre-app
+cd command-centre-ui
 yarn dev
+
+yarn start // for prod; using built files
+```
+#### Run Frontend App on Docker
+http://localhost:3000
+```
+cd command-centre-ui
+docker-compose up -d
 ```
 #### Run Api
 swagger url: http://localhost:7000/doc/api.html
