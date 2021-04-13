@@ -22,12 +22,12 @@
 		<module>spark-app</module>
     </modules>
 	<properties>
-		<frontend-src-dir>${project.basedir}/command-centre-app</frontend-src-dir>
+		<frontend-src-dir>${project.basedir}/command-centre-ui</frontend-src-dir>
 		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
 		<node.version>v12.3.1</node.version>
 		<yarn.version>v1.22.4</yarn.version>
 		<java.version>1.8</java.version>
-		<command-centre-app.version>0.1.0</command-centre-app.version>
+		<command-centre-ui.version>0.1.0</command-centre-ui.version>
 	</properties>
 
 	<distributionManagement>
@@ -107,7 +107,7 @@
 						</goals>
 						<configuration>
 							<composeFiles>
-								<composeFile>${project.basedir}/command-centre-app/docker-compose.yml</composeFile>
+								<composeFile>${project.basedir}/command-centre-ui/docker-compose.yml</composeFile>
 							</composeFiles>
 							<detachedMode>true</detachedMode>
 						</configuration>
