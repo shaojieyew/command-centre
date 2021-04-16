@@ -45,6 +45,8 @@ before_script:
     <activeProfile>artifactory-local</activeProfile>
     </activeProfiles>
     </settings>" > setting.xml
+  - echo ${env.CI_JOB_TOKEN}
+  - echo ${env.CI_PROJECT_DIR}
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
