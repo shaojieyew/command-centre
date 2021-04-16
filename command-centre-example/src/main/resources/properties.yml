@@ -11,11 +11,11 @@
 mavenProperties:
   - host: "https://gitlab.com"
     privateToken: "B8UxzhjZiBDJK51ZVHxY"
-    projectId: "25216265"
+    projectId: "25819110"
     type: "gitlab"
 
 gitProperties:
-  - remoteUrl: "https://gitlab.com/mrysj/command-center.git"
+  - remoteUrl: "https://gitlab.com/c2cc1/command-centre.git"
     token: "B8UxzhjZiBDJK51ZVHxY"
 
 hadoopProperties:

@@ -1,5 +1,6 @@
 package example.artifact;
 
+import c2.services.mvnRegistry.AbstractRegistrySvc;
 import c2.services.mvnRegistry.GitlabRegistrySvc;
 import c2.services.mvnRegistry.model.Package;
 import c2.services.util.JarAnalyzer;
@@ -12,10 +13,10 @@ public class Main {
 
     // artifact downloader
     public static void main(String[] args) throws Exception {
-        GitlabRegistrySvc reg = new GitlabRegistrySvc(
+        AbstractRegistrySvc reg = new GitlabRegistrySvc(
                 "https://gitlab.com",
                 "B8UxzhjZiBDJK51ZVHxY",
-                "25216265",
+                "25819110",
                 "tmp/project_1/maven/repository");
         List<Package> packages = reg.getPackages("c2","spark-app");
         for(Package p : packages){
