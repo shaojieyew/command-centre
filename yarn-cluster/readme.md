@@ -41,7 +41,7 @@ localhost:9092 | Kafka Service
 `set HADOOP_CONF_DIR=C:/spark-yarn-cluster/config`
 4. copy _command-centre/spark-yarn-cluster/spark/conf/spark-defaults.conf_  into _C:/spark-2.4.1-bin-hadoop2.7/conf_
 5. `spark-submit --master yarn --deploy-mode cluster --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.1 --executor-memory 1G --total-executor-cores 1 --num-executors 1
-    --files ../src/main/resources/config.yml --class example.data.app.SparkApp spark-app-1.0.0-SNAPSHOT.jar config.yml app1`
+    --files ../src/main/resources/config.yml --class app.SparkApp spark-app-1.0.1-SNAPSHOT.jar config.yml app1`
 
 Note:
  - spark-shell can only be ran from within the container
