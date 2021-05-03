@@ -1,9 +1,9 @@
 package example.artifact;
 
-import c2.services.mvnRegistry.AbstractRegistrySvc;
-import c2.services.mvnRegistry.GitlabRegistrySvc;
-import c2.services.mvnRegistry.model.Package;
-import c2.services.util.JarAnalyzer;
+import app.c2.services.mvnRegistry.AbstractRegistrySvc;
+import app.c2.services.mvnRegistry.GitlabRegistrySvc;
+import app.c2.services.mvnRegistry.model.Package;
+import app.c2.services.util.JarAnalyzer;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -18,7 +18,7 @@ public class Main {
                 "B8UxzhjZiBDJK51ZVHxY",
                 "25819110",
                 "tmp/project_1/maven/repository");
-        List<Package> packages = reg.getPackages("c2","spark-app");
+        List<Package> packages = reg.getPackages("app/c2","spark-app");
         for(Package p : packages){
             System.out.println(p.getGroup()+":"+p.getArtifact()+":"+p.getVersion());
         }

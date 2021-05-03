@@ -1,6 +1,6 @@
 package example.nifi;
 
-import c2.services.nifi.NifiSvc;
+import app.c2.services.nifi.NifiSvc;
 import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;
 
@@ -13,9 +13,9 @@ public class NifiApi {
         NifiSvc svc = new NifiSvc("http://localhost:8081");
 
         // search for process group
-        Map<ProcessGroupStatusDTO, String> a= svc.findProcessGroup("");
+        Map<ProcessGroupStatusDTO, String> a= svc.findProcessGroup("Ni.*/aa.*");
         // search for processor
-        Map<ProcessorStatusDTO, String> b= svc.findProcessor("");
+        Map<ProcessorStatusDTO, String> b= svc.findProcessor("Ni.*/aa.*/Gen.*");
         // start processor/stop processor
         b.keySet().stream().forEach(k->{
             try {
@@ -25,7 +25,7 @@ public class NifiApi {
             }
         });
         // start processor/stop processor in group
-        svc.updateAllProcessInProcessGroup("52a1d34a-0177-1000-5c56-2147cff59308",NifiSvc.NIFI_RUN_STATUS_STOPPED,true);
+        svc.updateAllProcessInProcessGroup("27281353-0179-1000-a523-953b88dae040",NifiSvc.NIFI_RUN_STATUS_STOPPED,true);
     }
 
 }

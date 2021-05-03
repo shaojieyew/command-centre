@@ -1,4 +1,4 @@
-package c2.serializer;
+package app.c2.serializer;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import example.trap.protobuf.SimpleMessageProtos.SimpleMessage;

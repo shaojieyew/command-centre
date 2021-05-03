@@ -1,6 +1,6 @@
 package example.git;
 
-import c2.services.git.GitSvc;
+import app.c2.services.git.GitSvc;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;

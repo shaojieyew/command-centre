@@ -1,8 +1,8 @@
-package c2.protobuf.producer;
+package app.c2.protobuf.producer;
 
 import com.google.protobuf.Timestamp;
-import c2.example.protobuf.SimpleMessageProtos.SimpleMessage;
-import c2.serializer.SimpleMessageSerializer;
+import app.c2.example.protobuf.SimpleMessageProtos.SimpleMessage;
+import app.c2.serializer.SimpleMessageSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;

@@ -1,13 +1,12 @@
 package example.spark;
 
-import c2.properties.C2Properties;
-import c2.properties.C2PropertiesLoader;
-import c2.properties.GitProperties;
-import c2.services.git.GitSvc;
-import c2.services.mvnRegistry.GitlabRegistrySvc;
-import c2.services.mvnRegistry.model.Package;
+import app.c2.properties.C2Properties;
+import app.c2.properties.C2PropertiesLoader;
+import app.c2.properties.GitProperties;
+import app.c2.services.git.GitSvc;
+import app.c2.services.mvnRegistry.GitlabRegistrySvc;
+import app.c2.services.mvnRegistry.model.Package;
 import org.apache.commons.io.FileUtils;
-import org.apache.directory.api.util.Unicode;
 import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
 
@@ -65,7 +64,7 @@ public class Main {
         String gitLabProjectId = prop.getMavenProperties().get(0).getProjectId();
 
         // Download Jar from Maven
-        String groupId = "c2";
+        String groupId = "app/c2";
         String artifactId = "spark-app";
         GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoHost,mavenPrivateToken,gitLabProjectId,"tmp/project_"+projectId+"/repository");
         List<Package> packages = reg.getPackages(groupId,artifactId);

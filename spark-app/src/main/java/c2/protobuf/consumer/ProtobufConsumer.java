@@ -1,7 +1,7 @@
-package c2.protobuf.consumer;
+package app.c2.protobuf.consumer;
 
-import c2.example.protobuf.SimpleMessageProtos.SimpleMessage;
-import c2.serializer.SimpleMessageDeserializer;
+import app.c2.example.protobuf.SimpleMessageProtos.SimpleMessage;
+import app.c2.serializer.SimpleMessageDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;

@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>c2</groupId>
-            <artifactId>command-centre-core</artifactId>
+            <artifactId>command-centre-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

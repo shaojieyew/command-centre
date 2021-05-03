@@ -1,6 +1,6 @@
 package example.hdfs;
 
-import c2.services.hdfs.HdfsSvc;
+import app.c2.services.hdfs.HdfsSvc;
 
 public class HdfsExample {
 

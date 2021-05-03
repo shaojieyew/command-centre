@@ -1,0 +1,13 @@
+kind : GroupResource
+spec:
+  - name : etl-resource
+    resources :
+    - name: config.yml
+      source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+      type: git
+    - name: pom.xml
+      source: D:\Workspace\Projects\csit\newc2\command-centre\pom.xml
+      type: local
+    - name: test1.txt
+      source: abcdefdlololol!
+      type: string

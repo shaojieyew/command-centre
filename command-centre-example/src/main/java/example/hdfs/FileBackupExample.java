@@ -1,7 +1,7 @@
 package example.hdfs;
 
-import c2.services.hdfs.FileBackupSvc;
-import c2.services.hdfs.HdfsSvc;
+import app.c2.services.hdfs.FileBackupSvc;
+import app.c2.services.hdfs.HdfsSvc;
 import example.spark.Main;
 
 import java.util.stream.Collectors;

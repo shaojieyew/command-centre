@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package c2.example.protobuf;
+package app.c2.example.protobuf;
 option java_outer_classname = "SimpleMessageProtos";
 
 

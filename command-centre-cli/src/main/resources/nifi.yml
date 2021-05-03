@@ -1,0 +1,11 @@
+kind : NifiQuery
+spec:
+#  - name: query1
+#    query: ^NiFi.*/aaa$
+#    type: group
+#    scope: first
+#  - name: query2
+#    query: ^NiFi.*/aaa/.*ToCSV$
+  - name: query3
+    query: "^.*$"
+    type: GenerateFlowFile

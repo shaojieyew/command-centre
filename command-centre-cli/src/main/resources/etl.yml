@@ -1,0 +1,39 @@
+kind : AppDeployment1
+spec:
+  - name : abc-app
+    projectId : 1
+    jarGroupId : c2
+    jarArtifactId : spark-app
+    jarVersion : 1.0.1-SNAPSHOT
+    mainClass : app.SparkApp
+    jarArgs :
+      - config.yml
+      - app1
+    sparkArgs :
+      spark.driver.memory : 1G
+      spark.executor.instances : 1
+      spark.executor.memory : 1G
+      spark.executor.cores : 1
+    resources:
+      - name: config.yml
+        source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+        type: git
+
+  - name : spark-etl
+    projectId : 1
+    jarGroupId : c2
+    jarArtifactId : spark-app
+    jarVersion : 1.0.1-SNAPSHOT
+    mainClass : app.SparkApp
+    jarArgs :
+      - config.yml
+      - app1
+    sparkArgs :
+      spark.driver.memory : 1G
+      spark.executor.instances : 1
+      spark.executor.memory : 1G
+      spark.executor.cores : 1
+    resources:
+      - name: config.yml
+        source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+        type: git
