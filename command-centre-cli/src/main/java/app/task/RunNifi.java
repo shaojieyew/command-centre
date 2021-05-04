@@ -31,7 +31,7 @@ public class RunNifi extends Task{
         this.spec = spec;
         query = spec.getQuery();
         processType = spec.getType();
-        onlyLeadingProcessor = spec.getScope() !=null && spec.getScope().equalsIgnoreCase("first");
+        onlyLeadingProcessor = spec.getScope() !=null && spec.getScope().equalsIgnoreCase(NifiQueryService.ProcessorScope.leadingProcessor.toString());
         startTask();
     }
 
@@ -63,7 +63,7 @@ public class RunNifi extends Task{
     NifiQueryService nifiQueryService;
     @Override
     protected void task() throws Exception {
-        if(processType!=null && processType.equalsIgnoreCase("group")){
+        if(processType!=null && processType.equalsIgnoreCase(NifiQueryService.ProcessorType.Group.toString())){
             nifiQueryService.updateProcessGroup(cli.getProject().getId(),query,onlyLeadingProcessor, NifiSvc.NIFI_RUN_STATUS_RUNNING);
         }else{
             nifiQueryService.updateProcessor(cli.getProject().getId(), query,processType, NifiSvc.NIFI_RUN_STATUS_RUNNING);

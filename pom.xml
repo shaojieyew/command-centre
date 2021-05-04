@@ -20,6 +20,7 @@
 		<module>command-centre-api</module>
 		<module>command-centre-service</module>
 		<module>command-centre-example</module>
+
         <!--		<module>spark-app</module>-->
     </modules>
 	<properties>

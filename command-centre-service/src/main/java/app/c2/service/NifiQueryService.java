@@ -10,6 +10,7 @@ import app.c2.services.nifi.NifiSvcFactory;
 import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Lists;
 import org.checkerframework.checker.units.qual.A;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,22 @@ import java.util.stream.Collectors;
 
 @Service
 public class NifiQueryService {
+    public enum ProcessorScope{
+        leadingProcessor
+    }
+    public enum ProcessorType{
+        Group
+    }
+
     @Autowired
     ProjectService projectService;
 
     @Autowired
     NifiQueryDao nifiQueryDao;
+
+    public List<NifiQuery> findAllNifiQuery(){
+        return Lists.newArrayList(nifiQueryDao.findAll());
+    }
 
     public void save(NifiQuery nifiQuery){
         nifiQueryDao.save(nifiQuery);
@@ -97,8 +109,8 @@ public class NifiQueryService {
         String query = savedQuery.get().getQuery();
         String processType = savedQuery.get().getType();
         String scope = savedQuery.get().getScope();
-        boolean onlyLeadingProcessor = scope!=null && scope.equalsIgnoreCase("first");
-        if(processType!=null && processType.equalsIgnoreCase("group")){
+        boolean onlyLeadingProcessor = scope!=null && scope.equalsIgnoreCase(ProcessorScope.leadingProcessor.toString());
+        if(processType!=null && processType.equalsIgnoreCase(NifiQueryService.ProcessorType.Group.toString())){
             stopProcessorGroup(projectId,  query, onlyLeadingProcessor);
         }else{
             stopProcessor( projectId,  query,  processType);

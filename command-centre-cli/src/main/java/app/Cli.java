@@ -39,7 +39,7 @@ public class Cli implements Callable<Integer> {
     private final static String TYPE_NIFI= "n";
     private final static String TYPE_FILE= "f";
     private final static String TYPE_APP= "a";
-    
+    private final static String TYPE_NIFI_QUERY= "nq";
     public String[] args;
 
     public static List<String> ACTIONS =  new ArrayList<String>(
@@ -154,6 +154,10 @@ public class Cli implements Callable<Integer> {
     StopNifi stopNifi;
     @Autowired
     RunNifi runNifi;
+    @Autowired
+    ListNifiQuery listNifiQuery;
+    @Autowired
+    DeleteNifiQuery deleteNifiQuery;
 
     public int initProject() throws Exception {
         File config = new File(_config);
@@ -193,12 +197,12 @@ public class Cli implements Callable<Integer> {
                 break;
 
             case ACTION_RUN:
+                if(getSpecFile().size()>0){
+                    createSpec.startTask(this);
+                }
                 if(get_type()!=null){
                     switch (get_type()){
                         case TYPE_APP:
-                            if(getSpecFile().size()>0){
-                                createSpec.startTask(this);
-                            }
                             runApp.startTask(this);
                             break;
                         case TYPE_NIFI:
@@ -208,7 +212,6 @@ public class Cli implements Callable<Integer> {
                 }else{
                     if(getSpecFile().size()>0){
                         runNifi.startTask(this);
-                        createSpec.startTask(this);
                         runApp.startTask(this);
                     }
                 }
@@ -227,6 +230,9 @@ public class Cli implements Callable<Integer> {
                             break;
                         case TYPE_NIFI:
                             listNifi.startTask(this);
+                            break;
+                        case TYPE_NIFI_QUERY:
+                            listNifiQuery.startTask(this);
                             break;
                         default:
                     }
@@ -280,6 +286,9 @@ public class Cli implements Callable<Integer> {
                         break;
                     case TYPE_FILE:
                         deleteFile.startTask(this);
+                        break;
+                    case TYPE_NIFI_QUERY:
+                        deleteNifiQuery.startTask(this);
                         break;
                 }
                 break;

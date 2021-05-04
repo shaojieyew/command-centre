@@ -1,6 +1,7 @@
 package app.task;
 
 import app.Cli;
+import app.c2.model.NifiQuery;
 import app.util.PrintTable;
 import app.c2.service.NifiQueryService;
 import app.c2.services.nifi.NifiSvc;
@@ -48,10 +49,10 @@ public class ListNifi extends Task{
         this.cli = cli;
         List<NifiInfo> list = new ArrayList<>();
         NifiSvc svc= NifiSvcFactory.create(cli.getC2CliProperties());
-        if(type!=null && type.equalsIgnoreCase("Group")){
+        if(type!=null && type.equalsIgnoreCase(NifiQueryService.ProcessorType.Group.toString())){
             List<ProcessGroupStatusDTO> processGroup= nifiQueryService.findProcessGroup(cli.getProject().getId(),cli.get_query());
             for(ProcessGroupStatusDTO group: processGroup){
-                NifiInfo info = new NifiInfo(group.getId(),group.getName(), null,"Group");
+                NifiInfo info = new NifiInfo(group.getId(),group.getName(), null,NifiQueryService.ProcessorType.Group.toString());
                 list.add(info);
             }
         }else{

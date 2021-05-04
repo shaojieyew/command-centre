@@ -2,6 +2,8 @@ package app.task;
 
 import app.Cli;
 import app.spec.Kind;
+import app.spec.nifi.NifiQueryKind;
+import app.spec.nifi.NifiQuerySpec;
 import app.spec.resource.GroupResourceKind;
 import app.spec.resource.GroupResourceSpec;
 import app.spec.spark.AppDeploymentKind;
@@ -17,6 +19,8 @@ public class CreateSpec extends Task{
     CreateFileGroup createFileGroup;
     @Autowired
     CreateApp createApp;
+    @Autowired
+    CreateNifiQuery createNifiQuery;
 
     public void startTask(Cli cli) throws Exception {
         for(Kind kind : cli.getSpecFile()){
@@ -31,6 +35,14 @@ public class CreateSpec extends Task{
                 List<AppDeploymentSpec> spec = kind.getSpec();
                 for (AppDeploymentSpec s : spec) {
                     createApp.startTask(cli, s);
+                }
+            }
+        }
+        for(Kind kind : cli.getSpecFile()){
+            if(kind instanceof NifiQueryKind) {
+                List<NifiQuerySpec> spec = kind.getSpec();
+                for (NifiQuerySpec s : spec) {
+                    createNifiQuery.startTask(cli, s);
                 }
             }
         }
