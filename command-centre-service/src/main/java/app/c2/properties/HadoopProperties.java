@@ -4,6 +4,24 @@ public class HadoopProperties {
     private String coreSite;
     private String hdfsSite;
     private String yarnSite;
+    private String webHdfsHost;
+    private String yarnHost;
+
+    public String getWebHdfsHost() {
+        return webHdfsHost;
+    }
+
+    public void setWebHdfsHost(String webHdfsHost) {
+        this.webHdfsHost = webHdfsHost;
+    }
+
+    public String getYarnHost() {
+        return yarnHost;
+    }
+
+    public void setYarnHost(String yarnHost) {
+        this.yarnHost = yarnHost;
+    }
 
     public String getCoreSite() {
         return coreSite;

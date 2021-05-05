@@ -6,8 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class C2PlatformProperties {
     private String sparkHome;
     private String tmp;
-    private String yarnHost;
-    private String nifiHost;
 
     public String getSparkHome() {
         return sparkHome;
@@ -23,21 +21,5 @@ public class C2PlatformProperties {
 
     public void setTmp(String tmp) {
         this.tmp = tmp;
-    }
-
-    public String getYarnHost() {
-        return yarnHost;
-    }
-
-    public void setYarnHost(String yarnHost) {
-        this.yarnHost = yarnHost;
-    }
-
-    public String getNifiHost() {
-        return nifiHost;
-    }
-
-    public void setNifiHost(String nifiHost) {
-        this.nifiHost = nifiHost;
     }
 }

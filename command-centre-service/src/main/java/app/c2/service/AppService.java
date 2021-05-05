@@ -7,8 +7,6 @@ import app.c2.model.AppInstance;
 import app.c2.model.File;
 import app.c2.model.Project;
 import app.c2.model.compositKey.AppId;
-import app.c2.service.SparkService;
-import app.c2.properties.C2Properties;
 import app.c2.services.yarn.YarnSvc;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,7 +14,6 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -52,16 +49,16 @@ public class AppService {
     }
 
     public App save(String name, long projectId, String jarGroupId, String jarArtifactId, String jarVersion, String jarMainClass, List<String> jarArgs, Map<String,String> sparkArgs) throws IOException {
-            App app = new App();
-            app.setName(name);
-            app.setProjectId(projectId);
-            app.setJarGroupId(jarGroupId);
-            app.setJarArtifactId(jarArtifactId);
-            app.setJarVersion(jarVersion);
-            app.setJarMainClass(jarMainClass);
-            app.setJarArgs(jarArgs);
-            app.setSparkArgs(sparkArgs);
-            app.setNamespace(null);
+        App app = new App();
+        app.setName(name);
+        app.setProjectId(projectId);
+        app.setJarGroupId(jarGroupId);
+        app.setJarArtifactId(jarArtifactId);
+        app.setJarVersion(jarVersion);
+        app.setJarMainClass(jarMainClass);
+        app.setJarArgs(jarArgs);
+        app.setSparkArgs(sparkArgs);
+        app.setNamespace(null);
         return appDao.save(app);
     }
 
@@ -131,20 +128,26 @@ public class AppService {
         }
         return apps.stream().map( app->{
             String sparkAppNameToSubmit = SparkService.getSparkAppName(projectOpt.get().getName(),projectId, app.getName());
-            YarnSvc yarnSvc = new YarnSvc(sparkProperties.getYarnHost());
-            Optional<YarnApp> yarnApp = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                    .setStartedTimeBegin(millis)
-                    .get().stream()
-                    .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
-                    .max(new Comparator<YarnApp>() {
-                        @Override
-                        public int compare(YarnApp o1, YarnApp o2) {
-                            return o1.getStartedTime().compareTo(o2.getStartedTime());
-                        }
-                    });
-            if(yarnApp.isPresent()){
-                app.setYarnStatus(yarnApp.get().getState());
-                app.setYarnAppId(yarnApp.get().getId());
+            YarnSvc yarnSvc = null;
+            try {
+                yarnSvc = new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost());
+
+                Optional<YarnApp> yarnApp = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                        .setStartedTimeBegin(millis)
+                        .get().stream()
+                        .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
+                        .max(new Comparator<YarnApp>() {
+                            @Override
+                            public int compare(YarnApp o1, YarnApp o2) {
+                                return o1.getStartedTime().compareTo(o2.getStartedTime());
+                            }
+                        });
+                if(yarnApp.isPresent()){
+                    app.setYarnStatus(yarnApp.get().getState());
+                    app.setYarnAppId(yarnApp.get().getId());
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
             }
             return app;
         }).collect(Collectors.toList());
@@ -170,15 +173,25 @@ public class AppService {
         }
         apps.stream().forEach( app->{
             String sparkAppNameToKill = SparkService.getSparkAppName(projectOpt.get().getName(),projectId, app.getName());
-            YarnSvc yarnSvc = new YarnSvc(sparkProperties.getYarnHost());
-            yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                    .setStartedTimeBegin(millis)
-                    .get().stream()
-                    .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToKill))
-                    .forEach(s->{
-                        new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(s.getId())
-                                .kill();
-                    });
+            YarnSvc yarnSvc = null;
+            try {
+                yarnSvc = new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost());
+                yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                        .setStartedTimeBegin(millis)
+                        .get().stream()
+                        .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToKill))
+                        .forEach(s->{
+                            try {
+                                new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(s.getId())
+                                        .kill();
+                            } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                            }
+                        });
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
         });
         return true;
     }

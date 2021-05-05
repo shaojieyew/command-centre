@@ -8,13 +8,13 @@ import app.c2.model.Project;
 import app.c2.properties.C2Properties;
 import app.c2.services.yarn.YarnSvc;
 import app.c2.services.yarn.model.YarnApp;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.htrace.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,15 +34,24 @@ public class AppInstanceService {
     FileStorageService fileStorageService;
 
 
-    private String getYarnAppState(String applicationId){
-        Optional<YarnApp> yarnApp = new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(applicationId).get().stream().findFirst();
-        return yarnApp.map(a->a.getState().toUpperCase()).orElse("UNKNOWN");
+    private String getYarnAppState(long projectId, String applicationId) throws JsonProcessingException {
+        Optional<Project> optionalProject = projectService.findById(projectId);
+        if(optionalProject.isPresent()){
+            Optional<YarnApp> yarnApp = new YarnSvc(optionalProject.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(applicationId).get().stream().findFirst();
+            return yarnApp.map(a->a.getState().toUpperCase()).orElse("UNKNOWN");
+        }else{
+            return "UNKNOWN";
+        }
     }
 
 
     public Optional<AppInstance> findById(String appid){
         Optional<AppInstance> appInstanceOptional = appInstanceDao.findById( appid).map(i->{
-            i.setLastState(getYarnAppState(i.getAppId()));
+            try {
+                i.setLastState(getYarnAppState(i.getProjectId(),i.getAppId()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return i;
         });
 
@@ -56,7 +65,11 @@ public class AppInstanceService {
     public List<AppInstance> findByProjectAppId(long projectId, String appName){
 
         List<AppInstance> instances = appInstanceDao.findByProjectIdAndName(projectId, appName).stream().map(i->{
-            i.setLastState(getYarnAppState(i.getAppId()));
+            try {
+                i.setLastState(getYarnAppState(projectId,i.getAppId()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return i;
         }).collect(Collectors.toList());
 
@@ -71,7 +84,11 @@ public class AppInstanceService {
                 return o1.getUpdatedTimestamp().compareTo(o2.getUpdatedTimestamp());
             }
         }).map(i->{
-            i.setLastState(getYarnAppState(i.getAppId()));
+            try {
+                i.setLastState(getYarnAppState(i.getProjectId(),i.getAppId()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return i;
         });
         return instances;
@@ -149,7 +166,7 @@ public class AppInstanceService {
             throw new Exception("Invalid ProjectId");
         }
         C2Properties prop = (projectOpt.get().getEnv());
-        return new YarnSvc(sparkProperties.getYarnHost()).setApplicationId(appId).kill();
+        return new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(appId).kill();
     }
 
 

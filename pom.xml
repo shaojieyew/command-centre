@@ -17,7 +17,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>command-centre-cli</module>
-		<module>command-centre-cli2</module>
 		<module>command-centre-api</module>
 		<module>command-centre-service</module>
 		<module>command-centre-example</module>

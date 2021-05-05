@@ -4,7 +4,6 @@ import app.c2.common.SystemUtil;
 import app.c2.model.AppInstance;
 import app.c2.model.Project;
 import app.c2.C2PlatformProperties;
-import app.c2.service.AppInstanceService;
 import app.c2.properties.C2Properties;
 import app.c2.services.mvnRegistry.AbstractRegistrySvc;
 import app.c2.services.mvnRegistry.RegistrySvcFactory;
@@ -196,7 +195,7 @@ public class SparkService {
 
         String sparkAppNameToSubmit = getSparkAppName(project.getName(), project.getId(), appInstance.getName());
 
-        YarnSvc yarnSvc = new YarnSvc(c2PlatformProperties.getYarnHost());
+        YarnSvc yarnSvc = new YarnSvc(prop.getHadoopProperties().getYarnHost());
         if(yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                 .get().stream()
                 .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
