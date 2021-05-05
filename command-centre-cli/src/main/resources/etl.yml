@@ -1,4 +1,4 @@
-kind : AppDeployment1
+kind : AppDeployment
 spec:
   - name : abc-app
     projectId : 1
@@ -10,7 +10,7 @@ spec:
       - config.yml
       - app1
     sparkArgs :
-      spark.driver.memory : 1G
+      spark.driver.memory: 1G
       spark.executor.instances : 1
       spark.executor.memory : 1G
       spark.executor.cores : 1
