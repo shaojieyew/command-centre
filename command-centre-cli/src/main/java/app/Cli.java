@@ -19,11 +19,9 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Command(name = "", mixinStandardHelpOptions = true, version = "1.0",
         description = "")
@@ -42,7 +40,7 @@ public class Cli implements Callable<Integer> {
     private final static String TYPE_NIFI_QUERY= "nq";
     public String[] args;
 
-    public static List<String> ACTIONS =  new ArrayList<String>(
+    public static List<String> ACTIONS =  new ArrayList<>(
             Arrays.asList(ACTION_CREATE,ACTION_DELETE,ACTION_RUN,ACTION_STOP,ACTION_LS,ACTION_GET));
 
     @Parameters(index = "0", description = "action (ls, get, create, run, stop, delete)")
@@ -183,12 +181,12 @@ public class Cli implements Callable<Integer> {
         initProject();
         initFiles();
 
-        if(!ACTIONS.contains(_action.toUpperCase())){
+        if(!ACTIONS.contains(_action.toLowerCase())){
             System.out.println("Invalid action");
             return 0;
         }
 
-        switch ((get_action()).toUpperCase()){
+        switch ((get_action()).toLowerCase()){
             case ACTION_CREATE:
                 if(getSpecFile().size()==0){
                     throw new Exception("No service or spec file provided");
@@ -344,10 +342,12 @@ public class Cli implements Callable<Integer> {
 
 }
 
-
-//TODO clean up hardcoded Strnig
-//TODO organise cli parameter,
-//TODO standardise config
+//TODO allow jar upload
+//TODO add Conf to spark laucher
+//TODO set sparkHOME
+//TODO kerberos auth
+//TODO organise cli parameter and case switch
+//TODO standardise config app.properties and setting.yml
 //TODO delete useless codes
-//TODO kerberos sparksubmit and nifi
+//TODO set bin env for shortcut
 

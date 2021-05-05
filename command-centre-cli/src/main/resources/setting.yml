@@ -1,3 +1,4 @@
+projectName: "test"
 mavenProperties:
   - host: "https://gitlab.com"
     privateToken: "B8UxzhjZiBDJK51ZVHxY"
