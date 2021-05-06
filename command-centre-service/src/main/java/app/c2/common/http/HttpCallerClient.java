@@ -1,4 +1,4 @@
-package app.c2.common;
+package app.c2.common.http;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -7,13 +7,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 
-public class HttpReqClient {
-        public HttpResponse callRestUrl(final String url, final String userId, HttpUriRequest request) {
+public class HttpCallerClient extends HttpCaller {
+        public HttpResponse callRestUrl(HttpUriRequest request) {
                 HttpResponse httpResponse = null;
                 HttpClient httpClient = HttpClientBuilder.create().build();
                 try {
                         httpResponse = httpClient.execute(request);
-                        httpResponse = httpResponse;
                 } catch (IOException e) {
                         e.printStackTrace();
                 }

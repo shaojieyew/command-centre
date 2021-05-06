@@ -117,6 +117,8 @@ public class SparkService {
     private SparkLauncher addArgs(SparkLauncher launcher, List<String> args){
         for(String arg: args){
             launcher = launcher.addAppArgs(arg);
+            launcher = launcher.addSparkArg("","");
+            launcher = launcher.setConf("","");
         }
         return launcher;
     }

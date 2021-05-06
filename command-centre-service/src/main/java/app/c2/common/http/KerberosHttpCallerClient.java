@@ -1,4 +1,4 @@
-package app.c2.common;
+package app.c2.common.http;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -26,33 +26,17 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-public class KerberosHttpReqClient {
+public class KerberosHttpCallerClient extends HttpCaller {
 
         private String principal;
         private String keytab;
 
-        public KerberosHttpReqClient(String principal, String keytab) {
+        public KerberosHttpCallerClient(String principal, String keytab) {
                 this.principal = principal;
                 this.keytab = keytab;
         }
 
-        /*
-
-                                                HttpUriRequest request = null;
-                                                switch (operation) {
-                                                        case DELETE:
-                                                                request = new HttpDelete(url);
-                                                                break;
-                                                        case POST:
-                                                                request = new HttpPost(url);
-                                                                break;
-                                                        default:
-                                                                request = new HttpGet(url);
-                                                                break;
-                                                }
-
-         */
-        public HttpResponse callRestUrl(final String url, final String userId, HttpUriRequest request) {
+        public HttpResponse callRestUrl(HttpUriRequest request) {
                 javax.security.auth.login.Configuration config = new javax.security.auth.login.Configuration() {
                         @SuppressWarnings("serial")
                         @Override
@@ -135,4 +119,10 @@ public class KerberosHttpReqClient {
 
                 return httpClient;
         }
+
+//        public static void main(String arg[]){
+//                KerberosHttpRequestClient client = new KerberosHttpRequestClient("asa","ssas");
+//                HttpUriRequest request = new HttpPost("https://www.yahoo.com");
+//                client.callRestUrl(request);
+//        }
 }

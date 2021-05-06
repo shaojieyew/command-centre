@@ -1,19 +1,29 @@
 package app.c2.services.yarn;
 
+import app.c2.common.http.HttpCaller;
+import app.c2.common.http.HttpCallerClient;
+import app.c2.common.http.KerberosHttpCallerClient;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import util.HttpService;
 
+import javax.ws.rs.core.MediaType;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class YarnSvc {
     String url;
@@ -150,6 +160,30 @@ public class YarnSvc {
             String queryUrl = url+"/"+applicationId+"/state";
             HashMap<String,String> requestMap = new HashMap<>();
             requestMap.put("content-type","application/json");
+
+            boolean enabledSpnegoHttpRequest = true;
+            String principle = "";
+            String keytab = "";
+            HttpCaller httpCaller = new HttpCallerClient();
+            if(enabledSpnegoHttpRequest){
+                httpCaller = new KerberosHttpCallerClient(principle, keytab);
+            }
+            String requestJson = "{\"state\": \"KILLED\"}";
+            StringEntity entity = new StringEntity(requestJson, "application/json");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Basic " + "xxxxxxxxxxxx");
+            HttpEntity<String> entity = new HttpEntity<String>(input, headers);
+
+            // send request and parse result
+            ResponseEntity<String> response = restTemplate
+                    .exchange(uri, HttpMethod.POST, entity, String.class);
+
+
+            request.setEntity(HttpEntity);
+            httpCaller.callRestUrl();
+
             HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, queryUrl, requestMap, "{\"state\": \"KILLED\"}");
             int statusCode = con.getResponseCode();
 
