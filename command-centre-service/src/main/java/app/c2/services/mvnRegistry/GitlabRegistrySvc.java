@@ -1,12 +1,16 @@
 package app.c2.services.mvnRegistry;
 
+import app.c2.common.http.HttpCaller;
+import app.c2.common.http.HttpCallerFactory;
+import app.c2.common.http.HttpUtil;
 import app.c2.services.mvnRegistry.downloader.ArtifactDownloader;
 import app.c2.services.mvnRegistry.model.Package;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import util.HttpService;
 import util.Util;
 
 import java.io.File;
@@ -38,9 +42,14 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
         requestMap.put("content-type","application/json");
         requestMap.put("PRIVATE-TOKEN",privateToken);
         try {
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.GET, url, requestMap, null);
-            int statusCode = con.getResponseCode();
-            strResponse = HttpService.inputStreamToString(con.getInputStream());
+            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpGet httpGet = new HttpGet(url);
+            httpGet.addHeader("content-type","application/json");
+            httpGet.addHeader("PRIVATE-TOKEN",privateToken);
+            HttpResponse response = httpCaller.execute(httpGet);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }

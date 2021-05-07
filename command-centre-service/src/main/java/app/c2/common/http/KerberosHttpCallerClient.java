@@ -36,7 +36,7 @@ public class KerberosHttpCallerClient extends HttpCaller {
                 this.keytab = keytab;
         }
 
-        public HttpResponse callRestUrl(HttpUriRequest request) {
+        public HttpResponse execute(HttpUriRequest request) {
                 javax.security.auth.login.Configuration config = new javax.security.auth.login.Configuration() {
                         @SuppressWarnings("serial")
                         @Override

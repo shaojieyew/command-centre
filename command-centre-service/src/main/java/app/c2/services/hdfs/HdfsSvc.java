@@ -1,14 +1,20 @@
 package app.c2.services.hdfs;
 
+import app.c2.common.http.HttpCaller;
+import app.c2.common.http.HttpCallerFactory;
+import app.c2.common.http.HttpUtil;
 import app.c2.services.hdfs.model.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import util.HttpService;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -77,13 +83,13 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HashMap<String,String> requestMap = new HashMap<>();
-            requestMap.put("content-type","application/json");
-            HttpURLConnection con = null;
-            con = HttpService.getConnection( HttpService.HttpMethod.GET, queryUrl, requestMap, null);
-            int statusCode = con.getResponseCode();
+            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpGet httpGet = new HttpGet(queryUrl);
+            httpGet.addHeader("content-type","application/json");
+            HttpResponse response = httpCaller.execute(httpGet);
 
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+            int statusCode = response.getStatusLine().getStatusCode();
+            String strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
@@ -114,12 +120,14 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HashMap<String,String> requestMap = new HashMap<>();
-            requestMap.put("content-type","application/json");
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, queryUrl, requestMap, null);
-            int statusCode = con.getResponseCode();
+            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpPut httpPut = new HttpPut(queryUrl);
+            httpPut.addHeader("content-type","application/json");
+            HttpResponse response = httpCaller.execute(httpPut);
 
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            String strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
@@ -147,12 +155,16 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HashMap<String,String> requestMap = new HashMap<>();
-            requestMap.put("content-type","application/json");
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.DELETE, queryUrl, requestMap, null);
-            int statusCode = con.getResponseCode();
 
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+
+            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpDelete httpDelete = new HttpDelete(queryUrl);
+            httpDelete.addHeader("content-type","application/json");
+            HttpResponse response = httpCaller.execute(httpDelete);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            String strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
@@ -179,12 +191,16 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HashMap<String,String> requestMap = new HashMap<>();
-            requestMap.put("content-type","application/json");
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, queryUrl, requestMap, null);
-            int statusCode = con.getResponseCode();
 
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+
+            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpPut httpPut = new HttpPut(queryUrl);
+            httpPut.addHeader("content-type","application/json");
+            HttpResponse response = httpCaller.execute(httpPut);
+
+            int statusCode =response.getStatusLine().getStatusCode();
+
+            String strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
@@ -239,12 +255,13 @@ public class HdfsSvc {
              queryUrl = queryUrl + "&user.name="+ username;
          }
 
-         HashMap<String,String> requestMap = new HashMap<>();
-        requestMap.put("content-type","application/json");
-        HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, queryUrl, requestMap, null);
-        int statusCode = con.getResponseCode();
+         HttpCaller httpCaller = HttpCallerFactory.create();
+         HttpPut httpPut = new HttpPut(queryUrl);
+         httpPut.addHeader("content-type","application/json");
+         HttpResponse response = httpCaller.execute(httpPut);
+         int statusCode =response.getStatusLine().getStatusCode();
+         String strResponse = HttpUtil.httpEntityToString(response.getEntity());
 
-        String strResponse = HttpService.inputStreamToString(con.getInputStream());
         if(statusCode != 200){
             throw new Exception(strResponse);
         }

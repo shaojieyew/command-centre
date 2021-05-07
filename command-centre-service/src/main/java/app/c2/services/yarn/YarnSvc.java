@@ -1,34 +1,26 @@
 package app.c2.services.yarn;
 
-import app.c2.common.http.HttpCaller;
-import app.c2.common.http.HttpCallerClient;
-import app.c2.common.http.KerberosHttpCallerClient;
+import app.c2.common.http.*;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpRequest;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.*;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import util.HttpService;
 
-import javax.ws.rs.core.MediaType;
-import java.net.HttpURLConnection;
 import java.util.*;
 
 public class YarnSvc {
     String url;
     String applicationId;
     Map<String, String> args = new HashMap<>();
+    String principle = null;
+    String keytab = null;
 
     public static YarnSvc builder(String host){
         return new YarnSvc(host);
@@ -36,6 +28,17 @@ public class YarnSvc {
     public YarnSvc(String host){
         url= host+"/ws/v1/cluster/apps";
     }
+
+    public YarnSvc setPrinciple(String principle) {
+        this.principle = principle;
+        return this;
+    }
+
+    public YarnSvc setKeytab(String keytab) {
+        this.keytab = keytab;
+        return this;
+    }
+
     public YarnSvc setApplicationId(String applicationId) {
         this.applicationId = applicationId;
         return this;
@@ -101,15 +104,17 @@ public class YarnSvc {
         HashMap<String,String> requestMap = new HashMap<>();
         requestMap.put("content-type","application/json");
         try {
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.GET,
-                    queryUrl,
-                    requestMap,
-                    null);
-            int statusCode = con.getResponseCode();
-            strResponse = HttpService.inputStreamToString(con.getInputStream());
+            HttpGet httpGet = new HttpGet(queryUrl);
+            httpGet.setHeader("content-type","application/json");
+            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
+
+            HttpResponse response= httpCaller.execute(httpGet);
+            int statusCode = response.getStatusLine().getStatusCode();
+            strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
+
             JSONParser parser = new JSONParser();
             JSONObject json = (JSONObject)parser.parse(strResponse);
             JSONObject jsonAppsObject = (JSONObject)json.get("apps");
@@ -158,39 +163,23 @@ public class YarnSvc {
                 throw new Exception("ApplicationId not set. To kill an application with YarnAppQuery, applicationId needs to be set using setApplicationId");
             }
             String queryUrl = url+"/"+applicationId+"/state";
-            HashMap<String,String> requestMap = new HashMap<>();
-            requestMap.put("content-type","application/json");
+            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
-            boolean enabledSpnegoHttpRequest = true;
-            String principle = "";
-            String keytab = "";
-            HttpCaller httpCaller = new HttpCallerClient();
-            if(enabledSpnegoHttpRequest){
-                httpCaller = new KerberosHttpCallerClient(principle, keytab);
-            }
             String requestJson = "{\"state\": \"KILLED\"}";
-            StringEntity entity = new StringEntity(requestJson, "application/json");
+            HttpPut httpPut = new HttpPut(queryUrl);
+            StringEntity entity = new StringEntity(requestJson,"UTF-8");
+            httpPut.setEntity(entity);
+            httpPut.setHeader("Accept", "application/json");
+            httpPut.setHeader("Content-type", "application/json");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Basic " + "xxxxxxxxxxxx");
-            HttpEntity<String> entity = new HttpEntity<String>(input, headers);
+            HttpResponse response = httpCaller.execute(httpPut);
+            int statusCode = response.getStatusLine().getStatusCode();
 
-            // send request and parse result
-            ResponseEntity<String> response = restTemplate
-                    .exchange(uri, HttpMethod.POST, entity, String.class);
-
-
-            request.setEntity(HttpEntity);
-            httpCaller.callRestUrl();
-
-            HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, queryUrl, requestMap, "{\"state\": \"KILLED\"}");
-            int statusCode = con.getResponseCode();
-
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+            String body = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
-                throw new Exception(strResponse);
+                throw new Exception(body);
             }
+
         } catch (Exception e) {
             return false;
         }

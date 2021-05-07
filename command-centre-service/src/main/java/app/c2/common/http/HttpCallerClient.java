@@ -8,7 +8,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.IOException;
 
 public class HttpCallerClient extends HttpCaller {
-        public HttpResponse callRestUrl(HttpUriRequest request) {
+        public HttpResponse execute(HttpUriRequest request) {
                 HttpResponse httpResponse = null;
                 HttpClient httpClient = HttpClientBuilder.create().build();
                 try {

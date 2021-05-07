@@ -1,14 +1,19 @@
 package app.c2.services.nifi;
 
+import app.c2.common.http.HttpCaller;
+import app.c2.common.http.HttpCallerFactory;
+import app.c2.common.http.HttpUtil;
 import com.davis.client.ApiClient;
 import com.davis.client.ApiException;
 import com.davis.client.api.FlowApi;
 import com.davis.client.model.*;
 import org.apache.hadoop.fs.InvalidRequestException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import util.HttpService;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -96,14 +101,16 @@ public class NifiSvc {
 
         String url = nifiHost+"/nifi-api"+"/processors/"+id+"/run-status";
 
-        HashMap<String,String> requestMap = new HashMap<>();
-        requestMap.put("content-type","application/json");
-        HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, url, requestMap, "{\"revision\":"+revision+",\"state\":\""+status+"\",\"disconnectedNodeAcknowledged\":false}");
-        // HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.PUT, url, requestMap, "{\"revision\":{\"clientId\":\""+"53a1ac4c-0177-1000-cd3a-285758ff3b47"+"\",\"version\":1},\"state\":\""+status+"\",\"disconnectedNodeAcknowledged\":false}");
-        try{
-            int statusCode = con.getResponseCode();
+        HttpCaller httpCaller = HttpCallerFactory.create();
 
-            String strResponse = HttpService.inputStreamToString(con.getInputStream());
+        HttpPut httpPut = new HttpPut(url);
+        httpPut.addHeader("content-type","application/json");
+        String requestJson = "{\"revision\":"+revision+",\"state\":\""+status+"\",\"disconnectedNodeAcknowledged\":false}";
+        httpPut.setEntity(HttpUtil.stringToHttpEntity(requestJson));
+        HttpResponse response = httpCaller.execute(httpPut);
+        try{
+            int statusCode = response.getStatusLine().getStatusCode();
+            String strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new InvalidRequestException(strResponse);
             }
@@ -219,14 +226,15 @@ public class NifiSvc {
 
     private String getProcessorJson(String id) throws IOException {
         String url = nifiHost+"/nifi-api"+"/processors/"+id;
-        HashMap<String,String> requestMap = new HashMap<>();
-        requestMap.put("content-type","application/json");
-        HttpURLConnection con = HttpService.getConnection( HttpService.HttpMethod.GET, url, requestMap, null);
-        int statusCode = con.getResponseCode();
+        HttpCaller httpCaller = HttpCallerFactory.create();
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.addHeader("content-type","application/json");
+        HttpResponse response = httpCaller.execute(httpGet);
+
+        int statusCode = response.getStatusLine().getStatusCode();
         String strResponse="";
         try{
-             strResponse = HttpService.inputStreamToString(con.getInputStream());
-
+             strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new InvalidRequestException(strResponse);
             }

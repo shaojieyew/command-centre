@@ -2,6 +2,7 @@ package util;
 
 import org.apache.log4j.Logger;
 
+
 public class Util {
 
     public static Logger initLogger(Class classType){
