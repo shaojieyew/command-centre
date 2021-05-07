@@ -9,6 +9,7 @@ import app.c2.services.mvnRegistry.AbstractRegistrySvc;
 import app.c2.services.mvnRegistry.RegistrySvcFactory;
 import app.c2.services.mvnRegistry.model.Package;
 import app.c2.services.yarn.YarnSvc;
+import app.c2.services.yarn.YarnSvcFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
@@ -197,7 +198,7 @@ public class SparkService {
 
         String sparkAppNameToSubmit = getSparkAppName(project.getName(), project.getId(), appInstance.getName());
 
-        YarnSvc yarnSvc = new YarnSvc(prop.getHadoopProperties().getYarnHost());
+        YarnSvc yarnSvc = YarnSvcFactory.create(prop);
         if(yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                 .get().stream()
                 .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))

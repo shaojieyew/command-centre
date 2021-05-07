@@ -8,15 +8,21 @@ import com.davis.client.ApiException;
 import com.davis.client.api.FlowApi;
 import com.davis.client.model.*;
 import org.apache.hadoop.fs.InvalidRequestException;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +31,10 @@ public class NifiSvc {
     private String nifiHost;
 
     public static FlowApi flowApi = null;
+    private String principle;
+    private String keytab;
+    private String username;
+    private String password;
 
     public NifiSvc(String nifiHost) {
         this.nifiHost = nifiHost;
@@ -32,10 +42,25 @@ public class NifiSvc {
         flowApi = new FlowApi(apiClient);
     }
 
+    public void setPrinciple(String principle) {
+        this.principle = principle;
+    }
+
+    public void setKeytab(String keytab) {
+        this.keytab = keytab;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public static final String NIFI_RUN_STATUS_STOPPED = "STOPPED";
     public static final String NIFI_RUN_STATUS_DISABLED = "DISABLED";
     public static final String NIFI_RUN_STATUS_RUNNING = "RUNNING";
-
 
     /**
      * get list of process groups by regex pattern
@@ -50,9 +75,9 @@ public class NifiSvc {
 
         List<ProcessGroupStatusDTO> groupToDrop =result.keySet().stream()
                 .filter(k->{
-            Pattern pattern = Pattern.compile(patternString.trim());
-            return !(pattern.matcher(result.get(k)+"/"+k.getName()).find());
-            //return !(pattern.matcher(k.getName()).matches() || k.getId().equals(patternString.trim()) || pattern.matcher(result.get(k)).matches());
+                    Pattern pattern = Pattern.compile(patternString.trim());
+                    return !(pattern.matcher(result.get(k)+"/"+k.getName()).find());
+                    //return !(pattern.matcher(k.getName()).matches() || k.getId().equals(patternString.trim()) || pattern.matcher(result.get(k)).matches());
                 }).collect(Collectors.toList());
 
         for(ProcessGroupStatusDTO k : groupToDrop){
@@ -76,7 +101,7 @@ public class NifiSvc {
                 .filter(k->{
                     Pattern pattern = Pattern.compile(patternString.trim());
                     return !(pattern.matcher(result.get(k)+"/"+k.getName()).find());
-                   // return !(pattern.matcher(k.getName()).matches() || k.getId().equals(patternString.trim()) || pattern.matcher(result.get(k)).matches());
+                    // return !(pattern.matcher(k.getName()).matches() || k.getId().equals(patternString.trim()) || pattern.matcher(result.get(k)).matches());
                 }).collect(Collectors.toList());
 
 
@@ -92,19 +117,23 @@ public class NifiSvc {
      * @param status
      * @throws Exception
      */
-    public void updateRunStatus(String id, String status) throws IOException, ParseException {
-        String entity = getProcessorJson(id);
+    public void updateRunStatus(String id, String status) throws Exception {
+        String entity = requestProcessorJson(id);
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject)parser.parse(entity);
         JSONObject jsonAppsObject = (JSONObject)json.get("revision");
         String revision = jsonAppsObject.toString();
 
         String url = nifiHost+"/nifi-api"+"/processors/"+id+"/run-status";
-
         HttpCaller httpCaller = HttpCallerFactory.create();
-
         HttpPut httpPut = new HttpPut(url);
-        httpPut.addHeader("content-type","application/json");
+        try {
+            String token = requestToken();
+            httpPut.addHeader("Authorization","Bearer "+token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
         String requestJson = "{\"revision\":"+revision+",\"state\":\""+status+"\",\"disconnectedNodeAcknowledged\":false}";
         httpPut.setEntity(HttpUtil.stringToHttpEntity(requestJson));
         HttpResponse response = httpCaller.execute(httpPut);
@@ -224,17 +253,59 @@ public class NifiSvc {
         return flowApi.getConnectionStatus(id, false, "");
     }
 
-    private String getProcessorJson(String id) throws IOException {
+
+    private String requestToken() throws Exception {
+        String token = null;
+        if(username!=null && password!=null){
+            token = requestToken(username,password);
+        }
+        if(principle!=null && keytab!=null){
+            token = requestTokenKerberos(principle,keytab);
+        }
+        return token;
+    }
+
+    private String requestToken(String username, String password) throws Exception {
+        String url = nifiHost+"/nifi-api"+"/access/token";
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader("content-type",MediaType.APPLICATION_FORM_URLENCODED);
+        httpPost.setEntity(new StringEntity(String.format("username=%s&password=%s",username, password)));
+        HttpResponse response = HttpCallerFactory.create().execute(httpPost);
+        String token = HttpUtil.httpEntityToString(response.getEntity());
+        if(response.getStatusLine().getStatusCode()!=200){
+            throw new Exception(token);
+        }
+        return token;
+    }
+
+    private String requestTokenKerberos(String principle, String keytab) throws Exception {
+        String url = nifiHost+"/nifi-api"+"/access/kerberos";
+        HttpPost httpPost = new HttpPost(url);
+        HttpResponse response = HttpCallerFactory.create(principle,keytab).execute(httpPost);
+        String token = HttpUtil.httpEntityToString(response.getEntity());
+        if(response.getStatusLine().getStatusCode()!=200){
+            throw new Exception(token);
+        }
+        return token;
+    }
+
+    private String requestProcessorJson(String id)  {
         String url = nifiHost+"/nifi-api"+"/processors/"+id;
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpGet httpGet = new HttpGet(url);
-        httpGet.addHeader("content-type","application/json");
+        httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
+        try {
+            String token = requestToken();
+            httpGet.addHeader("Authorization","Bearer "+token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         HttpResponse response = httpCaller.execute(httpGet);
 
         int statusCode = response.getStatusLine().getStatusCode();
         String strResponse="";
         try{
-             strResponse = HttpUtil.httpEntityToString(response.getEntity());
+            strResponse = HttpUtil.httpEntityToString(response.getEntity());
             if(statusCode != 200){
                 throw new InvalidRequestException(strResponse);
             }

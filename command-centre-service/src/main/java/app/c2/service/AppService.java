@@ -8,6 +8,7 @@ import app.c2.model.File;
 import app.c2.model.Project;
 import app.c2.model.compositKey.AppId;
 import app.c2.services.yarn.YarnSvc;
+import app.c2.services.yarn.YarnSvcFactory;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
@@ -130,7 +131,8 @@ public class AppService {
             String sparkAppNameToSubmit = SparkService.getSparkAppName(projectOpt.get().getName(),projectId, app.getName());
             YarnSvc yarnSvc = null;
             try {
-                yarnSvc = new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost());
+
+                yarnSvc = YarnSvcFactory.create(projectOpt.get().getEnv());
 
                 Optional<YarnApp> yarnApp = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                         .setStartedTimeBegin(millis)
@@ -175,14 +177,14 @@ public class AppService {
             String sparkAppNameToKill = SparkService.getSparkAppName(projectOpt.get().getName(),projectId, app.getName());
             YarnSvc yarnSvc = null;
             try {
-                yarnSvc = new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost());
+                yarnSvc =  YarnSvcFactory.create(projectOpt.get().getEnv());
                 yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                         .setStartedTimeBegin(millis)
                         .get().stream()
                         .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToKill))
                         .forEach(s->{
                             try {
-                                new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(s.getId())
+                                YarnSvcFactory.create(projectOpt.get().getEnv()).setApplicationId(s.getId())
                                         .kill();
                             } catch (JsonProcessingException e) {
                                 e.printStackTrace();

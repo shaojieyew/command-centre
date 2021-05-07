@@ -13,6 +13,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import util.Util;
 
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.*;
@@ -39,12 +40,12 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
         String url = host+"/api/v4/projects/"+projectId+"/packages";
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap();
-        requestMap.put("content-type","application/json");
+        requestMap.put("content-type", MediaType.APPLICATION_JSON);
         requestMap.put("PRIVATE-TOKEN",privateToken);
         try {
             HttpCaller httpCaller = HttpCallerFactory.create();
             HttpGet httpGet = new HttpGet(url);
-            httpGet.addHeader("content-type","application/json");
+            httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
             httpGet.addHeader("PRIVATE-TOKEN",privateToken);
             HttpResponse response = httpCaller.execute(httpGet);
 

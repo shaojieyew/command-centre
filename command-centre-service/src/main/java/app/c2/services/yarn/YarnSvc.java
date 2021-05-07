@@ -13,6 +13,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import javax.ws.rs.core.MediaType;
 import java.util.*;
 
 public class YarnSvc {
@@ -102,10 +103,10 @@ public class YarnSvc {
         List<YarnApp> list = new ArrayList<>();
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap<>();
-        requestMap.put("content-type","application/json");
+        requestMap.put("content-type", MediaType.APPLICATION_JSON);
         try {
             HttpGet httpGet = new HttpGet(queryUrl);
-            httpGet.setHeader("content-type","application/json");
+            httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
             HttpResponse response= httpCaller.execute(httpGet);
@@ -169,8 +170,8 @@ public class YarnSvc {
             HttpPut httpPut = new HttpPut(queryUrl);
             StringEntity entity = new StringEntity(requestJson,"UTF-8");
             httpPut.setEntity(entity);
-            httpPut.setHeader("Accept", "application/json");
-            httpPut.setHeader("Content-type", "application/json");
+            httpPut.setHeader("Accept", MediaType.APPLICATION_JSON);
+            httpPut.setHeader("Content-type", MediaType.APPLICATION_JSON);
 
             HttpResponse response = httpCaller.execute(httpPut);
             int statusCode = response.getStatusLine().getStatusCode();

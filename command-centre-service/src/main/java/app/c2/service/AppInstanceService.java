@@ -7,6 +7,7 @@ import app.c2.model.AppInstance;
 import app.c2.model.Project;
 import app.c2.properties.C2Properties;
 import app.c2.services.yarn.YarnSvc;
+import app.c2.services.yarn.YarnSvcFactory;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.htrace.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +38,7 @@ public class AppInstanceService {
     private String getYarnAppState(long projectId, String applicationId) throws JsonProcessingException {
         Optional<Project> optionalProject = projectService.findById(projectId);
         if(optionalProject.isPresent()){
-            Optional<YarnApp> yarnApp = new YarnSvc(optionalProject.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(applicationId).get().stream().findFirst();
+            Optional<YarnApp> yarnApp = YarnSvcFactory.create(optionalProject.get().getEnv()).setApplicationId(applicationId).get().stream().findFirst();
             return yarnApp.map(a->a.getState().toUpperCase()).orElse("UNKNOWN");
         }else{
             return "UNKNOWN";
@@ -165,8 +166,7 @@ public class AppInstanceService {
         if(!projectOpt.isPresent()){
             throw new Exception("Invalid ProjectId");
         }
-        C2Properties prop = (projectOpt.get().getEnv());
-        return new YarnSvc(projectOpt.get().getEnv().getHadoopProperties().getYarnHost()).setApplicationId(appId).kill();
+        return YarnSvcFactory.create(projectOpt.get().getEnv()).setApplicationId(appId).kill();
     }
 
 

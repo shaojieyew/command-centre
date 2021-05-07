@@ -144,6 +144,8 @@ public class NifiQueryService {
                     e.printStackTrace();
                 } catch (ParseException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
         }

@@ -19,6 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -29,10 +30,12 @@ import java.util.List;
  * A wrapper around hdfs operations; get files, delete/rename/copy files and create directory
  */
 public class HdfsSvc {
-    String webHdfsUrl = "";
-    String coreSiteXmlLocation ="";
-    String hdfsSiteXmlLocation = "";
-    String username = "";
+    String webHdfsUrl;
+    String coreSiteXmlLocation ;
+    String hdfsSiteXmlLocation ;
+    String username;
+    String principle;
+    String keytab;
 
     public String getUsername() {
         return username;
@@ -41,6 +44,21 @@ public class HdfsSvc {
     public HdfsSvc(String webHdfsUrl, String username) {
         this.webHdfsUrl = webHdfsUrl;
         this.username = username;
+    }
+
+    public HdfsSvc setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public HdfsSvc setPrinciple(String principle) {
+        this.principle = principle;
+        return this;
+    }
+
+    public HdfsSvc setKeytab(String keytab) {
+        this.keytab = keytab;
+        return this;
     }
 
     public String getWebHdfsUrl() {
@@ -83,9 +101,9 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
             HttpGet httpGet = new HttpGet(queryUrl);
-            httpGet.addHeader("content-type","application/json");
+            httpGet.addHeader("content-type", MediaType.APPLICATION_JSON);
             HttpResponse response = httpCaller.execute(httpGet);
 
             int statusCode = response.getStatusLine().getStatusCode();
@@ -120,9 +138,9 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpCaller httpCaller = HttpCallerFactory.create(principle,keytab);
             HttpPut httpPut = new HttpPut(queryUrl);
-            httpPut.addHeader("content-type","application/json");
+            httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
             HttpResponse response = httpCaller.execute(httpPut);
 
             int statusCode = response.getStatusLine().getStatusCode();
@@ -157,9 +175,9 @@ public class HdfsSvc {
 
 
 
-            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpCaller httpCaller = HttpCallerFactory.create(principle,keytab);
             HttpDelete httpDelete = new HttpDelete(queryUrl);
-            httpDelete.addHeader("content-type","application/json");
+            httpDelete.addHeader("content-type",MediaType.APPLICATION_JSON);
             HttpResponse response = httpCaller.execute(httpDelete);
 
             int statusCode = response.getStatusLine().getStatusCode();
@@ -193,9 +211,9 @@ public class HdfsSvc {
 
 
 
-            HttpCaller httpCaller = HttpCallerFactory.create();
+            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
             HttpPut httpPut = new HttpPut(queryUrl);
-            httpPut.addHeader("content-type","application/json");
+            httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
             HttpResponse response = httpCaller.execute(httpPut);
 
             int statusCode =response.getStatusLine().getStatusCode();
@@ -255,9 +273,9 @@ public class HdfsSvc {
              queryUrl = queryUrl + "&user.name="+ username;
          }
 
-         HttpCaller httpCaller = HttpCallerFactory.create();
+         HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
          HttpPut httpPut = new HttpPut(queryUrl);
-         httpPut.addHeader("content-type","application/json");
+         httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
          HttpResponse response = httpCaller.execute(httpPut);
          int statusCode =response.getStatusLine().getStatusCode();
          String strResponse = HttpUtil.httpEntityToString(response.getEntity());
