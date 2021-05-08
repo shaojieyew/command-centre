@@ -1,6 +1,6 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.service.FileStorageService;
 import app.spec.resource.GroupResourceSpec;
 import app.spec.resource.Resource;

@@ -1,10 +1,11 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
+import app.spec.spark.AppDeploymentKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,17 @@ public class StopApp extends Task{
     StopApp stopApp;
 
     Cli cli;
+    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+        kinds.forEach(k->{
+            k.getSpec().forEach(s-> {
+                try {
+                    stopApp.startTask(cli, s.getName());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+    }
 
     @Override
     protected String getTaskName() {

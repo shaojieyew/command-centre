@@ -1,7 +1,7 @@
 package app.task;
 
-import app.Cli;
 import app.c2.model.NifiQuery;
+import app.cli.Cli;
 import app.util.PrintTable;
 import app.c2.service.NifiQueryService;
 import app.c2.services.nifi.NifiSvc;
@@ -39,8 +39,43 @@ public class ListNifi extends Task{
     @Autowired
     NifiQueryService nifiQueryService;
 
+
+    public void startTask(Cli cli, String queryName) throws Exception {
+        System.out.println("Nifi Processor: ");
+
+        List<String> columns = new ArrayList<>();
+        columns.add("id");
+        columns.add("path");
+        columns.add("status");
+        columns.add("type");
+        this.cli = cli;
+        List<NifiInfo> list = new ArrayList<>();
+        Optional<NifiQuery> nifiQueryOptional = nifiQueryService.findByProjectIdAndName(cli.getProject().getId(), queryName);
+
+        String type = nifiQueryOptional.get().getType();
+        if(!nifiQueryOptional.isPresent()){
+            throw new Exception("Invalid query name");
+        }
+        if(type!=null && type.equalsIgnoreCase(NifiQueryService.ProcessorType.Group.toString())){
+            List<ProcessGroupStatusDTO> processGroup= nifiQueryService.findProcessGroup(cli.getProject().getId(),nifiQueryOptional.get().getQuery());
+            for(ProcessGroupStatusDTO group: processGroup){
+                NifiInfo info = new NifiInfo(group.getId(),group.getName(), null,NifiQueryService.ProcessorType.Group.toString());
+                list.add(info);
+            }
+        }else{
+            List<ProcessorStatusDTO> processors= nifiQueryService.findProcessor(cli.getProject().getId(),nifiQueryOptional.get().getQuery(), type);
+            for(ProcessorStatusDTO processor: processors) {
+                NifiInfo info = new NifiInfo(processor.getId(),processor.getName(),processor.getRunStatus(),processor.getAggregateSnapshot().getType());
+                list.add(info);
+            }
+        }
+        new PrintTable<NifiInfo>(list,columns);
+    }
+
     public void startTask(Cli cli) throws Exception {
-        String type = cli.get_nifi_process_type();
+        String type = cli.getCliNifiProcessType();
+        System.out.println("Nifi Processor: ");
+
         List<String> columns = new ArrayList<>();
         columns.add("id");
         columns.add("path");
@@ -50,13 +85,13 @@ public class ListNifi extends Task{
         List<NifiInfo> list = new ArrayList<>();
         NifiSvc svc= NifiSvcFactory.create(cli.getC2CliProperties());
         if(type!=null && type.equalsIgnoreCase(NifiQueryService.ProcessorType.Group.toString())){
-            List<ProcessGroupStatusDTO> processGroup= nifiQueryService.findProcessGroup(cli.getProject().getId(),cli.get_query());
+            List<ProcessGroupStatusDTO> processGroup= nifiQueryService.findProcessGroup(cli.getProject().getId(),cli.getCliQuery());
             for(ProcessGroupStatusDTO group: processGroup){
                 NifiInfo info = new NifiInfo(group.getId(),group.getName(), null,NifiQueryService.ProcessorType.Group.toString());
                 list.add(info);
             }
         }else{
-            List<ProcessorStatusDTO> processors= nifiQueryService.findProcessor(cli.getProject().getId(),cli.get_query(), cli.get_nifi_process_type());
+            List<ProcessorStatusDTO> processors= nifiQueryService.findProcessor(cli.getProject().getId(),cli.getCliQuery(), cli.getCliNifiProcessType());
             for(ProcessorStatusDTO processor: processors) {
                 NifiInfo info = new NifiInfo(processor.getId(),processor.getName(),processor.getRunStatus(),processor.getAggregateSnapshot().getType());
                 list.add(info);

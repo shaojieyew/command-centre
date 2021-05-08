@@ -1,9 +1,10 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
+import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,7 +23,18 @@ public class CreateApp extends Task{
 
     AppDeploymentSpec spec = null;
     Cli cli = null;
-
+    @Autowired CreateApp createApp;
+    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+        kinds.forEach(k->{
+            k.getSpec().forEach(s-> {
+                try {
+                    createApp.startTask(cli, s);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+    }
     public void startTask(Cli cli, AppDeploymentSpec spec) throws Exception {
         this.cli=cli;
         this.spec = spec;

@@ -1,6 +1,5 @@
 package app.c2.properties;
 
-import java.util.List;
 
 public class KerberosProperties {
    private String keytab;

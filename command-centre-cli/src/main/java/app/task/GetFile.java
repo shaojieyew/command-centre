@@ -1,6 +1,6 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.util.PrintTable;
 import app.c2.model.File;
 import app.c2.model.Project;
@@ -24,8 +24,7 @@ public class GetFile extends Task {
 
     @Override
     public void startTask(Cli cli) throws Exception {
-        if(cli.get_id()!=null){
-            long fileId = Long.parseLong(cli.get_id());
+            long fileId = Long.parseLong(cli.getCliId());
             Optional<File> optionalFile = fileStorageService.getFile(fileId);
             if(optionalFile.isPresent()){
                 String s = new String(optionalFile.get().getFileBlob());
@@ -42,7 +41,6 @@ public class GetFile extends Task {
             }else{
                 throw new Exception("Invalid fileId");
             }
-        }
     }
 
     @Override

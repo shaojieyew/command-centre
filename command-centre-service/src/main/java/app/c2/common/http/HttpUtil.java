@@ -13,8 +13,11 @@ public class HttpUtil {
 
     public static String httpEntityToString(HttpEntity entity) throws IOException {
         InputStream in = entity.getContent();
-        String encoding = entity.getContentEncoding().getValue();
-        encoding = encoding == null ? "UTF-8" : encoding;
+        String encoding ="UTF-8";
+        try{
+             encoding = entity.getContentEncoding().getValue();
+        }catch (Exception ex) {
+        }
         String body = IOUtils.toString(in, encoding);
         return body;
     }

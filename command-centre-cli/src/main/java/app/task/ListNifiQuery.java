@@ -1,17 +1,12 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.model.NifiQuery;
 import app.c2.service.NifiQueryService;
-import app.c2.services.nifi.NifiSvc;
-import app.c2.services.nifi.NifiSvcFactory;
 import app.util.PrintTable;
-import com.davis.client.model.ProcessGroupStatusDTO;
-import com.davis.client.model.ProcessorStatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -8,8 +8,6 @@ import com.davis.client.ApiException;
 import com.davis.client.api.FlowApi;
 import com.davis.client.model.*;
 import org.apache.hadoop.fs.InvalidRequestException;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,12 +15,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -278,14 +272,20 @@ public class NifiSvc {
         return token;
     }
 
+    private String token;
+    private long tokenLastUpdate = 0;
     private String requestTokenKerberos(String principle, String keytab) throws Exception {
+        if((System.currentTimeMillis()-tokenLastUpdate)<(1000*60*60) && token!=null && token.length()>0){
+            return token;
+        }
         String url = nifiHost+"/nifi-api"+"/access/kerberos";
         HttpPost httpPost = new HttpPost(url);
         HttpResponse response = HttpCallerFactory.create(principle,keytab).execute(httpPost);
-        String token = HttpUtil.httpEntityToString(response.getEntity());
+        token = HttpUtil.httpEntityToString(response.getEntity());
         if(response.getStatusLine().getStatusCode()!=200){
             throw new Exception(token);
         }
+        tokenLastUpdate = System.currentTimeMillis();
         return token;
     }
 

@@ -2,7 +2,6 @@ package app.c2.services.yarn;
 
 import app.c2.properties.C2Properties;
 import app.c2.properties.KerberosProperties;
-import app.c2.services.nifi.NifiSvc;
 
 public class YarnSvcFactory {
     public  static YarnSvc create(C2Properties props){

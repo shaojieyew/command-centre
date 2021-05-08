@@ -1,15 +1,15 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.spec.resource.GroupResourceKind;
 import app.spec.resource.GroupResourceSpec;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DeleteFile extends Task {
@@ -27,6 +27,15 @@ public class DeleteFile extends Task {
         return DeleteFile.class.getSimpleName() +" "+path;
     }
 
+    public void startTask(Cli cli, List<GroupResourceKind> kinds) throws Exception {
+        kinds.forEach(s-> {
+            try {
+                startTask(cli, s);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
     public void startTask(Cli cli, GroupResourceKind kind) throws Exception {
         kind.getSpec().forEach(s-> {
             try {
@@ -59,7 +68,7 @@ public class DeleteFile extends Task {
 
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
-        this.path = cli.get_name();
+        this.path = cli.getCliName();
         if (path == null || path.length() == 0) {
             throw new Exception("Invalid resource path");
         }
@@ -69,7 +78,7 @@ public class DeleteFile extends Task {
     @Override
     protected void task() throws Exception {
         if(path!=null){
-            String path = cli.get_name();
+            String path = cli.getCliName();
             String filename = null;
             String namespace = null;
             if(path.contains("/")){

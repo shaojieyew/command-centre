@@ -1,6 +1,6 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.util.PrintTable;
 import app.c2.model.App;
 import app.c2.service.AppService;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ListApp extends Task{
@@ -31,19 +32,27 @@ public class ListApp extends Task{
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
 
-        System.out.println("Spark Application: ");
-        List<App> apps = appService.findAllAppStatus(cli.getProject().getId());
+        if(cli.getCliName()!=null){
+            System.out.println("Spark Application: "+cli.getCliName());
+        }else{
+            System.out.println("Spark Application: ");
+        }
+        List<App> apps = appService.findAllAppStatus(cli.getProject().getId()).stream().filter(s->{
+            if(cli.getCliName()==null){
+                return true;
+            }
+            return s.getName().toLowerCase().contains(cli.getCliName().toLowerCase());
+        }).collect(Collectors.toList());
         ArrayList<String> header = new ArrayList<>();
         header.add("updatedTimestamp");
         header.add("name");
         header.add("jarMainClass");
-        header.add("jarArgs");
         header.add("jarVersion");
+        header.add("jarArgs");
         header.add("namespace");
         header.add("yarnAppId");
         header.add("yarnStatus");
         new PrintTable(apps, header);
-
     }
 
     @Override

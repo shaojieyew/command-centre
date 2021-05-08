@@ -1,7 +1,6 @@
 package app.task;
 
 import app.cli.Cli;
-import app.cli.CreateCli;
 import app.spec.Kind;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
@@ -13,42 +12,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class CreateSpec extends Task{
+public class DeleteSpec extends Task{
     @Autowired
-    CreateFileGroup createFileGroup;
+    DeleteFile deleteFile;
     @Autowired
-    CreateApp createApp;
+    DeleteApp deleteApp;
     @Autowired
-    CreateNifiQuery createNifiQuery;
+    DeleteNifiQuery deleteNifiQuery;
 
     public void startTask(Cli cli) throws Exception {
         startTask(cli, cli.getSpecFile());
     }
 
     public void startTask(Cli cli, List<Kind> k) throws Exception {
-        for(Kind kind : k){
-            if(kind instanceof GroupResourceKind){
-                List<GroupResourceSpec> spec = kind.getSpec();
-                for(GroupResourceSpec s : spec){
-                    createFileGroup.startTask(cli, s);
-                }
-            }}
         for(Kind kind :k){
             if(kind instanceof AppDeploymentKind) {
                 List<AppDeploymentSpec> spec = kind.getSpec();
                 for (AppDeploymentSpec s : spec) {
-                    createApp.startTask(cli, s);
+                    deleteApp.startTask(cli, s);
                 }
             }
         }
         for(Kind kind : k){
+            if(kind instanceof GroupResourceKind){
+                List<GroupResourceSpec> spec = kind.getSpec();
+                for(GroupResourceSpec s : spec){
+                    deleteFile.startTask(cli, s);
+                }
+            }}
+        for(Kind kind : k){
             if(kind instanceof NifiQueryKind) {
                 List<NifiQuerySpec> spec = kind.getSpec();
                 for (NifiQuerySpec s : spec) {
-                    createNifiQuery.startTask(cli, s);
+                    deleteNifiQuery.startTask(cli, s);
                 }
             }
         }

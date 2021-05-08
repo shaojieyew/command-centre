@@ -11,7 +11,6 @@ import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
-import org.checkerframework.checker.units.qual.A;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +36,9 @@ public class NifiQueryService {
 
     public List<NifiQuery> findAllNifiQuery(){
         return Lists.newArrayList(nifiQueryDao.findAll());
+    }
+    public Optional<NifiQuery> findByProjectIdAndName(long projectId, String queryName){
+        return nifiQueryDao.findById(new NifiQueryId(projectId, queryName));
     }
 
     public void save(NifiQuery nifiQuery){
@@ -159,6 +161,39 @@ public class NifiQueryService {
             svc.findProcessGroup(query).entrySet().stream().forEach(s->{
                 svc.updateAllProcessInProcessGroup(s.getKey().getId(),status, onlyLeadingProcessor);
             });
+        }
+    }
+
+
+    public void stopProcessGroupById(long projectId, String groupId, boolean onlyLeadingProcessor) throws JsonProcessingException {
+        updateProcessGroupById( projectId,  groupId,  onlyLeadingProcessor, NifiSvc.NIFI_RUN_STATUS_STOPPED);
+    }
+    public void startProcessGroupById(long projectId, String groupId, boolean onlyLeadingProcessor) throws JsonProcessingException {
+        updateProcessGroupById( projectId,  groupId,  onlyLeadingProcessor, NifiSvc.NIFI_RUN_STATUS_RUNNING);
+    }
+    public void updateProcessGroupById(long projectId, String groupId, boolean onlyLeadingProcessor,String status) throws JsonProcessingException {
+        Optional<Project> project = projectService.findById(projectId);
+        if(project.isPresent() && project.get().getEnv()!=null) {
+            C2Properties prop = project.get().getEnv();
+            NifiSvc svc = NifiSvcFactory.create(prop);
+            svc.updateAllProcessInProcessGroup(groupId, status, onlyLeadingProcessor);
+        }
+    }
+
+
+    public void stopProcessById(long projectId, String id) throws Exception {
+        updateProcessById( projectId,  id, NifiSvc.NIFI_RUN_STATUS_STOPPED);
+    }
+    public void startProcessById(long projectId, String id) throws Exception {
+        updateProcessById( projectId,  id, NifiSvc.NIFI_RUN_STATUS_RUNNING);
+    }
+
+    public void updateProcessById(long projectId, String id ,String status) throws Exception {
+        Optional<Project> project = projectService.findById(projectId);
+        if(project.isPresent() && project.get().getEnv()!=null) {
+            C2Properties prop = project.get().getEnv();
+            NifiSvc svc = NifiSvcFactory.create(prop);
+            svc.updateRunStatus(id, status);
         }
     }
 }

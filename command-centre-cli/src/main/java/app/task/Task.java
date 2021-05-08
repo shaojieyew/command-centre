@@ -1,6 +1,6 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.util.ConsoleHelper;
 
 public abstract class Task {

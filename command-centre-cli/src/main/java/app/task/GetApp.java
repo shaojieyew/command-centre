@@ -1,6 +1,6 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
@@ -59,8 +59,7 @@ public class GetApp extends Task {
 
     @Override
     public void startTask(Cli cli) throws Exception {
-        if(cli.get_name()!=null){
-            Optional<App> optionalApp = appService.findApp(cli.getProject().getId(), cli.get_name());
+            Optional<App> optionalApp = appService.findApp(cli.getProject().getId(), cli.getCliName());
             if(optionalApp.isPresent()){
                 App app = optionalApp.get();
                 AppDeploymentKind appDeploymentKind = convertAppToSpec(app);
@@ -71,9 +70,6 @@ public class GetApp extends Task {
             }else{
                 throw new Exception("Invalid app name");
             }
-        }else{
-            throw new Exception("Invalid app name");
-        }
 
     }
 

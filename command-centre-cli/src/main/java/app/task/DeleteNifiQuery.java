@@ -1,20 +1,13 @@
 package app.task;
 
-import app.Cli;
-import app.c2.model.App;
-import app.c2.model.NifiQuery;
+import app.cli.Cli;
 import app.c2.service.*;
-import app.spec.Kind;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DeleteNifiQuery extends Task {
@@ -42,6 +35,15 @@ public class DeleteNifiQuery extends Task {
 
     @Autowired DeleteNifiQuery deleteNifiQuery;
 
+    public void startTask(Cli cli, List<NifiQueryKind> kinds) throws Exception {
+        kinds.forEach(s->{
+                try {
+                    deleteNifiQuery.startTask(cli,s);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        });
+    }
     public void startTask(Cli cli, NifiQueryKind kind) throws Exception {
         kind.getSpec().forEach(s->{
             if(s instanceof NifiQuerySpec){
@@ -62,10 +64,7 @@ public class DeleteNifiQuery extends Task {
 
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
-        this.queryName = cli.get_name();
-        if(queryName==null || queryName.length()==0){
-            throw new Exception("Invalid query name");
-        }
+        this.queryName = cli.getCliName();
         super.startTask(cli);
     }
 

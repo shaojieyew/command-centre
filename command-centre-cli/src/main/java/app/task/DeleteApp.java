@@ -1,12 +1,11 @@
 package app.task;
 
-import app.Cli;
+import app.cli.Cli;
 import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.c2.service.SparkService;
-import app.spec.Kind;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,36 +34,28 @@ public class DeleteApp extends Task {
         return DeleteApp.class.getSimpleName() +" "+appName;
     }
 
-//    public void startTask(Cli cli, String appName) throws Exception {
-//        this.cli = cli;
-//        this.appName = appName;
-//        super.startTask(cli);
-//    }
+    public void startTask(Cli cli, String appName) throws Exception {
+        this.cli = cli;
+        this.appName = appName;
+        super.startTask(cli);
+    }
 
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
-        this.appName = cli.get_name();
-        if(appName==null || appName.length()==0){
-            throw new Exception("Invalid app name");
-        }
+        this.appName = cli.getCliName();
         super.startTask(cli);
-
-//        if(appName==null){
-//            for(Kind kind : cli.getSpecFile()){
-//                if(kind instanceof AppDeploymentKind) {
-//                    List<AppDeploymentSpec> spec = kind.getSpec();
-//                    for (AppDeploymentSpec s : spec) {
-//                        startTask(cli, s.getName());
-//                    }
-//                }
-//            }
-//            if(cli.getSpecFile().size()==0){
-//                throw new Exception("Invalid app name");
-//            }
-//        }else{
-//            super.startTask(cli,false);
-//        }
     }
+
+    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+        kinds.forEach(s-> {
+            try {
+                startTask(cli, s);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public void startTask(Cli cli, AppDeploymentKind kind) throws Exception {
         kind.getSpec().forEach(s-> {
             try {
@@ -82,22 +73,6 @@ public class DeleteApp extends Task {
             throw new Exception("Invalid app name");
         }
         super.startTask(cli);
-
-//        if(appName==null){
-//            for(Kind kind : cli.getSpecFile()){
-//                if(kind instanceof AppDeploymentKind) {
-//                    List<AppDeploymentSpec> spec = kind.getSpec();
-//                    for (AppDeploymentSpec s : spec) {
-//                        startTask(cli, s.getName());
-//                    }
-//                }
-//            }
-//            if(cli.getSpecFile().size()==0){
-//                throw new Exception("Invalid app name");
-//            }
-//        }else{
-//            super.startTask(cli,false);
-//        }
     }
 
     @Override

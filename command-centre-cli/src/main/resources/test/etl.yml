@@ -1,7 +1,6 @@
 kind : AppDeployment
 spec:
   - name : abc-app
-    projectId : 1
     jarGroupId : c2
     jarArtifactId : spark-app
     jarVersion : 1.0.1-SNAPSHOT
@@ -20,7 +19,6 @@ spec:
         type: git
 
   - name : spark-etl
-    projectId : 1
     jarGroupId : c2
     jarArtifactId : spark-app
     jarVersion : 1.0.1-SNAPSHOT
