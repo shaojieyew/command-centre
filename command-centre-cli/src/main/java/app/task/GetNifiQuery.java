@@ -12,6 +12,7 @@ import app.spec.nifi.NifiQuerySpec;
 import app.spec.resource.Resource;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
+import app.util.ConsoleHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class GetNifiQuery extends Task {
             NifiQueryKind kind = convertQueryToSpec(query);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             String specStr = mapper.writeValueAsString(kind);
-            System.out.println(specStr);
+            ConsoleHelper.console.display(specStr);
         }else{
             throw new Exception("Invalid app name");
         }

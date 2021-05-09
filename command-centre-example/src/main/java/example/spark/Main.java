@@ -59,27 +59,26 @@ public class Main {
         env.put("HADOOP_CONF_DIR", hadoopConfDirFile.getAbsolutePath());
         setEnv(env);
 
-        String mavenRepoHost = prop.getMavenProperties().get(0).getHost();
+        String mavenRepoUrl = prop.getMavenProperties().get(0).getUrl();
         String mavenPrivateToken =  prop.getMavenProperties().get(0).getPrivateToken();
-        String gitLabProjectId = prop.getMavenProperties().get(0).getProjectId();
 
         // Download Jar from Maven
-        String groupId = "app/c2";
+        String groupId = "c2";
         String artifactId = "spark-app";
-        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoHost,mavenPrivateToken,gitLabProjectId,"tmp/project_"+projectId+"/repository");
+        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoUrl,mavenPrivateToken,"tmp/project_"+projectId+"/repository");
         List<Package> packages = reg.getPackages(groupId,artifactId);
         for(Package p : packages){
             System.out.println(p.getGroup()+":"+p.getArtifact()+":"+p.getVersion());
         }
         Package pkg = reg.getPackages(groupId, artifactId).stream().findFirst().get();
-        String jarUrl = reg.download(pkg).getAbsolutePath();
+        String jarUrl = reg.download(pkg ).getAbsolutePath();
 
         // Download config from repo
         String configFile = "spark-app/src/main/resources/config.yml";
         String selectedBranch ="refs/heads/master";
         GitProperties repo = prop.getGitProperties().get(0);
-        GitSvc svc = new GitSvc(repo.getRemoteUrl(),repo.getToken());
-        File f = svc.getFile(selectedBranch,configFile,"tmp/project_"+projectId+"/file");
+        GitSvc svc = new GitSvc(repo.getRemoteUrl(),repo.getToken(),"tmp");
+        File f = svc.getFile(selectedBranch,configFile);
         System.out.println(f.getAbsolutePath());
         System.out.println(f.getName());
 

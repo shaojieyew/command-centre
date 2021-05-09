@@ -1,6 +1,6 @@
 package app.c2.model;
 
-import app.c2.model.compositKey.AppId;
+import app.c2.model.compositeKey.AppId;
 import app.c2.service.FileStorageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

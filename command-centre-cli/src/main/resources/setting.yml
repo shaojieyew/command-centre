@@ -1,10 +1,12 @@
 projectName: "test"
 mavenProperties:
-  - host: "https://gitlab.com"
+#  - host: "https://gitlab.com"
+#    privateToken: "B8UxzhjZiBDJK51ZVHxY"
+#    projectId: "25819110"
+#    type: "gitlab"
+  - url: "https://gitlab.com/api/v4/projects/25819110/packages/maven"
     privateToken: "B8UxzhjZiBDJK51ZVHxY"
-    projectId: "25819110"
     type: "gitlab"
-
 nifiProperties:
   host: "http://localhost"
   port: "8081"

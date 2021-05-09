@@ -3,7 +3,7 @@ package app.c2.service;
 import app.c2.dao.NifiQueryDao;
 import app.c2.model.NifiQuery;
 import app.c2.model.Project;
-import app.c2.model.compositKey.NifiQueryId;
+import app.c2.model.compositeKey.NifiQueryId;
 import app.c2.properties.C2Properties;
 import app.c2.services.nifi.NifiSvc;
 import app.c2.services.nifi.NifiSvcFactory;

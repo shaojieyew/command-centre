@@ -11,19 +11,18 @@ public abstract class Task {
         public JobRunnable(String jobName){
             this.jobName = jobName;
         }
-        ConsoleHelper consoleHelper = new ConsoleHelper();
         public void done(){
             running = false;
-            consoleHelper.animate( jobName, 1);
+            ConsoleHelper.console.display(jobName+" completed");
         }
         public void failed(){
             running = false;
-            consoleHelper.animate( jobName, -1);
+            ConsoleHelper.console.display(jobName+" failed");
         }
         @Override
         public void run() {
             while(running){
-                consoleHelper.animate( jobName, 0);
+                ConsoleHelper.console.animate( jobName, 0);
                 //simulate a piece of task
                 try {
                     Thread.sleep(200);

@@ -41,8 +41,6 @@ public class ListNifi extends Task{
 
 
     public void startTask(Cli cli, String queryName) throws Exception {
-        System.out.println("Nifi Processor: ");
-
         List<String> columns = new ArrayList<>();
         columns.add("id");
         columns.add("path");
@@ -74,8 +72,6 @@ public class ListNifi extends Task{
 
     public void startTask(Cli cli) throws Exception {
         String type = cli.getCliNifiProcessType();
-        System.out.println("Nifi Processor: ");
-
         List<String> columns = new ArrayList<>();
         columns.add("id");
         columns.add("path");
@@ -97,7 +93,7 @@ public class ListNifi extends Task{
                 list.add(info);
             }
         }
-        new PrintTable<NifiInfo>(list,columns);
+        new PrintTable<NifiInfo>(list,columns,"Nifi Processor");
     }
 
     @Override

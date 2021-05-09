@@ -1,10 +1,12 @@
 package app.util;
 
-
 public class ConsoleHelper {
+    public static ConsoleHelper console = new ConsoleHelper();
     private String lastLine = "";
+    private byte anim;
+    private final static int PROGRESS_BAR_LENGTH = 30;
 
-    public void print(String line) {
+    private void print(String line) {
         //clear the last line if longer
         if (lastLine.length() > line.length()) {
             String temp = "";
@@ -17,10 +19,6 @@ public class ConsoleHelper {
         System.out.print("\r" + line);
         lastLine = line;
     }
-
-    private byte anim;
-
-    private final static int PROGRESS_BAR_LENGTH = 20;
 
     public void animate(String line, int status) {
         String progress = "";
@@ -49,11 +47,13 @@ public class ConsoleHelper {
         anim++;
     }
 
+    public void display(String message){
+        System.out.println("\r"+message);
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        ConsoleHelper consoleHelper = new ConsoleHelper();
         for (int i = 0; i < 5; i++) {
-            consoleHelper.animate("asds", 0);
+            ConsoleHelper.console.animate("asds", 0);
             //simulate a piece of task
             try {
                 Thread.sleep(100);
@@ -61,6 +61,6 @@ public class ConsoleHelper {
                 e.printStackTrace();
             }
         }
-        consoleHelper.animate("asds", 1);
+        ConsoleHelper.console.display("testing");
     }
 }

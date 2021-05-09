@@ -3,35 +3,33 @@ package app.c2.services.mvnRegistry;
 import app.c2.common.http.HttpCaller;
 import app.c2.common.http.HttpCallerFactory;
 import app.c2.common.http.HttpUtil;
-import app.c2.services.mvnRegistry.downloader.ArtifactDownloader;
 import app.c2.services.mvnRegistry.model.Package;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import util.Util;
 
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.net.HttpURLConnection;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GitlabRegistrySvc extends AbstractRegistrySvc {
-    final static Logger logger = Util.initLogger(GitlabRegistrySvc.class);
 
     public final static String type = "gitlab";
     private String host;
-    private String privateToken;
     private String projectId;
 
-    public GitlabRegistrySvc(String host, String privateToken, String projectId, String localRepository) {
-        this.host = host;
-        this.privateToken = privateToken;
-        this.projectId = projectId;
-        this.localRepository = localRepository;
+    public GitlabRegistrySvc(String url, String privateToken, String localRepository) {
+        super(url, privateToken, localRepository);
+        Matcher hostMatcher = Pattern.compile("^(http[s]?:\\/\\/)?[a-zA-Z0-9\\.:]+").matcher(url);
+        Matcher projectIdMatcher = Pattern.compile("\\/projects\\/[0-9]+\\/").matcher(url);
+        hostMatcher.find();
+        projectIdMatcher.find();
+        this.host =  hostMatcher.group(0);
+        this.projectId = projectIdMatcher.group(0).replaceAll("\\D+","");
     }
 
     @Override
@@ -41,12 +39,16 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap();
         requestMap.put("content-type", MediaType.APPLICATION_JSON);
-        requestMap.put("PRIVATE-TOKEN",privateToken);
+        if(getPrivateToken()!=null){
+            requestMap.put("PRIVATE-TOKEN",getPrivateToken());
+        }
         try {
             HttpCaller httpCaller = HttpCallerFactory.create();
             HttpGet httpGet = new HttpGet(url);
             httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
-            httpGet.addHeader("PRIVATE-TOKEN",privateToken);
+            if(getPrivateToken()!=null) {
+                httpGet.addHeader("PRIVATE-TOKEN", getPrivateToken());
+            }
             HttpResponse response = httpCaller.execute(httpGet);
 
             int statusCode = response.getStatusLine().getStatusCode();
@@ -71,7 +73,6 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
                 }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
         }
         return packages;
     }
@@ -98,15 +99,5 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
                 )).findFirst();
     }
 
-    @Override
-    public File download(Package pkg) {
-        ArtifactDownloader downloader = new ArtifactDownloader();
-        downloader.setRemoteRepoUrl(host+"/api/v4/projects/"+projectId+"/packages/maven");
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("PRIVATE-TOKEN",privateToken);
-        downloader.setHeaders(headers);
-        downloader.setLocalRepoPath(localRepository);
-        return downloader.download(pkg.getGroup(), pkg.getArtifact(),pkg.getVersion(),"","jar");
-    }
 
 }

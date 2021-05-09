@@ -27,7 +27,7 @@ public class ArtifactDownloader {
     private String serverId = null;
 
     private Map<String, String> headers = null;
-    private String remoteRepoUrl = null; //"https://gitlab.com/api/v4/projects/22122170/packages/maven"
+    private String remoteRepoUrl = null;
     private String localRepoPath = null;
 
     private String username = null;

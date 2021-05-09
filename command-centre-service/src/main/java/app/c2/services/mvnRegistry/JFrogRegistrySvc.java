@@ -1,21 +1,22 @@
 package app.c2.services.mvnRegistry;
 
+import app.c2.services.mvnRegistry.downloader.ArtifactDownloader;
 import app.c2.services.mvnRegistry.model.Package;
-import org.apache.log4j.Logger;
-import util.Util;
-
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //TODO to be implemented
 public class JFrogRegistrySvc extends AbstractRegistrySvc {
-    final static Logger logger = Util.initLogger(JFrogRegistrySvc.class);
 
     public final static String type = "jfrog";
-    private String host;
-    public JFrogRegistrySvc(String host) {
-        this.host = host;
+
+    public JFrogRegistrySvc(String url, String privateToken, String localRepository) {
+        super(url, privateToken, localRepository);
     }
 
     @Override
@@ -38,8 +39,4 @@ public class JFrogRegistrySvc extends AbstractRegistrySvc {
         return Optional.empty();
     }
 
-    @Override
-    public File download(Package pkg) {
-        return null;
-    }
 }

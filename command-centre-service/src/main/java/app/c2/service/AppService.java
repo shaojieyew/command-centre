@@ -6,7 +6,7 @@ import app.c2.model.App;
 import app.c2.model.AppInstance;
 import app.c2.model.File;
 import app.c2.model.Project;
-import app.c2.model.compositKey.AppId;
+import app.c2.model.compositeKey.AppId;
 import app.c2.services.yarn.YarnSvc;
 import app.c2.services.yarn.YarnSvcFactory;
 import app.c2.services.yarn.model.YarnApp;

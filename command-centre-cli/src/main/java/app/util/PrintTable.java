@@ -35,7 +35,7 @@ public class PrintTable<T> {
 
         List<String> headers= new ArrayList<String>();
         headers.add("projectId");
-        new PrintTable(a, null);
+        new PrintTable(a, null,null);
     }
 
     public static Map<String, Object> parameters(Object obj) {
@@ -48,10 +48,14 @@ public class PrintTable<T> {
     }
 
     public PrintTable(List<T> objects){
-        this(objects ,null);
+        this(objects ,null, null);
+    }
+    public PrintTable(List<T> objects, List<String> cols){
+        this( objects,  cols, null);
     }
 
-    public PrintTable(List<T> objects, List<String> cols){
+    public PrintTable(List<T> objects, List<String> cols, String title){
+        this.title = title;
         List<String> headers = new ArrayList<String>();
         List<String> keys = new ArrayList<String>();
         List<List<String>> content = new ArrayList<>();
@@ -102,6 +106,7 @@ public class PrintTable<T> {
     private List<List<String>> table;
     private List<Integer> maxLength;
     private int rows,cols;
+    private String title;
 
     /*
      * To update the matrix
@@ -127,7 +132,6 @@ public class PrintTable<T> {
         for(int i = 0; i < TABLEPADDING; i++){
             padder += " ";
         }
-
         //Create the rowSeperator
         for(int i = 0; i < maxLength.size(); i++){
             sbRowSep.append("|");
@@ -138,7 +142,14 @@ public class PrintTable<T> {
         sbRowSep.append("|");
         rowSeperator = sbRowSep.toString();
 
-        sb.append(rowSeperator);
+        String fullLine = rowSeperator.replace("|","-");
+        if(title!=null && title.length()>0){
+            sb.append(fullLine);
+            sb.append("\n");
+            sb.append("|"+title+fullLine.substring(0,fullLine.length()-(title.length()+2)).replace("-"," ")+"|");
+        }
+        sb.append("\n");
+        sb.append(fullLine);
         sb.append("\n");
         //HEADERS
         sb.append("|");
@@ -153,7 +164,7 @@ public class PrintTable<T> {
             sb.append("|");
         }
         sb.append("\n");
-        sb.append(rowSeperator);
+        sb.append(fullLine);
         sb.append("\n");
 
         //BODY
@@ -172,10 +183,10 @@ public class PrintTable<T> {
                 sb.append("|");
             }
             sb.append("\n");
-            sb.append(rowSeperator);
+            sb.append(fullLine);
             sb.append("\n");
         }
-        System.out.println(sb.toString());
+        ConsoleHelper.console.display(sb.toString());
     }
     /*
      * Fills maxLenth with the length of the longest word

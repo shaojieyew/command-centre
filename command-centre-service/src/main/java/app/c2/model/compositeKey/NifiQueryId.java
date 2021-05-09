@@ -1,15 +1,15 @@
-package app.c2.model.compositKey;
+package app.c2.model.compositeKey;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-public class AppId implements Serializable {
+public class NifiQueryId implements Serializable {
     public long projectId;
     public String name;
 
-    public AppId(){}
+    public NifiQueryId(){}
 
-    public AppId(long projectId, String name) {
+    public NifiQueryId(long projectId, String name) {
         this.projectId = projectId;
         this.name = name;
     }
@@ -18,9 +18,9 @@ public class AppId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AppId appId = (AppId) o;
-        return projectId == appId.projectId &&
-                Objects.equals(name, appId.name);
+        NifiQueryId that = (NifiQueryId) o;
+        return projectId == that.projectId &&
+                Objects.equals(name, that.name);
     }
 
     @Override

@@ -26,15 +26,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class SparkService {
-    public static String getSparkAppName(String projectName, long projectId, String AppName){
-        return projectName.replaceAll(" ","")+projectId+"_"+AppName;
-    }
+
     @Autowired
     AppInstanceService appInstanceService;
     @Autowired
     C2PlatformProperties c2PlatformProperties;
     @Autowired ProjectService projectService;
     @Autowired FileStorageService fileStorageService;
+
+    public static String getSparkAppName(String projectName, long projectId, String AppName){
+        return projectName.replaceAll(" ","")+projectId+"_"+AppName;
+    }
 
     @Async
     public void startSparkLauncherAsync(SparkLauncher finalLauncher, AppInstance app, boolean saveSnapshot){

@@ -1,6 +1,7 @@
 package app.task;
 
 import app.cli.Cli;
+import app.util.ConsoleHelper;
 import app.util.PrintTable;
 import app.c2.model.File;
 import app.c2.model.Project;
@@ -33,11 +34,10 @@ public class GetFile extends Task {
                 fileHeader.add("name");
                 fileHeader.add("sourceType");
                 fileHeader.add("source");
-                Optional<Project> optionalProject = projectService.findById(cli.getProject().getId());
                 List<File> f = new ArrayList<>();
                 f.add(optionalFile.get());
-                new PrintTable(f,fileHeader);
-                System.out.println(s);
+                new PrintTable(f,fileHeader, null);
+                ConsoleHelper.console.display(s);
             }else{
                 throw new Exception("Invalid fileId");
             }

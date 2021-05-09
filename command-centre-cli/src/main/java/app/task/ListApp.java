@@ -31,12 +31,6 @@ public class ListApp extends Task{
 
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
-
-        if(cli.getCliName()!=null){
-            System.out.println("Spark Application: "+cli.getCliName());
-        }else{
-            System.out.println("Spark Application: ");
-        }
         List<App> apps = appService.findAllAppStatus(cli.getProject().getId()).stream().filter(s->{
             if(cli.getCliName()==null){
                 return true;
@@ -52,7 +46,7 @@ public class ListApp extends Task{
         header.add("namespace");
         header.add("yarnAppId");
         header.add("yarnStatus");
-        new PrintTable(apps, header);
+        new PrintTable(apps, header,"Spark Applications");
     }
 
     @Override

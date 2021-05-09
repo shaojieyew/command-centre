@@ -188,7 +188,6 @@ public abstract class Cli  implements Callable<Integer> {
                 Kind kind = parseKind(file);
                 if(kind != null){
                     specFile.add(kind);
-                    System.out.println(file.getAbsolutePath());
                 }
             }
         }

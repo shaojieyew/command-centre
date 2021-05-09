@@ -8,6 +8,7 @@ import app.c2.service.ProjectService;
 import app.spec.resource.Resource;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
+import app.util.ConsoleHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +66,7 @@ public class GetApp extends Task {
                 AppDeploymentKind appDeploymentKind = convertAppToSpec(app);
                 ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 String appSpec = mapper.writeValueAsString(appDeploymentKind);
-                System.out.println(appSpec);
-
+                ConsoleHelper.console.display(appSpec);
             }else{
                 throw new Exception("Invalid app name");
             }

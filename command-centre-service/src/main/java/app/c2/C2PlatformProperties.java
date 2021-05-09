@@ -2,7 +2,7 @@ package app.c2;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("app.app.c2")
+@ConfigurationProperties("c2.config")
 public class C2PlatformProperties {
     private String sparkHome;
     private String tmp;

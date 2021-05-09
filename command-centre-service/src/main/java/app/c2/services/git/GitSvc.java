@@ -1,5 +1,6 @@
 package app.c2.services.git;
 
+import app.c2.services.util.FileManager;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class GitSvc {
 
-    // private String tmpLocalFile = "tmp/file";
+    private String tmpLocalRepository;
     private String token = null;
     private String remoteUrl = null;
 
@@ -46,9 +47,10 @@ public class GitSvc {
         this.remoteUrl = remoteUrl;
     }
 
-    public GitSvc(String remoteUrl, String token){
+    public GitSvc(String remoteUrl, String token, String tmpLocalRepository){
         this.remoteUrl= remoteUrl;
         this.token= token;
+        this.tmpLocalRepository = tmpLocalRepository;
     }
 
     public enum BranchType{
@@ -163,26 +165,24 @@ public class GitSvc {
      * @throws IOException
      * @return false when fails, otherwise true
      */
-    public boolean updateFile(String filePath, String content, String branch, String newBranch, String commitMessage, String tmpLocalRepository)  {
+    public boolean updateFile(String filePath, String content, String branch, String newBranch, String commitMessage)  {
         if(newBranch==null || newBranch.length()==0){
             newBranch = branch;
         }
-        new File(tmpLocalRepository).mkdirs();
-
-        // delete folders older than 2hours
-        File targetDir = new File(tmpLocalRepository);
-        Arrays.stream(targetDir.listFiles()).forEach(f->{
-                try {
-                    if(System.currentTimeMillis() - Long.parseLong(f.getName())>1000*60*60*24*2){
-                        FileUtils.deleteDirectory(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        String tmpDirectory = tmpLocalRepository+"/repo";
+        if( new File(tmpDirectory).exists() &&  !new File(tmpDirectory).isFile()){
+            // delete folders older than 2hours
+            try {
+                FileManager.clean(tmpDirectory, 2);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        );
+        }
 
-        String tmpRepo = tmpLocalRepository+"/"+System.currentTimeMillis();
+        new File(tmpDirectory).mkdirs();
+
+
+        String tmpRepo = tmpDirectory+"/"+System.currentTimeMillis();
         File localRepoDir = new File(tmpRepo);
         Git git = null;
         try{
@@ -278,12 +278,26 @@ public class GitSvc {
      * @throws GitAPIException
      * @throws IOException
      */
-    public File getFile(String branch, String filePath, String tmpLocalFile) throws GitAPIException, IOException {
+    public File getFile(String branch, String filePath) throws GitAPIException, IOException {
+
+        String tmpDirectory = tmpLocalRepository+"/file";
+
+        if( new File(tmpDirectory).exists() &&  !new File(tmpDirectory).isFile()){
+            // delete folders older than 2hours
+            try {
+                FileManager.clean(tmpDirectory, 2);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        new File(tmpDirectory).mkdirs();
+
         String fileName = filePath.split("/")[filePath.split("/").length-1];
         String content = getFileAsString( branch,  filePath);
         byte[] bytes = content.getBytes();
         String md5 = DigestUtils.md5Hex(bytes);
-        String dir = tmpLocalFile+"/"+md5;
+        String dir = tmpDirectory+"/"+md5;
         Path path = Paths.get(dir);
         Files.createDirectories(path);
         String tmpFileLocation = dir+"/"+fileName;

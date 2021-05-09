@@ -17,6 +17,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         C2PlatformProperties.class
 })
 
+// TODO: Exception Handling
+// TODO: Printing
+// TODO: Logging
+
 @SpringBootApplication(scanBasePackages = {"app"})
 public class Main implements CommandLineRunner {
 
@@ -24,7 +28,6 @@ public class Main implements CommandLineRunner {
             .getLogger(Main.class);
 
     public static void main(String[] args) {
-        System.out.println(Main.class.getResource("/spark-2.4.7-bin-hadoop2.7").getPath());
         SpringApplication app = new SpringApplication(Main.class);
         app.run(args);
     }

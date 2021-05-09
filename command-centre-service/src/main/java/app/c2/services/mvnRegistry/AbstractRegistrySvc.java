@@ -1,13 +1,48 @@
 package app.c2.services.mvnRegistry;
 
+import app.c2.C2PlatformProperties;
+import app.c2.services.mvnRegistry.downloader.ArtifactDownloader;
 import app.c2.services.mvnRegistry.model.Package;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public abstract class AbstractRegistrySvc {
-    String localRepository = "tmp/repository";
+    private String localRepository;
+    private String remoteUrl;
+    private String privateToken;
+    ArtifactDownloader downloader = new ArtifactDownloader();
+
+    public AbstractRegistrySvc(String remoteUrl, String privateToken, String localRepository) {
+        this.remoteUrl = remoteUrl;
+        this.privateToken = privateToken;
+        this.localRepository = localRepository;
+    }
+
+    public AbstractRegistrySvc(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
+    }
+
+    public String getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    public void setRemoteUrl(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
+    }
+
+    public String getPrivateToken() {
+        return privateToken;
+    }
+
+    public void setPrivateToken(String privateToken) {
+        this.privateToken = privateToken;
+    }
+
     public final static String type = "";
 
     /**
@@ -43,5 +78,15 @@ public abstract class AbstractRegistrySvc {
      * @param pkg
      * @return returns the downloaded pkg as File
      */
-    abstract public File download(Package pkg);
+    public File download(Package pkg) {
+        ArtifactDownloader downloader = new ArtifactDownloader();
+        downloader.setRemoteRepoUrl(remoteUrl);
+        if(privateToken!=null && privateToken.length()>0){
+            Map<String, String> headers = new HashMap<String, String>();
+            headers.put("PRIVATE-TOKEN",privateToken);
+            downloader.setHeaders(headers);
+        }
+        downloader.setLocalRepoPath(localRepository);
+        return downloader.download(pkg.getGroup(), pkg.getArtifact(),pkg.getVersion(),"","jar");
+    }
 }

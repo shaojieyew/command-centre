@@ -1,17 +1,16 @@
 package app.c2.properties;
 
 public class MavenProperties {
-    private String host;
+    private String url;
     private String privateToken;
-    private String projectId;
     private String type;
 
-    public String getHost() {
-        return host;
+    public String getUrl() {
+        return url;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getPrivateToken() {
@@ -20,14 +19,6 @@ public class MavenProperties {
 
     public void setPrivateToken(String privateToken) {
         this.privateToken = privateToken;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
     }
 
     public String getType() {
@@ -41,9 +32,8 @@ public class MavenProperties {
     @Override
     public String toString() {
         return "MavenProperties{" +
-                "host='" + host + '\'' +
+                "host='" + url + '\'' +
                 ", privateToken='" + privateToken + '\'' +
-                ", projectId='" + projectId + '\'' +
                 ", type='" + type + '\'' +
                 '}';
     }

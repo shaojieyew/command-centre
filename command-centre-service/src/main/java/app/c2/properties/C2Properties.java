@@ -8,21 +8,10 @@ import app.c2.properties.NifiProperties;
 import java.util.List;
 
 public class C2Properties {
-    // private HdfsServiceProperties hdfsProperties;
     private NifiProperties nifiProperties;
     private List<MavenProperties> mavenProperties;
     private List<GitProperties> gitProperties;
     private HadoopProperties hadoopProperties;
-
-//
-//    public HdfsServiceProperties getHdfsProperties() {
-//        return hdfsProperties;
-//    }
-//
-//    public void setHdfsProperties(HdfsServiceProperties hdfsProperties) {
-//        this.hdfsProperties = hdfsProperties;
-//    }
-
 
     @Override
     public String toString() {
