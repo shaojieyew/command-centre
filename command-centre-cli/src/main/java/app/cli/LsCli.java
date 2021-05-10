@@ -2,6 +2,7 @@ package app.cli;
 
 import app.cli.type.Component;
 import app.task.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import picocli.CommandLine;
@@ -12,6 +13,8 @@ import picocli.CommandLine.Command;
 @Service
 public class LsCli extends Cli {
 
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(LsCli.class);
     @Autowired
     ListTask listTask;
     @Autowired

@@ -11,6 +11,7 @@ import app.spec.resource.GroupResourceKind;
 import app.spec.spark.AppDeploymentKind;
 import app.task.*;
 import app.util.YamlLoader;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import picocli.CommandLine;
@@ -32,6 +33,8 @@ import java.util.stream.Collectors;
         description = "")
 @Service
 public class CreateCli extends Cli {
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(CreateCli.class);
     @Autowired
     CreateSpec createSpec;
     @Autowired

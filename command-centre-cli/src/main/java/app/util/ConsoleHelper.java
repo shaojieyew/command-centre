@@ -1,12 +1,16 @@
 package app.util;
 
+import app.cli.StopCli;
 import org.apache.hadoop.log.LogLevel;
 import org.jboss.logging.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class ConsoleHelper {
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(StopCli.class);
     public static ConsoleHelper console = new ConsoleHelper();
     private String lastLine = "";
     private byte anim;
@@ -58,6 +62,21 @@ public class ConsoleHelper {
     }
     public void display(String message, Logger.Level level){
         System.out.println("\r"+level.toString()+" "+message);
+        if(level.equals(Logger.Level.INFO)){
+            LOG.info(message);
+        }
+        if(level.equals(Logger.Level.WARN)){
+            LOG.warn(message);
+        }
+        if(level.equals(Logger.Level.ERROR)){
+            LOG.error(message);
+        }
+        if(level.equals(Logger.Level.FATAL)){
+            LOG.error(message);
+        }
+        if(level.equals(Logger.Level.DEBUG)){
+            LOG.debug(message);
+        }
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -74,9 +93,9 @@ public class ConsoleHelper {
     }
 
     public void display(Exception e) {
-//        StringWriter errors = new StringWriter();
-//        e.printStackTrace(new PrintWriter(errors));
-//        display( errors.toString(), Logger.Level.ERROR);
+        StringWriter errors = new StringWriter();
+        e.printStackTrace(new PrintWriter(errors));
         display( e.getMessage(), Logger.Level.ERROR);
+        LOG.error(errors.toString());
     }
 }

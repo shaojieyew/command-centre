@@ -21,6 +21,8 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -46,6 +48,7 @@ public class GitSvc {
     public void setRemoteUrl(String remoteUrl) {
         this.remoteUrl = remoteUrl;
     }
+
 
     public GitSvc(String remoteUrl, String token, String tmpLocalRepository){
         this.remoteUrl= remoteUrl;

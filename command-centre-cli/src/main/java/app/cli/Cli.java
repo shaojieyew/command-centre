@@ -1,6 +1,7 @@
 package app.cli;
 
 import app.C2CliProperties;
+import app.Main;
 import app.c2.model.Project;
 import app.c2.service.ProjectService;
 import app.cli.type.Component;
@@ -15,6 +16,7 @@ import app.task.CreateSpec;
 import app.util.ConsoleHelper;
 import app.util.YamlLoader;
 import org.jboss.logging.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
 
@@ -27,6 +29,9 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public abstract class Cli  implements Callable<Integer> {
+
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(Cli.class);
 
     @CommandLine.Parameters(defaultValue="", index = "0")
     private String cliComponent;
@@ -143,6 +148,7 @@ public abstract class Cli  implements Callable<Integer> {
             }
 
             if(file.isDirectory()){
+                LOG.info("loading files from directory="+file.getAbsolutePath());
                 for(File subFile: file.listFiles()){
                     try {
                         Kind kind = parseKind(subFile);
@@ -158,6 +164,7 @@ public abstract class Cli  implements Callable<Integer> {
                     }
                 }
             }else{
+                LOG.info("loading file="+file.getAbsolutePath());
                 Kind kind = parseKind(file);
                 if(kind != null){
                     specFile.add(kind);
@@ -165,9 +172,14 @@ public abstract class Cli  implements Callable<Integer> {
             }
         }
 
+        LOG.info("total file loaded="+specFile.size());
+
+        LOG.info("loading config from="+config.getAbsolutePath());
         c2CliProperties = (C2CliProperties) new YamlLoader(C2CliProperties.class).load(config.getAbsolutePath());
         Optional<Project> optionalProject =  projectService.findAll().stream().filter(p->p.getName().equals(c2CliProperties.getProjectName())).findFirst();
 
+        LOG.info("init project env properties");
+        LOG.info(c2CliProperties.toString());
         project = new Project();
         if(optionalProject.isPresent()){
             project = optionalProject.get();
@@ -192,21 +204,25 @@ public abstract class Cli  implements Callable<Integer> {
 
 
     private Kind parseKind(File file) throws IOException, SpecException {
+        LOG.info("loading file="+file.getAbsolutePath());
         Kind k = null;
         MetadataKind metadata =  new YamlLoader<>(MetadataKind.class).load(file.getAbsolutePath());
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_APP_DEPLOYMENT.toUpperCase())){
+            LOG.info("file is AppDeploymentKind="+file.getAbsolutePath());
             k = new YamlLoader<>(AppDeploymentKind.class).load(file.getAbsolutePath());
             k.setFileOrigin(file);
             k.validate();
             return k;
         }
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_GROUP_RESOURCE.toUpperCase())){
+            LOG.info("file is GroupResourceKind="+file.getAbsolutePath());
             k = new YamlLoader<>(GroupResourceKind.class).load(file.getAbsolutePath());
             k.setFileOrigin(file);
             k.validate();
             return k;
         }
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_NIFI_QUERY.toUpperCase())){
+            LOG.info("file is NifiQueryKind="+file.getAbsolutePath());
             k = new YamlLoader<>(NifiQueryKind.class).load(file.getAbsolutePath());
             k.setFileOrigin(file);
             k.validate();

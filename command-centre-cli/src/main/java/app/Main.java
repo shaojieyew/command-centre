@@ -51,7 +51,9 @@ public class Main implements CommandLineRunner {
         String [] cliArgs = new String[args.length-1];
         System.arraycopy(args,1,cliArgs,0,args.length-1);
         int exitCode = 0;
-        switch (option.toLowerCase()){
+        String action = option.toLowerCase();
+        LOG.info("starting action="+action);
+        switch (action){
             case "create":
                 exitCode = createCli.execute(cliArgs);
                 break;

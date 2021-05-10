@@ -7,6 +7,7 @@ import app.task.CreateApp;
 import app.task.CreateNifiQuery;
 import app.task.RunApp;
 import app.task.RunNifi;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import picocli.CommandLine.Command;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class RunCli extends Cli {
 
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(RunCli.class);
     @Autowired
     RunApp runApp;
     @Autowired

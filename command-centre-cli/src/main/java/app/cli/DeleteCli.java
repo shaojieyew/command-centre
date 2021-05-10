@@ -7,6 +7,7 @@ import app.spec.spark.AppDeploymentKind;
 import app.task.DeleteApp;
 import app.task.DeleteFile;
 import app.task.DeleteNifiQuery;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import picocli.CommandLine.Command;
@@ -18,6 +19,8 @@ import java.util.stream.Collectors;
         description = "")
 @Service
 public class DeleteCli extends Cli {
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(DeleteCli.class);
 
     @Autowired
     DeleteApp deleteApp;

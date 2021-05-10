@@ -4,6 +4,7 @@ import app.cli.type.Component;
 import app.task.GetApp;
 import app.task.GetFile;
 import app.task.GetNifiQuery;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import picocli.CommandLine.Command;
@@ -12,6 +13,8 @@ import picocli.CommandLine.Command;
         description = "")
 @Service
 public class GetCli extends Cli {
+    private static org.slf4j.Logger LOG = LoggerFactory
+            .getLogger(GetCli.class);
 
     @Autowired
     GetApp getApp;
