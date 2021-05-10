@@ -41,11 +41,11 @@ public class ListFile extends Task{
         if(optionalProject.isPresent()){
             Map<String, Set<Long>> fileMapping = optionalProject.get().getFileIds();
             for(String namespace: fileMapping.keySet()){
-                System.out.println("Files in "+namespace+" namespace: ");
                 new PrintTable(fileMapping.get(namespace)
                         .stream().map(id->fileStorageService.getFile(id).orElseGet(null))
                         .collect(Collectors.toList()),
-                        fileHeader);
+                        fileHeader,
+                        "Files in "+namespace+" namespace");
             }
         }
     }

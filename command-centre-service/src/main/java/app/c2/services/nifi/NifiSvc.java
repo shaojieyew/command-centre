@@ -138,7 +138,7 @@ public class NifiSvc {
                 throw new InvalidRequestException(strResponse);
             }
         }catch (Exception ex){
-            System.out.println("Failed on "+ id);
+            ex.printStackTrace();
         }
     }
 
