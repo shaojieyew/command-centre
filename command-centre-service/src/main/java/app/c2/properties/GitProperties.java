@@ -1,15 +1,15 @@
 package app.c2.properties;
 
 public class GitProperties {
-    private String remoteUrl;
+    private String url;
     private String token;
 
-    public String getRemoteUrl() {
-        return remoteUrl;
+    public String getUrl() {
+        return url;
     }
 
-    public void setRemoteUrl(String remoteUrl) {
-        this.remoteUrl = remoteUrl;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getToken() {
@@ -23,7 +23,7 @@ public class GitProperties {
     @Override
     public String toString() {
         return "GitProperties{" +
-                "remoteUrl='" + remoteUrl + '\'' +
+                "remoteUrl='" + url + '\'' +
                 ", token='" + token + '\'' +
                 '}';
     }

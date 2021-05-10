@@ -6,6 +6,7 @@ import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.spec.resource.GroupResourceKind;
 import app.spec.resource.GroupResourceSpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class DeleteFile extends Task {
             try {
                 startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         });
     }
@@ -41,7 +42,7 @@ public class DeleteFile extends Task {
             try {
                 startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         });
     }
@@ -63,7 +64,7 @@ public class DeleteFile extends Task {
         if (path == null || path.length() == 0) {
             throw new Exception("Invalid resource path");
         }
-        startTask(cli);
+        startTask();
     }
 
     public void startTask(Cli cli) throws Exception {
@@ -72,13 +73,12 @@ public class DeleteFile extends Task {
         if (path == null || path.length() == 0) {
             throw new Exception("Invalid resource path");
         }
-        startTask(cli);
+        startTask();
     }
 
     @Override
     protected void task() throws Exception {
         if(path!=null){
-            String path = cli.getCliName();
             String filename = null;
             String namespace = null;
             if(path.contains("/")){

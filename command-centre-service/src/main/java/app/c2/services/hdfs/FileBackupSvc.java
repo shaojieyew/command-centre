@@ -75,12 +75,8 @@ public class FileBackupSvc {
         List<Backup> backups = new ArrayList<>();
         try {
             for(FileStatus backupFs: dfs.getFileStatusList(backupDirectory)){
-                try{
                     Backup backup = new Backup(backupFs.getPathSuffix());
                     backups.add(backup);
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();

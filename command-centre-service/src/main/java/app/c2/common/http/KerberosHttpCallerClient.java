@@ -10,6 +10,8 @@ import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -36,7 +38,7 @@ public class KerberosHttpCallerClient extends HttpCaller {
                 this.keytab = keytab;
         }
 
-        public HttpResponse execute(HttpUriRequest request) {
+        public HttpResponse execute(HttpUriRequest request) throws LoginException {
                 javax.security.auth.login.Configuration config = new javax.security.auth.login.Configuration() {
                         @SuppressWarnings("serial")
                         @Override
@@ -64,7 +66,6 @@ public class KerberosHttpCallerClient extends HttpCaller {
                 Set<Principal> principals = new HashSet<Principal>(1);
                 principals.add(new KerberosPrincipal(principal));
                 Subject sub = new Subject(false, principals, new HashSet<Object>(), new HashSet<Object>());
-                try {
                         // Authentication module: Krb5Login
                         LoginContext loginContext = new LoginContext("Krb5Login", sub, null, config);
                         loginContext.login();
@@ -84,10 +85,6 @@ public class KerberosHttpCallerClient extends HttpCaller {
                                         return httpResponse;
                                 }
                         });
-                } catch (Exception e) {
-                        e.printStackTrace();
-                }
-                return null;
         }
 
         private static HttpClient buildSpengoHttpClient() {

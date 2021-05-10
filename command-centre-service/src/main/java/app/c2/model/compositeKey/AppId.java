@@ -27,4 +27,12 @@ public class AppId implements Serializable {
     public int hashCode() {
         return Objects.hash(projectId, name);
     }
+
+    @Override
+    public String toString() {
+        return "AppId{" +
+                "projectId=" + projectId +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

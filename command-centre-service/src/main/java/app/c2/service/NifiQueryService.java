@@ -7,6 +7,7 @@ import app.c2.model.compositeKey.NifiQueryId;
 import app.c2.properties.C2Properties;
 import app.c2.services.nifi.NifiSvc;
 import app.c2.services.nifi.NifiSvcFactory;
+import com.davis.client.ApiException;
 import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -50,7 +51,7 @@ public class NifiQueryService {
     }
 
 
-    public List<ProcessorStatusDTO> findProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException {
+    public List<ProcessorStatusDTO> findProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException, ApiException {
         Optional<NifiQuery> savedQuery = nifiQueryDao.findByProjectIdAndName(projectId, queryName).stream().findFirst();
         if(!savedQuery.isPresent()){
             return new ArrayList<>();
@@ -61,7 +62,7 @@ public class NifiQueryService {
         return findProcessor( projectId,  query,  processType);
     }
 
-    public List<ProcessorStatusDTO> findProcessor(long projectId, String query, String processType) throws JsonProcessingException {
+    public List<ProcessorStatusDTO> findProcessor(long projectId, String query, String processType) throws JsonProcessingException, ApiException {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
@@ -79,7 +80,7 @@ public class NifiQueryService {
         return new ArrayList<>();
     }
 
-    public List<ProcessGroupStatusDTO> findProcessGroup(long projectId, String query) throws JsonProcessingException {
+    public List<ProcessGroupStatusDTO> findProcessGroup(long projectId, String query) throws JsonProcessingException, ApiException {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
@@ -95,14 +96,14 @@ public class NifiQueryService {
         return new ArrayList<>();
     }
 
-    public void stopProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException {
+    public void stopProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException, ApiException {
         updateProcessorByQueryName( projectId,  queryName,  NifiSvc.NIFI_RUN_STATUS_STOPPED);
     }
-    public void startProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException {
+    public void startProcessorByQueryName(long projectId, String queryName) throws JsonProcessingException, ApiException {
         updateProcessorByQueryName( projectId,  queryName,  NifiSvc.NIFI_RUN_STATUS_RUNNING);
     }
 
-    public void updateProcessorByQueryName(long projectId, String queryName, String status) throws JsonProcessingException {
+    public void updateProcessorByQueryName(long projectId, String queryName, String status) throws JsonProcessingException, ApiException {
         Optional<NifiQuery> savedQuery = nifiQueryDao.findByProjectIdAndName(projectId, queryName).stream().findFirst();
         if(!savedQuery.isPresent()){
             return;
@@ -120,20 +121,20 @@ public class NifiQueryService {
     }
 
 
-    public void stopProcessor(long projectId, String query, String processType) throws JsonProcessingException {
+    public void stopProcessor(long projectId, String query, String processType) throws JsonProcessingException, ApiException {
         updateProcessor( projectId,  query,  processType, NifiSvc.NIFI_RUN_STATUS_STOPPED);
     }
-    public void startProcessor(long projectId, String query, String processType) throws JsonProcessingException {
+    public void startProcessor(long projectId, String query, String processType) throws JsonProcessingException, ApiException {
         updateProcessor( projectId,  query, processType,  NifiSvc.NIFI_RUN_STATUS_RUNNING);
     }
-    public void stopProcessorGroup(long projectId, String query, boolean onlyLeadingProcessor) throws JsonProcessingException {
+    public void stopProcessorGroup(long projectId, String query, boolean onlyLeadingProcessor) throws JsonProcessingException, ApiException {
         updateProcessGroup( projectId,  query, onlyLeadingProcessor, NifiSvc.NIFI_RUN_STATUS_RUNNING);
     }
-    public void startProcessorGroup(long projectId, String query, boolean onlyLeadingProcessor) throws JsonProcessingException {
+    public void startProcessorGroup(long projectId, String query, boolean onlyLeadingProcessor) throws JsonProcessingException, ApiException {
         updateProcessGroup( projectId,  query, onlyLeadingProcessor, NifiSvc.NIFI_RUN_STATUS_RUNNING);
     }
 
-    public void updateProcessor(long projectId, String query, String processType, String status) throws JsonProcessingException {
+    public void updateProcessor(long projectId, String query, String processType, String status) throws JsonProcessingException, ApiException {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
@@ -153,7 +154,7 @@ public class NifiQueryService {
         }
     }
 
-    public void updateProcessGroup(long projectId, String query, boolean onlyLeadingProcessor,String status) throws JsonProcessingException {
+    public void updateProcessGroup(long projectId, String query, boolean onlyLeadingProcessor,String status) throws JsonProcessingException, ApiException {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();

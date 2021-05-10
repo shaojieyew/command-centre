@@ -31,7 +31,7 @@ public class CreateFileGroup extends Task{
     @Override
     protected void task() throws IOException, GitAPIException {
         for(Resource resource: spec.getResources()){
-            uploadResource(resource, cli.getProject().getId(), resource.getName());
+            uploadResource(resource, cli.getProject().getId(), spec.getName());
         }
     }
 
@@ -44,10 +44,10 @@ public class CreateFileGroup extends Task{
                 String remoteUrl = sourceArr[0];
                 String branch = sourceArr[1];
                 String path = sourceArr[2];
-                fileStorageService.addGitFileToProject(remoteUrl,branch,path, projectId, namespace);
+                fileStorageService.addGitFileToProject(remoteUrl,branch,path, projectId, namespace, resource.getName() );
                 break;
             case "LOCAL":
-                fileStorageService.addUploadedFileToProject(new File(resource.getSource()), projectId, namespace);
+                fileStorageService.addUploadedFileToProject(new File(resource.getSource()), projectId, namespace, resource.getName());
                 break;
             case "STRING":
                 fileStorageService.addStringContentToProject(resource.getSource(), resource.getName(), projectId, namespace);

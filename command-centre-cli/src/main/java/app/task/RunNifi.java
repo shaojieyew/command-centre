@@ -7,6 +7,7 @@ import app.c2.service.NifiQueryService;
 import app.c2.services.nifi.NifiSvc;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class RunNifi extends Task{
             try {
                 RunNifi.startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         }));
     }

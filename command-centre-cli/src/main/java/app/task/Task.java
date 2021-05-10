@@ -49,15 +49,15 @@ public abstract class Task {
         if(disableLoading){
             task();
         }else{
-        jobRunnable = new JobRunnable(getTaskName());
-        new Thread(jobRunnable).start();
-        try{
-            task();
-            jobRunnable.done();
-        }catch (Exception ex){
-            jobRunnable.failed();
-            ex.printStackTrace();
-        }
+            jobRunnable = new JobRunnable(getTaskName());
+            new Thread(jobRunnable).start();
+            try{
+                task();
+                jobRunnable.done();
+            }catch (Exception ex){
+                jobRunnable.failed();
+                throw ex;
+            }
         }
     }
 

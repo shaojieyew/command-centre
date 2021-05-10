@@ -1,5 +1,11 @@
 package app.util;
 
+import org.apache.hadoop.log.LogLevel;
+import org.jboss.logging.Logger;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class ConsoleHelper {
     public static ConsoleHelper console = new ConsoleHelper();
     private String lastLine = "";
@@ -48,7 +54,10 @@ public class ConsoleHelper {
     }
 
     public void display(String message){
-        System.out.println("\r"+message);
+        display("\r"+message, Logger.Level.INFO);
+    }
+    public void display(String message, Logger.Level level){
+        System.out.println("\r"+level.toString()+" "+message);
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -62,5 +71,12 @@ public class ConsoleHelper {
             }
         }
         ConsoleHelper.console.display("testing");
+    }
+
+    public void display(Exception e) {
+//        StringWriter errors = new StringWriter();
+//        e.printStackTrace(new PrintWriter(errors));
+//        display( errors.toString(), Logger.Level.ERROR);
+        display( e.getMessage(), Logger.Level.ERROR);
     }
 }

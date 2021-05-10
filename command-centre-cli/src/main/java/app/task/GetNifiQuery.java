@@ -60,7 +60,7 @@ public class GetNifiQuery extends Task {
             String specStr = mapper.writeValueAsString(kind);
             ConsoleHelper.console.display(specStr);
         }else{
-            throw new Exception("Invalid app name");
+            ConsoleHelper.console.display(new Exception("Invalid app name"));
         }
     }
 

@@ -5,6 +5,7 @@ import app.c2.model.NifiQuery;
 import app.c2.service.NifiQueryService;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,10 +50,10 @@ public class CreateNifiQuery extends Task{
     @Override
     protected void task() throws Exception {
         if(queryName==null ){
-            throw new Exception("name of query not specified");
+            throw  new Exception("name of query not specified, -n or --name");
         }
         if(query==null){
-            throw new Exception("query not specified");
+            throw new Exception("query not specified, -q or --query");
         }
 
         NifiQuery nifiQuery = new NifiQuery();
@@ -69,7 +70,7 @@ public class CreateNifiQuery extends Task{
             try {
                 createNifiQuery.startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         }));
     }

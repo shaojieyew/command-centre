@@ -3,6 +3,7 @@ package app.c2.services.yarn;
 import app.c2.common.http.*;
 import app.c2.services.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.*;
@@ -12,8 +13,11 @@ import org.apache.http.entity.StringEntity;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.*;
 
 public class YarnSvc {
@@ -85,7 +89,7 @@ public class YarnSvc {
      * get list of yarn application
      * @return
      */
-    public List<YarnApp> get(){
+    public List<YarnApp> get() throws Exception {
         String queryUrl = url;
         String parameters = "";
         for(Map.Entry<String, String> entry : args.entrySet()) {
@@ -104,7 +108,6 @@ public class YarnSvc {
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap<>();
         requestMap.put("content-type", MediaType.APPLICATION_JSON);
-        try {
             HttpGet httpGet = new HttpGet(queryUrl);
             httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
@@ -137,9 +140,6 @@ public class YarnSvc {
                 YarnApp app = mapper.readValue((jsonAppObject.get(i)).toString(), YarnApp.class);
                 list.add(app);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         return list;
     }
 
@@ -160,30 +160,34 @@ public class YarnSvc {
      */
     public boolean kill(){
         try {
-            if(applicationId==null){
-                throw new Exception("ApplicationId not set. To kill an application with YarnAppQuery, applicationId needs to be set using setApplicationId");
+            if (applicationId == null) {
+                return false;
             }
-            String queryUrl = url+"/"+applicationId+"/state";
+            String queryUrl = url + "/" + applicationId + "/state";
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
             String requestJson = "{\"state\": \"KILLED\"}";
             HttpPut httpPut = new HttpPut(queryUrl);
-            StringEntity entity = new StringEntity(requestJson,"UTF-8");
+            StringEntity entity = new StringEntity(requestJson, "UTF-8");
             httpPut.setEntity(entity);
             httpPut.setHeader("Accept", MediaType.APPLICATION_JSON);
             httpPut.setHeader("Content-type", MediaType.APPLICATION_JSON);
 
             HttpResponse response = httpCaller.execute(httpPut);
-            int statusCode = response.getStatusLine().getStatusCode();
 
             String body = HttpUtil.httpEntityToString(response.getEntity());
-            if(statusCode != 200){
-                throw new Exception(body);
+            if(body.equalsIgnoreCase(requestJson)){
+                return true;
+            }else{
+                return false;
             }
-
+        } catch (LoginException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } catch (Exception e) {
-            return false;
+            e.printStackTrace();
         }
-        return true;
+        return false;
     }
 }

@@ -4,6 +4,9 @@ import app.cli.Cli;
 import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
+import app.spec.Kind;
+import app.spec.Spec;
+import app.spec.resource.Resource;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -25,15 +28,11 @@ public class CreateApp extends Task{
     Cli cli = null;
     @Autowired CreateApp createApp;
     public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
-        kinds.forEach(k->{
-            k.getSpec().forEach(s-> {
-                try {
-                    createApp.startTask(cli, s);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        });
+        for(Kind k : kinds){
+            for(Object s: k.getSpec()){
+                createApp.startTask(cli, (AppDeploymentSpec) s);
+            }
+        }
     }
     public void startTask(Cli cli, AppDeploymentSpec spec) throws Exception {
         this.cli=cli;
@@ -47,7 +46,7 @@ public class CreateApp extends Task{
     }
 
     @Override
-    protected void task() throws IOException {
+    protected void task() throws IOException, GitAPIException {
         createApp(cli, spec);
     }
 
@@ -55,7 +54,7 @@ public class CreateApp extends Task{
     FileStorageService fileStorageService;
     @Autowired
     AppService appService;
-    private void createApp(Cli cli, AppDeploymentSpec spec) throws IOException {
+    private void createApp(Cli cli, AppDeploymentSpec spec) throws IOException, GitAPIException {
         Optional<App> appOptional = appService.findApp(cli.getProject().getId(), spec.getName());
         App app = new App();
         if(appOptional.isPresent()){
@@ -63,8 +62,7 @@ public class CreateApp extends Task{
         }
         Set<Long> fileIds = new HashSet<>();
         if(spec.getResources()!=null) {
-
-            fileIds = spec.getResources().stream().map(resource -> {
+            for (Resource resource : spec.getResources()) {
                 long fileId = 0;
                 switch (resource.getType().toUpperCase()) {
                     case "GIT":
@@ -72,35 +70,20 @@ public class CreateApp extends Task{
                         String remoteUrl = sourceArr[0];
                         String branch = sourceArr[1];
                         String path = sourceArr[2];
-                        try {
-                            app.c2.model.File file = fileStorageService.saveFile(remoteUrl, branch, path, cli.getProject().getId());
-                            fileId = file.getId();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (GitAPIException e) {
-                            e.printStackTrace();
-                        }
+                        fileId =  fileStorageService.saveFile(remoteUrl, branch, path, cli.getProject().getId(), resource.getName()).getId();
                         break;
                     case "LOCAL":
-                        try {
-                            app.c2.model.File file = fileStorageService.saveFile(new File(resource.getSource()), cli.getProject().getId());
-                            fileId = file.getId();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        fileId =  fileStorageService.saveFile(new File(resource.getSource()), resource.getName(), cli.getProject().getId()).getId();
                         break;
                     case "STRING":
-                        try {
-                            app.c2.model.File file = fileStorageService.saveFile(resource.getSource(), resource.getName(), cli.getProject().getId());
-                            fileId = file.getId();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        fileId =  fileStorageService.saveFile(resource.getSource(), resource.getName(), cli.getProject().getId()).getId();
                         break;
                     default:
                 }
-                return fileId;
-            }).collect(Collectors.toSet());
+                if(fileId!=0){
+                    fileIds.add(fileId);
+                }
+            }
         }
 
         app.setName(spec.getName());

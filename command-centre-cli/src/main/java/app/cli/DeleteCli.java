@@ -68,7 +68,24 @@ public class DeleteCli extends Cli {
                 deleteFile.startTask(this, groupResourceKindList);
             }
         }else{
-            deleteFile.startTask(this);
+
+            List<AppDeploymentKind> appDeployments = getSpecFile().stream()
+                    .filter(s->s instanceof AppDeploymentKind)
+                    .map(s->(AppDeploymentKind)s)
+                    .collect(Collectors.toList());
+            deleteApp.startTask(this, appDeployments);
+
+            List<NifiQueryKind> nifiQueryKinds = getSpecFile().stream()
+                    .filter(s->s instanceof NifiQueryKind)
+                    .map(s->(NifiQueryKind)s)
+                    .collect(Collectors.toList());
+            deleteNifiQuery.startTask(this, nifiQueryKinds);
+
+            List<GroupResourceKind> groupResourceKindList = getSpecFile().stream()
+                    .filter(s->s instanceof GroupResourceKind)
+                    .map(s->(GroupResourceKind)s)
+                    .collect(Collectors.toList());
+            deleteFile.startTask(this, groupResourceKindList);
         }
         return 0;
     }

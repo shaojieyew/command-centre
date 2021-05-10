@@ -4,6 +4,7 @@ import app.cli.Cli;
 import app.c2.service.*;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class DeleteNifiQuery extends Task {
                 try {
                     deleteNifiQuery.startTask(cli,s);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ConsoleHelper.console.display(e);
                 }
         });
     }
@@ -50,7 +51,7 @@ public class DeleteNifiQuery extends Task {
                 try {
                     deleteNifiQuery.startTask(cli,s);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ConsoleHelper.console.display(e);
                 }
             }
         });

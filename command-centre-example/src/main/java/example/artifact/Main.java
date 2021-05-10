@@ -7,6 +7,7 @@ import app.c2.services.util.JarAnalyzer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -26,5 +27,6 @@ public class Main {
         }
         System.out.println(reg.download(packages.get(0)).getAbsolutePath());
         Map<Class, Method> mains =  JarAnalyzer.getMainMethods(reg.download(packages.get(0)).getAbsolutePath());
+        mains.entrySet().forEach(s->System.out.println(s.getKey()+": "+s.getValue()));
     }
 }

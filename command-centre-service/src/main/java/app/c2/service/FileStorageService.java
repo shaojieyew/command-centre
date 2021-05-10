@@ -43,13 +43,13 @@ public class FileStorageService {
     }
 
     @Autowired
-    public FileStorageService(FileStorageProperties fileStorageProperties) throws Exception {
+    public FileStorageService(FileStorageProperties fileStorageProperties) throws IOException {
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
                 .toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.fileStorageLocation);
         } catch (Exception ex) {
-            throw new Exception("Could not create the directory where the uploaded files will be stored.", ex);
+            throw new IOException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
 
@@ -103,12 +103,11 @@ public class FileStorageService {
 
         return addFileToProject(f, project, namespace);
     }
-
-    public File addUploadedFileToProject(java.io.File ioFile, long projectId, String namespace) throws IOException {
+    public File addUploadedFileToProject(java.io.File ioFile, long projectId, String namespace, String filename) throws IOException {
         if(namespace==null || namespace.length()==0){
             namespace=DEFAULT_NAMESPACE;
         }
-        File f = saveFile(ioFile, projectId);
+        File f = saveFile(ioFile, filename, projectId);
         Optional<Project> projectOpt = projectService.findById(projectId);
         if(!projectOpt.isPresent()){
             return null;
@@ -117,8 +116,13 @@ public class FileStorageService {
 
         return addFileToProject(f, project, namespace);
     }
-
+    public File addUploadedFileToProject(java.io.File ioFile, long projectId, String namespace) throws IOException {
+        return addUploadedFileToProject( ioFile,  projectId,  namespace,  ioFile.getName());
+    }
     public File addGitFileToProject(String remoteUrl, String branch, String filePath, long projectId, String namespace) throws IOException, GitAPIException {
+        return  addGitFileToProject( remoteUrl,  branch,  filePath,  projectId,  namespace, filePath.split("/")[filePath.split("/").length-1]);
+    }
+    public File addGitFileToProject(String remoteUrl, String branch, String filePath, long projectId, String namespace, String filename) throws IOException, GitAPIException {
         if(namespace==null || namespace.length()==0){
             namespace=DEFAULT_NAMESPACE;
         }
@@ -127,7 +131,7 @@ public class FileStorageService {
             return null;
         }
         Project project = projectOptional.get();
-        File f = saveFile(remoteUrl, branch, filePath, projectId);
+        File f = saveFile(remoteUrl, branch, filePath, projectId, filename);
         f = save(f);
         return addFileToProject(f, project, namespace);
     }
@@ -170,7 +174,10 @@ public class FileStorageService {
     }
 
     public File addUploadedFileToApp(java.io.File ioFile, long projectId, String appName) throws IOException {
-        File f = saveFile(ioFile, projectId);
+        return addUploadedFileToApp( ioFile,  projectId,  appName,  ioFile.getName());
+    }
+    public File addUploadedFileToApp(java.io.File ioFile, long projectId, String appName, String filename) throws IOException {
+        File f = saveFile(ioFile, filename, projectId);
         Optional<Project> projectOpt = projectService.findById(projectId);
         if(!projectOpt.isPresent()){
             return null;
@@ -180,6 +187,10 @@ public class FileStorageService {
 
     public File addGitFileToApp(String remoteUrl, String branch, String filePath, long projectId, String appName) throws IOException, GitAPIException {
         File f = saveFile(remoteUrl,  branch,  filePath,  projectId);
+        return addFileToApp(f, projectId, appName);
+    }
+    public File addGitFileToApp(String remoteUrl, String branch, String filePath, long projectId, String appName, String filename) throws IOException, GitAPIException {
+        File f = saveFile(remoteUrl,  branch,  filePath,  projectId, filename);
         return addFileToApp(f, projectId, appName);
     }
 
@@ -207,6 +218,10 @@ public class FileStorageService {
     }
 
     public File saveFile(String remoteUrl, String branch, String filePath, long projectId) throws IOException, GitAPIException {
+        return saveFile( remoteUrl,  branch,  filePath,  projectId,   filePath.split("/")[filePath.split("/").length-1]);
+    }
+
+    public File saveFile(String remoteUrl, String branch, String filePath, long projectId, String filename) throws IOException, GitAPIException {
         Optional<Project> projectOptional = projectService.findById(projectId);
         if(!projectOptional.isPresent()){
             return null;
@@ -214,7 +229,7 @@ public class FileStorageService {
         Project project = projectOptional.get();
         GitSvc gitSvc = GitSvcFactory.create(project.getEnv(),remoteUrl);
         String content = gitSvc.getFileAsString(branch, filePath);
-        String filename = filePath.split("/")[filePath.split("/").length-1];
+        //String filename = filePath.split("/")[filePath.split("/").length-1];
         File f = FileFactory.createFromString(content,"text/plain",filename ,projectId,remoteUrl+"/-/"+branch+"/-/"+filePath, FileFactory.SOURCE_TYPE_GIT);
         f = save(f);
         return f;
@@ -224,18 +239,13 @@ public class FileStorageService {
         f = save(f);
         return f;
     }
-    public File saveFile(java.io.File ioFile, long projectId) throws IOException {
-        File f = FileFactory.createNioFile(ioFile,projectId,"user", FileFactory.SOURCE_TYPE_UPLOAD);
+    public File saveFile(java.io.File ioFile, String filename, long projectId) throws IOException {
+        File f = FileFactory.createNioFile(ioFile,projectId,"user", FileFactory.SOURCE_TYPE_UPLOAD, filename);
         f = save(f);
         return f;
     }
-//    public File saveFile(MultipartFile multipartFile, long projectId) throws IOException {
-//        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-//        if(fileName.contains("..")) {
-//            throw new IOException("Sorry! Filename contains invalid path sequence " + fileName);
-//        }
-//        File f = FileFactory.createFromFile(multipartFile,projectId,"user", FileFactory.SOURCE_TYPE_UPLOAD);
-//        f = save(f);
-//        return f;
-//    }
+    public File saveFile(java.io.File ioFile, long projectId) throws IOException {
+        return saveFile( ioFile,  ioFile.getName(),  projectId);
+    }
+
 }

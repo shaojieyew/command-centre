@@ -16,7 +16,7 @@ public class RegistrySvcFactory {
     }
 
     public static List<AbstractRegistrySvc> create(C2Properties props){
-        return new RegistrySvcFactory().create(props);
+        return new RegistrySvcFactory().createSvc(props);
     }
 
     public List<AbstractRegistrySvc> createSvc(C2Properties props){

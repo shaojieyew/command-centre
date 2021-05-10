@@ -85,9 +85,9 @@ public class ProjectService {
       Project project = projectOpt.get();
       Map<String, Set<Long>> fileIdsMap = project.getFileIds();
       if(fileIdsMap.keySet().contains(namespace)){
-      Set<File> files = getFiles(projectId, namespace);
-
-        fileIdsMap.put(namespace, files.stream().filter(f->!f.getName().equals(filename)).map(f->f.getId()).collect(Collectors.toSet()));
+        Set<File> files = getFiles(projectId, namespace);
+        fileIdsMap.put(namespace, files.stream().filter(f->!f.getName().equals(filename))
+                .map(f->f.getId()).collect(Collectors.toSet()));
         project.setFileIds(fileIdsMap);
         save(project);
       }

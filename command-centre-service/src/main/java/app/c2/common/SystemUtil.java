@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public class SystemUtil {
-    public static void setEnv(Map<String, String> newenv) throws Exception {
+    public static void setEnv(Map<String, String> newenv)  {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
@@ -21,14 +21,23 @@ public class SystemUtil {
             Map<String, String> env = System.getenv();
             for(Class cl : classes) {
                 if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-                    Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
-                    Object obj = field.get(env);
-                    Map<String, String> map = (Map<String, String>) obj;
-                    map.clear();
-                    map.putAll(newenv);
+                    Field field = null;
+                    try {
+                        field = cl.getDeclaredField("m");
+                        field.setAccessible(true);
+                        Object obj = field.get(env);
+                        Map<String, String> map = (Map<String, String>) obj;
+                        map.clear();
+                        map.putAll(newenv);
+                    } catch (NoSuchFieldException | IllegalAccessException noSuchFieldException) {
+                        noSuchFieldException.printStackTrace();
+                    }
                 }
             }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
     }
 }

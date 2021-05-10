@@ -35,7 +35,7 @@ public class AppInstanceService {
     FileStorageService fileStorageService;
 
 
-    private String getYarnAppState(long projectId, String applicationId) throws JsonProcessingException {
+    private String getYarnAppState(long projectId, String applicationId) throws Exception {
         Optional<Project> optionalProject = projectService.findById(projectId);
         if(optionalProject.isPresent()){
             Optional<YarnApp> yarnApp = YarnSvcFactory.create(optionalProject.get().getEnv()).setApplicationId(applicationId).get().stream().findFirst();
@@ -51,6 +51,8 @@ public class AppInstanceService {
             try {
                 i.setLastState(getYarnAppState(i.getProjectId(),i.getAppId()));
             } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return i;
@@ -70,6 +72,8 @@ public class AppInstanceService {
                 i.setLastState(getYarnAppState(projectId,i.getAppId()));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return i;
         }).collect(Collectors.toList());
@@ -88,6 +92,8 @@ public class AppInstanceService {
             try {
                 i.setLastState(getYarnAppState(i.getProjectId(),i.getAppId()));
             } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return i;

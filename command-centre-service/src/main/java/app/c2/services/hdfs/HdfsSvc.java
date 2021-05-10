@@ -19,6 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -131,9 +132,7 @@ public class HdfsSvc {
             return false;
         }
         try{
-
             String queryUrl =webHdfsUrl+"/webhdfs/v1"+path+"?op=MKDIRS";
-
             if(username !=null && username.length()>0){
                 queryUrl = queryUrl + "&user.name="+ username;
             }
@@ -155,6 +154,8 @@ public class HdfsSvc {
         } catch (ParseException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (LoginException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();

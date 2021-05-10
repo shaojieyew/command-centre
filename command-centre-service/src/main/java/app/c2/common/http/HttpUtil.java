@@ -14,9 +14,8 @@ public class HttpUtil {
     public static String httpEntityToString(HttpEntity entity) throws IOException {
         InputStream in = entity.getContent();
         String encoding ="UTF-8";
-        try{
-             encoding = entity.getContentEncoding().getValue();
-        }catch (Exception ex) {
+        if(entity!=null && entity.getContentEncoding()!=null){
+            encoding = entity.getContentEncoding().getValue();
         }
         String body = IOUtils.toString(in, encoding);
         return body;

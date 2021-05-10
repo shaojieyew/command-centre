@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,7 +98,6 @@ public class ArtifactsController {
     Map<Class, Method> mainClass = new HashMap<>();
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
-
         List<AbstractRegistrySvc> services = RegistrySvcFactory.create(prop);
         for (AbstractRegistrySvc svc : services){
           _package = svc.getPackage(group,artifact,version.orElse(null)).orElse(null);

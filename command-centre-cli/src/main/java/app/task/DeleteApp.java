@@ -8,6 +8,7 @@ import app.c2.service.ProjectService;
 import app.c2.service.SparkService;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,7 @@ public class DeleteApp extends Task {
     public void startTask(Cli cli) throws Exception {
         this.cli = cli;
         this.appName = cli.getCliName();
-        super.startTask(cli);
+        super.startTask();
     }
 
     public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
@@ -51,7 +52,7 @@ public class DeleteApp extends Task {
             try {
                 startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         });
     }
@@ -61,7 +62,7 @@ public class DeleteApp extends Task {
             try {
                 startTask(cli, s);
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         });
     }
@@ -72,24 +73,11 @@ public class DeleteApp extends Task {
         if(appName==null || appName.length()==0){
             throw new Exception("Invalid app name");
         }
-        super.startTask(cli);
+        super.startTask();
     }
 
     @Override
     protected void task() throws Exception {
-        if(appService.findApp(cli.getProject().getId(), appName).isPresent()){
-
-            List<App> apps = appService.findAllAppStatus(cli.getProject().getId());
-
-            boolean appNotRunning = apps.stream().filter(a->a.getYarnAppId()==null)
-                    .map(f->f.getName()).collect(Collectors.toList())
-                    .contains(appName);
-
-            if(appNotRunning){
-                appService.delete(appName,cli.getProject().getId());
-            }else{
-                throw new Exception("App name is currently running");
-            }
-        }
+        appService.delete(appName,cli.getProject().getId());
     }
 }

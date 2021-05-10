@@ -16,7 +16,9 @@ import org.apache.http.entity.StringEntity;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -61,7 +63,7 @@ public class NifiSvc {
      * @param patternString on empty or null return all process groups
      * @return
      */
-    public Map<ProcessGroupStatusDTO, String> findProcessGroup(String patternString){
+    public Map<ProcessGroupStatusDTO, String> findProcessGroup(String patternString) throws ApiException {
         Map<ProcessGroupStatusDTO, String> result = getAllProcessGroup("root", new ArrayList<String>());
         if(patternString==null || patternString.trim().length()==0){
             return result;
@@ -85,7 +87,7 @@ public class NifiSvc {
      * @param patternString on empty or null return all processors
      * @return
      */
-    public Map<ProcessorStatusDTO, String>  findProcessor(String patternString){
+    public Map<ProcessorStatusDTO, String>  findProcessor(String patternString) throws ApiException {
         Map<ProcessorStatusDTO, String> result= getAllProcess("root", new ArrayList<String>());
         if(patternString==null || patternString.trim().length()==0){
             return result;
@@ -195,9 +197,8 @@ public class NifiSvc {
         }
     }
 
-    private Map<ProcessGroupStatusDTO, String> getAllProcessGroup(String groupId, List<String> path) {
+    private Map<ProcessGroupStatusDTO, String> getAllProcessGroup(String groupId, List<String> path) throws ApiException {
         Map<ProcessGroupStatusDTO, String> list = new HashMap<>();
-        try {
             ProcessGroupStatusEntity processGroup = getProcessGroup(groupId);
             if(!groupId.equals("root"))
                 list.put(processGroup.getProcessGroupStatus(), String.join("/",path));
@@ -208,15 +209,12 @@ public class NifiSvc {
                 list.putAll(getAllProcessGroup(groupProcessId, path));
                 path.remove(path.size()-1);
             }
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
         return list;
     }
 
-    private Map<ProcessorStatusDTO, String> getAllProcess(String groupId, List<String> path) {
+    private Map<ProcessorStatusDTO, String> getAllProcess(String groupId, List<String> path) throws ApiException {
         Map<ProcessorStatusDTO, String> list = new HashMap<>();
-        try {
+
             ProcessGroupStatusEntity processGroup = getProcessGroup(groupId);
             path.add(processGroup.getProcessGroupStatus().getName());
             for( ProcessorStatusSnapshotEntity processorStatusSnapshotEntity:processGroup.getProcessGroupStatus().getAggregateSnapshot().getProcessorStatusSnapshots() ){
@@ -228,9 +226,7 @@ public class NifiSvc {
                 String groupProcessId = processGroupStatusSnapshotEntity.getId();
                 list.putAll(getAllProcess(groupProcessId, path));
             }
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
+
         path.remove(path.size()-1);
         return list;
     }
@@ -289,7 +285,7 @@ public class NifiSvc {
         return token;
     }
 
-    private String requestProcessorJson(String id)  {
+    private String requestProcessorJson(String id) throws IOException, LoginException {
         String url = nifiHost+"/nifi-api"+"/processors/"+id;
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpGet httpGet = new HttpGet(url);
@@ -304,13 +300,9 @@ public class NifiSvc {
 
         int statusCode = response.getStatusLine().getStatusCode();
         String strResponse="";
-        try{
-            strResponse = HttpUtil.httpEntityToString(response.getEntity());
-            if(statusCode != 200){
-                throw new InvalidRequestException(strResponse);
-            }
-        }catch (Exception ex){
-            ex.printStackTrace();
+        strResponse = HttpUtil.httpEntityToString(response.getEntity());
+        if(statusCode != 200){
+            throw new InvalidRequestException(strResponse);
         }
 
         return strResponse;

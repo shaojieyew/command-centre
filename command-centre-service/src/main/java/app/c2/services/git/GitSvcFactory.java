@@ -3,9 +3,7 @@ package app.c2.services.git;
 import app.c2.C2PlatformProperties;
 import app.c2.common.SpringContext;
 import app.c2.properties.C2Properties;
-import app.c2.properties.GitProperties;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,8 +29,8 @@ public class GitSvcFactory {
         String localRepository = getC2PlatformProperties().getTmp()+"/git/repository";
         List<GitSvc> svcs = new ArrayList<>();
         prop.getGitProperties().forEach(gitProp->{
-            String hash = DigestUtils.md5Hex((gitProp.getRemoteUrl()).getBytes());
-            GitSvc gitSvc = new GitSvc(gitProp.getRemoteUrl(), gitProp.getToken(), localRepository+"/"+hash);
+            String hash = DigestUtils.md5Hex((gitProp.getUrl()).getBytes());
+            GitSvc gitSvc = new GitSvc(gitProp.getUrl(), gitProp.getToken(), localRepository+"/"+hash);
             svcs.add(gitSvc);
         });
         return svcs;

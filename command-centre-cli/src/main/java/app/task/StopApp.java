@@ -6,6 +6,7 @@ import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.spec.spark.AppDeploymentKind;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class StopApp extends Task{
                 try {
                     stopApp.startTask(cli, s.getName());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ConsoleHelper.console.display(e);
                 }
             });
         });
@@ -49,7 +50,7 @@ public class StopApp extends Task{
             try {
                 stopApp.startTask(cli, a.getName());
             } catch (Exception e) {
-                e.printStackTrace();
+                ConsoleHelper.console.display(e);
             }
         });
     }

@@ -27,4 +27,12 @@ public class NifiQueryId implements Serializable {
     public int hashCode() {
         return Objects.hash(projectId, name);
     }
+
+    @Override
+    public String toString() {
+        return "NifiQueryId{" +
+                "projectId=" + projectId +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

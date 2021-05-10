@@ -6,11 +6,15 @@ import app.c2.service.ProjectService;
 import app.cli.type.Component;
 import app.spec.Kind;
 import app.spec.MetadataKind;
+import app.spec.Spec;
+import app.spec.SpecException;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.resource.GroupResourceKind;
 import app.spec.spark.AppDeploymentKind;
 import app.task.CreateSpec;
+import app.util.ConsoleHelper;
 import app.util.YamlLoader;
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
 
@@ -28,7 +32,7 @@ public abstract class Cli  implements Callable<Integer> {
     private String cliComponent;
 
     @CommandLine.Option(names = {"-c", "--config"}, description = "config location")
-    private String cliConfig = System.getProperty("user.home")+"/.c2/setting.yml";
+    private String cliConfig = System.getProperty("user.home")+"\\.c2\\setting.yml";
 
     @CommandLine.Option(names = {"-f", "--file"}, description = "file location")
     private String cliFilePath = null;
@@ -123,11 +127,44 @@ public abstract class Cli  implements Callable<Integer> {
     @Autowired
     private ProjectService projectService;
 
-    public int initProject() throws Exception {
+    @Override
+    public Integer call() throws Exception {
         File config = new File(cliConfig);
-        if(! config.exists()){
-            throw new Exception("file not found: "+ cliConfig);
+        if(!config.exists()){
+            ConsoleHelper.console.display(cliConfig+" file not found", Logger.Level.ERROR);
+            return 0;
         }
+
+        if(cliFilePath != null) {
+            File file = new File(cliFilePath);
+            if (!file.exists()) {
+                ConsoleHelper.console.display(cliFilePath+" file not found", Logger.Level.ERROR);
+                return 0;
+            }
+
+            if(file.isDirectory()){
+                for(File subFile: file.listFiles()){
+                    try {
+                        Kind kind = parseKind(subFile);
+                        if(kind != null){
+                            specFile.add(kind);
+                        }
+                    } catch (SpecException e) {
+                        ConsoleHelper.console.display(e.getMessage(), Logger.Level.ERROR);
+                        return 0;
+                    }catch (Exception e) {
+                        ConsoleHelper.console.display(e);
+                        return 0;
+                    }
+                }
+            }else{
+                Kind kind = parseKind(file);
+                if(kind != null){
+                    specFile.add(kind);
+                }
+            }
+        }
+
         c2CliProperties = (C2CliProperties) new YamlLoader(C2CliProperties.class).load(config.getAbsolutePath());
         Optional<Project> optionalProject =  projectService.findAll().stream().filter(p->p.getName().equals(c2CliProperties.getProjectName())).findFirst();
 
@@ -139,14 +176,13 @@ public abstract class Cli  implements Callable<Integer> {
         }
         project.setEnv(c2CliProperties);
         project = projectService.save(project);
-        return 0;
-    }
 
-    @Override
-    public Integer call() throws Exception {
-        initProject();
-        initFiles();
-        return task();
+        try{
+            return task();
+        }catch (Exception e){
+            ConsoleHelper.console.display(e);
+            return 0;
+        }
     }
     abstract public Integer task() throws Exception;
 
@@ -154,42 +190,28 @@ public abstract class Cli  implements Callable<Integer> {
     final private static String KIND_GROUP_RESOURCE="GroupResource";
     final private static String KIND_NIFI_QUERY="NifiQuery";
 
-    private Kind parseKind(File file) throws IOException {
+
+    private Kind parseKind(File file) throws IOException, SpecException {
+        Kind k = null;
         MetadataKind metadata =  new YamlLoader<>(MetadataKind.class).load(file.getAbsolutePath());
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_APP_DEPLOYMENT.toUpperCase())){
-            return new YamlLoader<>(AppDeploymentKind.class).load(file.getAbsolutePath());
+            k = new YamlLoader<>(AppDeploymentKind.class).load(file.getAbsolutePath());
+            k.setFileOrigin(file);
+            k.validate();
+            return k;
         }
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_GROUP_RESOURCE.toUpperCase())){
-            return new YamlLoader<>(GroupResourceKind.class).load(file.getAbsolutePath());
+            k = new YamlLoader<>(GroupResourceKind.class).load(file.getAbsolutePath());
+            k.setFileOrigin(file);
+            k.validate();
+            return k;
         }
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_NIFI_QUERY.toUpperCase())){
-            return new YamlLoader<>(NifiQueryKind.class).load(file.getAbsolutePath());
+            k = new YamlLoader<>(NifiQueryKind.class).load(file.getAbsolutePath());
+            k.setFileOrigin(file);
+            k.validate();
+            return k;
         }
         return null;
-    }
-
-    private void initFiles() throws IOException {
-        if(cliFilePath !=null){
-            File file = new File(cliFilePath);
-            if(!file.exists()){
-                throw new FileNotFoundException("file not found: "+ cliFilePath);
-            }
-            if(file.isDirectory()){
-                for(File subFile: file.listFiles()){
-                    try {
-                        Kind kind = parseKind(subFile);
-                        if(kind != null){
-                            specFile.add(kind);
-                        }
-                    } catch (Exception e) {
-                    }
-                }
-            }else{
-                Kind kind = parseKind(file);
-                if(kind != null){
-                    specFile.add(kind);
-                }
-            }
-        }
     }
 }

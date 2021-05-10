@@ -75,7 +75,7 @@ public class SparkService {
         t.start();
     }
 
-    public void startSparkLauncher(SparkLauncher finalLauncher, AppInstance app, boolean saveSnapshot){
+    public void startSparkLauncher(SparkLauncher finalLauncher, AppInstance app, boolean saveSnapshot) throws Exception {
         SparkAppHandle handler = null;
         String applicationId = null;
         String state = null;
@@ -94,6 +94,7 @@ public class SparkService {
         }
         if(applicationId==null){
             applicationId  = app.getName()+"_"+System.currentTimeMillis();
+            throw new Exception(app.getName()+" failed to launch");
         }
 
         if(saveSnapshot){
@@ -120,8 +121,6 @@ public class SparkService {
     private SparkLauncher addArgs(SparkLauncher launcher, List<String> args){
         for(String arg: args){
             launcher = launcher.addAppArgs(arg);
-            launcher = launcher.addSparkArg("","");
-            launcher = launcher.setConf("","");
         }
         return launcher;
     }
@@ -205,7 +204,7 @@ public class SparkService {
                 .get().stream()
                 .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
                 .count()>0){
-            throw new Exception("App name, "+appInstance.getName()+" has been submitted");
+            throw new Exception(appInstance.getName()+" already running");
         }
 
         SparkLauncher launcher= new SparkLauncher()

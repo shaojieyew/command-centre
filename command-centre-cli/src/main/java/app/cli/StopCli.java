@@ -44,6 +44,17 @@ public class StopCli extends Cli {
                         .collect(Collectors.toList());
                 stopNifi.startTask(this, nifiQueryKinds );
             }
+        }else{
+            List<NifiQueryKind> nifiQueryKinds = getSpecFile().stream()
+                    .filter(s->s instanceof NifiQueryKind)
+                    .map(s->(NifiQueryKind)s)
+                    .collect(Collectors.toList());
+            stopNifi.startTask(this, nifiQueryKinds );
+            List<AppDeploymentKind> appDeployments = getSpecFile().stream()
+                    .filter(s->s instanceof AppDeploymentKind)
+                    .map(s->(AppDeploymentKind)s)
+                    .collect(Collectors.toList());
+            stopApp.startTask(this, appDeployments);
         }
         return 0;
     }

@@ -1,6 +1,7 @@
 package example.nifi;
 
 import app.c2.services.nifi.NifiSvc;
+import com.davis.client.ApiException;
 import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;
 
@@ -9,7 +10,7 @@ import java.util.Map;
 public class NifiApi {
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ApiException {
         NifiSvc svc = new NifiSvc("http://localhost:8081");
 
         // search for process group

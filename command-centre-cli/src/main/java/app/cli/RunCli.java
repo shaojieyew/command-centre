@@ -55,6 +55,19 @@ public class RunCli extends Cli {
                 createNifiQuery.startTask(this, nifiQueryKinds);
                 runNifi.startTask(this, nifiQueryKinds );
             }
+        }else{
+            List<NifiQueryKind> nifiQueryKinds = getSpecFile().stream()
+                    .filter(s->s instanceof NifiQueryKind)
+                    .map(s->(NifiQueryKind)s)
+                    .collect(Collectors.toList());
+            createNifiQuery.startTask(this, nifiQueryKinds);
+            runNifi.startTask(this, nifiQueryKinds );
+            List<AppDeploymentKind> appDeployments = getSpecFile().stream()
+                    .filter(s->s instanceof AppDeploymentKind)
+                    .map(s->(AppDeploymentKind)s)
+                    .collect(Collectors.toList());
+            createApp.startTask(this, appDeployments);
+            runApp.startTask(this, appDeployments);
         }
         return 0;
     }

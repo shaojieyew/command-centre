@@ -77,7 +77,7 @@ public class Main {
         String configFile = "spark-app/src/main/resources/config.yml";
         String selectedBranch ="refs/heads/master";
         GitProperties repo = prop.getGitProperties().get(0);
-        GitSvc svc = new GitSvc(repo.getRemoteUrl(),repo.getToken(),"tmp");
+        GitSvc svc = new GitSvc(repo.getUrl(),repo.getToken(),"tmp");
         File f = svc.getFile(selectedBranch,configFile);
         System.out.println(f.getAbsolutePath());
         System.out.println(f.getName());

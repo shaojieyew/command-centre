@@ -1,5 +1,6 @@
 package app.spec.spark;
 
+import app.spec.SpecException;
 import app.spec.resource.Resource;
 import app.spec.Spec;
 

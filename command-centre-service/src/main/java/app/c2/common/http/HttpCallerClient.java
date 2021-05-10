@@ -8,14 +8,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.IOException;
 
 public class HttpCallerClient extends HttpCaller {
-        public HttpResponse execute(HttpUriRequest request) {
+        public HttpResponse execute(HttpUriRequest request) throws IOException {
                 HttpResponse httpResponse = null;
                 HttpClient httpClient = HttpClientBuilder.create().build();
-                try {
-                        httpResponse = httpClient.execute(request);
-                } catch (IOException e) {
-                        e.printStackTrace();
-                }
+
+                httpResponse = httpClient.execute(request);
                 return httpResponse;
         }
 }

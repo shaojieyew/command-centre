@@ -127,32 +127,33 @@ public class AppService {
         if(!projectOpt.isPresent()){
             throw new Exception("Invalid ProjectId");
         }
-        return apps.stream().map( app->{
+        List<App> listApps = new ArrayList<>();
+        for(App app : apps){
             String sparkAppNameToSubmit = SparkService.getSparkAppName(projectOpt.get().getName(),projectId, app.getName());
             YarnSvc yarnSvc = null;
-            try {
-
                 yarnSvc = YarnSvcFactory.create(projectOpt.get().getEnv());
 
-                Optional<YarnApp> yarnApp = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                        .setStartedTimeBegin(millis)
-                        .get().stream()
-                        .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
-                        .max(new Comparator<YarnApp>() {
-                            @Override
-                            public int compare(YarnApp o1, YarnApp o2) {
-                                return o1.getStartedTime().compareTo(o2.getStartedTime());
-                            }
-                        });
-                if(yarnApp.isPresent()){
-                    app.setYarnStatus(yarnApp.get().getState());
-                    app.setYarnAppId(yarnApp.get().getId());
+                try{
+                    Optional<YarnApp> yarnApp = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                            .setStartedTimeBegin(millis)
+                            .get().stream()
+                            .filter(f->f.getName().equalsIgnoreCase(sparkAppNameToSubmit))
+                            .max(new Comparator<YarnApp>() {
+                                @Override
+                                public int compare(YarnApp o1, YarnApp o2) {
+                                    return o1.getStartedTime().compareTo(o2.getStartedTime());
+                                }
+                            });
+                    if(yarnApp.isPresent()){
+                        app.setYarnStatus(yarnApp.get().getState());
+                        app.setYarnAppId(yarnApp.get().getId());
+                    }
+                }catch (Exception e){
                 }
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return app;
-        }).collect(Collectors.toList());
+            listApps.add(app);
+        }
+
+        return listApps;
 
     }
 
@@ -191,6 +192,8 @@ public class AppService {
                             }
                         });
             } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

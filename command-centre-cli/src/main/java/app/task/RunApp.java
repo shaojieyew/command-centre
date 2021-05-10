@@ -4,6 +4,7 @@ import app.cli.Cli;
 import app.c2.service.AppService;
 import app.spec.spark.AppDeploymentKind;
 import app.spec.spark.AppDeploymentSpec;
+import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class RunApp extends Task{
                 try {
                     runApp.startTask(cli, s.getName());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ConsoleHelper.console.display(e);
                 }
             });
         });
@@ -52,6 +53,6 @@ public class RunApp extends Task{
     AppService appService;
     @Override
     protected void task() throws Exception {
-        appService.submitApp(cli.getProject().getId(), appName, false);
+        appService.submitApp(cli.getProject().getId(), appName, false, false);
     }
 }
