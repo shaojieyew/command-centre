@@ -5,7 +5,7 @@ import app.c2.properties.KerberosProperties;
 
 public class NifiSvcFactory {
     public  static NifiSvc create(C2Properties props){
-        NifiSvc nifiSvc = new NifiSvc(props.getNifiProperties().getHost()+":"+props.getNifiProperties().getPort());
+        NifiSvc nifiSvc = new NifiSvc(props.getNifiProperties().getHost());
         if(props.getNifiProperties().getKerberos()!=null){
             KerberosProperties kerberosProperties = props.getNifiProperties().getKerberos();
             if(kerberosProperties.getKeytab()!=null && kerberosProperties.getPrinciple()!=null){

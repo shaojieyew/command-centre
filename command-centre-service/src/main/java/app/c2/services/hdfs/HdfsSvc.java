@@ -4,6 +4,8 @@ import app.c2.common.http.HttpCaller;
 import app.c2.common.http.HttpCallerFactory;
 import app.c2.common.http.HttpUtil;
 import app.c2.services.hdfs.model.FileStatus;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -15,16 +17,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -32,8 +32,8 @@ import java.util.List;
  */
 public class HdfsSvc {
     String webHdfsUrl;
-    String coreSiteXmlLocation ;
-    String hdfsSiteXmlLocation ;
+    String coreSiteXml;
+    String hdfsSiteXml;
     String username;
     String principle;
     String keytab;
@@ -42,9 +42,12 @@ public class HdfsSvc {
         return username;
     }
 
-    public HdfsSvc(String webHdfsUrl, String username) {
-        this.webHdfsUrl = webHdfsUrl;
-        this.username = username;
+    public String getPrinciple() {
+        return principle;
+    }
+
+    public String getKeytab() {
+        return keytab;
     }
 
     public HdfsSvc setUsername(String username) {
@@ -54,6 +57,7 @@ public class HdfsSvc {
 
     public HdfsSvc setPrinciple(String principle) {
         this.principle = principle;
+        this.username = username;
         return this;
     }
 
@@ -71,21 +75,21 @@ public class HdfsSvc {
         return this;
     }
 
-    public String getCoreSiteXmlLocation() {
-        return coreSiteXmlLocation;
+    public String getCoreSiteXml() {
+        return coreSiteXml;
     }
 
-    public HdfsSvc setCoreSiteXmlLocation(String coreSiteXmlLocation) {
-        this.coreSiteXmlLocation = coreSiteXmlLocation;
+    public HdfsSvc setCoreSiteXml(String coreSiteXml) {
+        this.coreSiteXml = coreSiteXml;
         return this;
     }
 
-    public String getHdfsSiteXmlLocation() {
-        return hdfsSiteXmlLocation;
+    public String getHdfsSiteXml() {
+        return hdfsSiteXml;
     }
 
-    public HdfsSvc setHdfsSiteXmlLocation(String hdfsSiteXmlLocation) {
-        this.hdfsSiteXmlLocation = hdfsSiteXmlLocation;
+    public HdfsSvc setHdfsSiteXml(String hdfsSiteXml) {
+        this.hdfsSiteXml = hdfsSiteXml;
         return this;
     }
 
@@ -109,11 +113,11 @@ public class HdfsSvc {
 
             int statusCode = response.getStatusLine().getStatusCode();
             String strResponse = HttpUtil.httpEntityToString(response.getEntity());
+            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            org.json.simple.parser.JSONParser parser = new JSONParser();
             if(statusCode != 200){
                 throw new Exception(strResponse);
             }
-            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-            org.json.simple.parser.JSONParser parser = new JSONParser();
             JSONObject json = (JSONObject)parser.parse(strResponse);
             JSONObject jsonFileStatuses = (JSONObject)json.get("FileStatuses");
             JSONArray jsonFileStatusArray = (JSONArray)jsonFileStatuses.get("FileStatus");
@@ -210,8 +214,6 @@ public class HdfsSvc {
                 queryUrl = queryUrl + "&user.name="+ username;
             }
 
-
-
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
             HttpPut httpPut = new HttpPut(queryUrl);
             httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
@@ -240,12 +242,12 @@ public class HdfsSvc {
         if(oldPath==null || oldPath.length()==0 || newPath==null || newPath.length()==0) {
             return false;
         }
-        if(hdfsSiteXmlLocation==null || hdfsSiteXmlLocation.length()==0 || coreSiteXmlLocation==null || coreSiteXmlLocation.length()==0) {
+        if(hdfsSiteXml ==null || hdfsSiteXml.length()==0 || coreSiteXml ==null || coreSiteXml.length()==0) {
             return false;
         }
         Configuration conf = new Configuration();
-        conf.addResource(hdfsSiteXmlLocation);
-        conf.addResource(coreSiteXmlLocation);
+        conf.addResource(IOUtils.toInputStream(hdfsSiteXml, StandardCharsets.UTF_8));
+        conf.addResource(IOUtils.toInputStream(coreSiteXml, StandardCharsets.UTF_8));
         if(username !=null && username.length()>0){
             System.setProperty("HADOOP_USER_NAME", username);
         }
@@ -275,9 +277,9 @@ public class HdfsSvc {
          }
 
          HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
-         HttpPut httpPut = new HttpPut(queryUrl);
-         httpPut.addHeader("content-type",MediaType.APPLICATION_JSON);
-         HttpResponse response = httpCaller.execute(httpPut);
+         HttpGet httpGet = new HttpGet(queryUrl);
+         httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
+         HttpResponse response = httpCaller.execute(httpGet);
          int statusCode =response.getStatusLine().getStatusCode();
          String strResponse = HttpUtil.httpEntityToString(response.getEntity());
 

@@ -7,6 +7,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import javax.persistence.*;
 import java.io.IOException;
+import java.security.Key;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -139,19 +140,19 @@ public class AppInstance {
     this.jarArgs = new ObjectMapper().writeValueAsString(jarArg);
   }
 
-  public Map<String, String> getSparkArgs() throws JsonProcessingException {
+  public Set<KeyValuePair> getSparkArgs() throws JsonProcessingException {
 
     if(this.sparkArgs==null){
-      return new HashMap<String, String>();
+      return new HashSet<>();
     }
-    TypeReference<HashMap<String, String>> typeRef
-            = new TypeReference<HashMap<String,String>>() {};
+    TypeReference<HashSet<KeyValuePair>> typeRef
+            = new TypeReference<HashSet<KeyValuePair>>() {};
     ObjectMapper mapper = new ObjectMapper();
-    HashMap<String, String> o = mapper.readValue(sparkArgs, typeRef);
+    HashSet<KeyValuePair> o = mapper.readValue(sparkArgs, typeRef);
     return o;
   }
 
-  public void setSparkArgs(Map<String, String> sparkArg) throws JsonProcessingException {
+  public void setSparkArgs(Set<KeyValuePair> sparkArg) throws JsonProcessingException {
     this.sparkArgs = new ObjectMapper().writeValueAsString(sparkArg);
   }
 

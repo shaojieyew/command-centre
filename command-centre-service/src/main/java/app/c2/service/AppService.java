@@ -2,10 +2,7 @@ package app.c2.service;
 
 import app.c2.C2PlatformProperties;
 import app.c2.dao.AppDao;
-import app.c2.model.App;
-import app.c2.model.AppInstance;
-import app.c2.model.File;
-import app.c2.model.Project;
+import app.c2.model.*;
 import app.c2.model.compositeKey.AppId;
 import app.c2.services.yarn.YarnSvc;
 import app.c2.services.yarn.YarnSvcFactory;
@@ -49,7 +46,7 @@ public class AppService {
         return appDao.save(app);
     }
 
-    public App save(String name, long projectId, String jarGroupId, String jarArtifactId, String jarVersion, String jarMainClass, List<String> jarArgs, Map<String,String> sparkArgs) throws IOException {
+    public App save(String name, long projectId, String jarGroupId, String jarArtifactId, String jarVersion, String jarMainClass, List<String> jarArgs, Set<KeyValuePair> sparkArgs) throws IOException {
         App app = new App();
         app.setName(name);
         app.setProjectId(projectId);

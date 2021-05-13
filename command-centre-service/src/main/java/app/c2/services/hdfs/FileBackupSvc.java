@@ -18,32 +18,18 @@ import java.util.List;
  * Restore backup-ed files
  */
 public class FileBackupSvc {
-    HdfsSvc dfs;
-    String webHdfsUrl;
+    HdfsSvc hdfsSvc;
     String backupDirectory;
     String tmpDirectory;
-    String username;
-    String coreSite;
-    String hdfsSite;
 
-    public FileBackupSvc(String webHdfsHost, String backupDirectory, String username, String coreSite, String hdfsSite) {
-        this.webHdfsUrl = webHdfsHost;
+
+    public FileBackupSvc(HdfsSvc hdfsSvc, String backupDirectory) {
+        this.hdfsSvc = hdfsSvc;
         this.backupDirectory = backupDirectory +"/backup";
         this.tmpDirectory = backupDirectory +"/tmp";
-        this.username = username;
-        this.coreSite = coreSite;
-        this.hdfsSite = hdfsSite;
-        init();
     }
 
-    public void init(){
-        dfs = new HdfsSvc(webHdfsUrl,username);
-        dfs.setCoreSiteXmlLocation(coreSite);
-        dfs.setHdfsSiteXmlLocation(hdfsSite);
-        dfs.createDirectory(backupDirectory);
-    }
-
-    public void backup(String name, String[] backupList, boolean removeSrc)  {
+    public void backup(String name, String[] backupList)  {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("MD5");
@@ -61,12 +47,12 @@ public class FileBackupSvc {
             String FileName = oldFilePath.split("/")[oldFilePath.split("/").length-1];
             String oldLocation = oldFilePath.substring(0,oldFilePath.length()-FileName.length()-1);
             String newLocation = backupDirectory +"/"+backup.getFolderName()+oldLocation+"/"+"@BASE";
-            if(dfs.createDirectory(newLocation)){
-                if(removeSrc){
-                    dfs.renameFile(oldFilePath,newLocation);
-                }else{
-                    dfs.copyFile(oldFilePath,newLocation);
-                }
+            if(hdfsSvc.createDirectory(newLocation)){
+//                if(removeSrc){
+                    hdfsSvc.renameFile(oldFilePath,newLocation);
+//                }else{
+//                    hdfsSvc.copyFile(oldFilePath,newLocation);
+//                }
             }
         }
     }
@@ -74,7 +60,7 @@ public class FileBackupSvc {
     public List<Backup> getAllBackup()  {
         List<Backup> backups = new ArrayList<>();
         try {
-            for(FileStatus backupFs: dfs.getFileStatusList(backupDirectory)){
+            for(FileStatus backupFs: hdfsSvc.getFileStatusList(backupDirectory)){
                     Backup backup = new Backup(backupFs.getPathSuffix());
                     backups.add(backup);
             }
@@ -85,26 +71,26 @@ public class FileBackupSvc {
     }
 
     public boolean restoreBackup(String backupId){
-        return restoreBackup( backupId, false, false);
+        return restoreBackup( backupId, false);
     }
 
-    public boolean restoreBackup(String backupId, boolean ignoreConflict, boolean deleteBackup) {
+    public boolean restoreBackup(String backupId, boolean ignoreConflict) {
         Backup backup = getBackup(backupId);
         try{
             String path = backupDirectory + "/" + backup.getFolderName();
             String recoverLocation = "";
             String fname = "";
             while(!fname.equals("@BASE")){
-                fname = dfs.getFileStatusList(path).get(0).getPathSuffix();
+                fname = hdfsSvc.getFileStatusList(path).get(0).getPathSuffix();
                 path = path +"/"+fname;
                 if(!fname.equals("@BASE"))
                     recoverLocation = recoverLocation +"/"+fname;
             }
             boolean isSuccess = true;
 
-            List<FileStatus> srcDirFiles = dfs.getFileStatusList(recoverLocation);
+            List<FileStatus> srcDirFiles = hdfsSvc.getFileStatusList(recoverLocation);
             List<String> conflictFile = new ArrayList<>();
-            for(FileStatus file: dfs.getFileStatusList(path)){
+            for(FileStatus file: hdfsSvc.getFileStatusList(path)){
                 if(srcDirFiles.stream().anyMatch(srcDirFile->{
                     return srcDirFile.getPathSuffix().equalsIgnoreCase(file.getPathSuffix())
                             && srcDirFile.getType().equalsIgnoreCase(file.getType());
@@ -117,27 +103,27 @@ public class FileBackupSvc {
                 if(ignoreConflict){
                     String finalRecoverLocation = recoverLocation;
                     conflictFile.stream().forEach(f->{
-                        dfs.deleteFile(finalRecoverLocation +"/"+f, true);
+                        hdfsSvc.deleteFile(finalRecoverLocation +"/"+f, true);
                     });
                 }else{
                     throw new Exception("Could not restore backup file(s) to original location as following file(s) exist at "+recoverLocation+". "+ StringUtils.join(conflictFile,","));
                 }
              }
 
-            for(FileStatus folder: dfs.getFileStatusList(path)){
+            for(FileStatus folder: hdfsSvc.getFileStatusList(path)){
                 fname = folder.getPathSuffix();
-                if(deleteBackup){
-                    boolean isRenamed = dfs.renameFile(path+"/"+fname,recoverLocation);
+//                if(deleteBackup){
+                    boolean isRenamed = hdfsSvc.renameFile(path+"/"+fname,recoverLocation);
                     if(!isRenamed)
                         isSuccess = false;
                     if(isSuccess){
                         deleteBackup(backupId);
                     }
-                }else{
-                    boolean isCopied =  dfs.copyFile(path+"/"+fname,recoverLocation);
-                    if(!isCopied)
-                        isSuccess = false;
-                }
+//                }else{
+//                    boolean isCopied =  hdfsSvc.copyFile(path+"/"+fname,recoverLocation);
+//                    if(!isCopied)
+//                        isSuccess = false;
+//                }
             }
             return true;
         }catch (Exception e){
@@ -154,7 +140,7 @@ public class FileBackupSvc {
         Backup backup = getBackup(backupId);
         try{
             String path = backupDirectory + "/" + backup.getFolderName();
-            dfs.deleteFile(path , true);
+            hdfsSvc.deleteFile(path , true);
             return true;
         }catch (Exception e){
             e.printStackTrace();

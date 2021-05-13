@@ -25,11 +25,26 @@ public class LsCli extends Cli {
     ListFile listFile;
     @Autowired
     ListNifiQuery listNifiQuery;
-
+    @Autowired
+    ListCheckpoint listCheckpoint;
     @CommandLine.Option(names = {"--nifi-query"})
     private boolean list_nifi_query = false;
     @CommandLine.Option(names = {"--query-name"})
     private String query_name;
+    @CommandLine.Option(names = {"--backlog-only"})
+    private boolean show_backlog_only=false;
+
+    public boolean isList_nifi_query() {
+        return list_nifi_query;
+    }
+
+    public String getQuery_name() {
+        return query_name;
+    }
+
+    public boolean isShow_backlog_only() {
+        return show_backlog_only;
+    }
 
     @Override
     public Integer task() throws Exception {
@@ -47,12 +62,17 @@ public class LsCli extends Cli {
             }
         }else if(getCliComponent().equalsIgnoreCase(Component.file.toString())){
             listFile.startTask(this);
-        }else{
+        }else if(getCliComponent().equalsIgnoreCase(Component.checkpoint.toString())){
+            if(getCliQuery()!=null){
+                listCheckpoint.startTask(this);
+            }else{
+                throw new Exception("Missing --query or -q");
+            }
+        } else{
             listTask.startTask(this);
         }
         return 0;
     }
-
 
 }
 

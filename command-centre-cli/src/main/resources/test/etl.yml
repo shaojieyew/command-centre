@@ -9,10 +9,14 @@ spec:
       - config.yml
       - app1
     sparkArgs :
-      spark.driver.memory: 1G
-      spark.executor.instances : 1
-      spark.executor.memory : 1G
-      spark.executor.cores : 1
+      - name : spark.driver.memory
+        value : 1G
+      - name : spark.executor.instances
+        value: 1
+      - name : spark.executor.memory
+        value : 1G
+      - name : spark.executor.cores
+        value : 1
     resources:
       - name: config.yml
         source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
@@ -27,10 +31,14 @@ spec:
       - config.yml
       - app1
     sparkArgs :
-      spark.driver.memory : 1G
-      spark.executor.instances : 1
-      spark.executor.memory : 1G
-      spark.executor.cores : 1
+      - name : spark.driver.memory
+        value : 1G
+      - name : spark.executor.instances
+        value: 1
+      - name : spark.executor.memory
+        value : 1G
+      - name : spark.executor.cores
+        value : 1
     resources:
       - name: config.yml
         source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml

@@ -48,6 +48,7 @@ public abstract class Task {
     public void startTask(boolean disableLoading) throws Exception {
         if(disableLoading){
             task();
+            postTask();
         }else{
             jobRunnable = new JobRunnable(getTaskName());
             new Thread(jobRunnable).start();
@@ -58,9 +59,15 @@ public abstract class Task {
                 jobRunnable.failed();
                 throw ex;
             }
+            finally {
+                postTask();
+            }
         }
     }
 
+    public void postTask(){
+
+    }
 
     protected abstract String getTaskName();
     protected abstract void task() throws Exception;

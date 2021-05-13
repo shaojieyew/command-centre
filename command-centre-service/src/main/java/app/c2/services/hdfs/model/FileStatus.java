@@ -118,4 +118,23 @@ public class FileStatus {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return "FileStatus{" +
+                "accessTime=" + accessTime +
+                ", blockSize=" + blockSize +
+                ", childrenNum=" + childrenNum +
+                ", fileId=" + fileId +
+                ", group='" + group + '\'' +
+                ", length=" + length +
+                ", modificationTime=" + modificationTime +
+                ", owner='" + owner + '\'' +
+                ", pathSuffix='" + pathSuffix + '\'' +
+                ", permission='" + permission + '\'' +
+                ", replication=" + replication +
+                ", storagePolicy=" + storagePolicy +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

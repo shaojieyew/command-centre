@@ -1,11 +1,13 @@
 package app.spec.spark;
 
+import app.c2.model.KeyValuePair;
 import app.spec.SpecException;
 import app.spec.resource.Resource;
 import app.spec.Spec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AppDeploymentSpec implements Spec {
     private String name;
@@ -14,7 +16,7 @@ public class AppDeploymentSpec implements Spec {
     private String jarVersion;
     private String mainClass;
     private List<String> jarArgs;
-    private Map<String, String> sparkArgs;
+    private Set<KeyValuePair> sparkArgs;
     private List<Resource> resources;
     private String namespace;
 
@@ -66,11 +68,11 @@ public class AppDeploymentSpec implements Spec {
         this.jarArgs = jarArgs;
     }
 
-    public Map<String, String> getSparkArgs() {
+    public Set<KeyValuePair> getSparkArgs() {
         return sparkArgs;
     }
 
-    public void setSparkArgs(Map<String, String> sparkArgs) {
+    public void setSparkArgs(Set<KeyValuePair> sparkArgs) {
         this.sparkArgs = sparkArgs;
     }
 

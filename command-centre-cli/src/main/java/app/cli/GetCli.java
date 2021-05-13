@@ -2,6 +2,7 @@ package app.cli;
 
 import app.cli.type.Component;
 import app.task.GetApp;
+import app.task.GetCheckpoint;
 import app.task.GetFile;
 import app.task.GetNifiQuery;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ public class GetCli extends Cli {
     GetFile getFile;
     @Autowired
     GetNifiQuery getNifiQuery;
+    @Autowired
+    GetCheckpoint getCheckpoint;
     @Override
     public Integer task() throws Exception {
         if(getCliComponent().equalsIgnoreCase(Component.spark.toString())){
@@ -41,6 +44,12 @@ public class GetCli extends Cli {
                 getFile.startTask(this);
             }else{
                 throw new Exception("Invalid file Id");
+            }
+        }else if(getCliComponent().equalsIgnoreCase(Component.checkpoint.toString())){
+            if(getCliQuery()!=null){
+                getCheckpoint.startTask(this);
+            }else{
+                throw new Exception("Missing query");
             }
         }
         return 0;

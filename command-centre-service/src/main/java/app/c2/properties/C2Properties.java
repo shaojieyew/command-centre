@@ -1,26 +1,13 @@
 package app.c2.properties;
 
-import app.c2.properties.GitProperties;
-import app.c2.properties.HadoopProperties;
-import app.c2.properties.MavenProperties;
-import app.c2.properties.NifiProperties;
-
 import java.util.List;
 
 public class C2Properties {
     private NifiProperties nifiProperties;
     private List<MavenProperties> mavenProperties;
     private List<GitProperties> gitProperties;
-    private HadoopProperties hadoopProperties;
-
-    @Override
-    public String toString() {
-        return "C2Properties{" +
-                "mavenProperties=" + mavenProperties +
-                ", gitProperties=" + gitProperties +
-                ", hadoopProperties=" + hadoopProperties +
-                '}';
-    }
+    private YarnProperties hadoopYarnProperties;
+    private SparkCheckpointProperties sparkCheckpointProperties;
 
     public NifiProperties getNifiProperties() {
         return nifiProperties;
@@ -46,11 +33,19 @@ public class C2Properties {
         this.gitProperties = gitProperties;
     }
 
-    public void setHadoopProperties(HadoopProperties hadoopProperties) {
-        this.hadoopProperties = hadoopProperties;
+    public YarnProperties getHadoopYarnProperties() {
+        return hadoopYarnProperties;
     }
 
-    public HadoopProperties getHadoopProperties() {
-        return  this.hadoopProperties;
+    public void setHadoopYarnProperties(YarnProperties hadoopYarnProperties) {
+        this.hadoopYarnProperties = hadoopYarnProperties;
+    }
+
+    public SparkCheckpointProperties getSparkCheckpointProperties() {
+        return sparkCheckpointProperties;
+    }
+
+    public void setSparkCheckpointProperties(SparkCheckpointProperties sparkCheckpointProperties) {
+        this.sparkCheckpointProperties = sparkCheckpointProperties;
     }
 }

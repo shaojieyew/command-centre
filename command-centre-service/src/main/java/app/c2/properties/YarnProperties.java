@@ -1,6 +1,6 @@
 package app.c2.properties;
 
-public class HadoopProperties {
+public class YarnProperties extends HadoopProperties{
     private String coreSite;
     private String hdfsSite;
     private String yarnSite;

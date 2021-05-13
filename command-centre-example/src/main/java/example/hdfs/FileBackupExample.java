@@ -1,24 +1,26 @@
 package example.hdfs;
 
+import app.c2.properties.C2Properties;
+import app.c2.properties.C2PropertiesLoader;
 import app.c2.services.hdfs.FileBackupSvc;
 import app.c2.services.hdfs.HdfsSvc;
-import example.spark.Main;
+import app.c2.services.hdfs.HdfsSvcFactory;
+import com.google.common.io.Resources;
 
 import java.util.stream.Collectors;
 
 public class FileBackupExample {
 
     public static void main(String argp[]) throws Exception {
-        String webHdfsHost = "http://localhost:9001";
-        String username = "user";
+        String path = Resources.getResource("setting.yml").getPath();
+        C2Properties c2PlatformProperties =  C2PropertiesLoader.load(path   );
+        HdfsSvc hdfsSvc = HdfsSvcFactory.create(c2PlatformProperties);
         String backupDirectory = "/user/backmanager/backup";
-        String coreSite  = Main.class.getClassLoader().getResource("core-site.xml").getPath();
-        String hdfsSite  = Main.class.getClassLoader().getResource("hdfs-site.xml").getPath();
-        FileBackupSvc fm = new FileBackupSvc(webHdfsHost, backupDirectory,username,coreSite, hdfsSite);
+        FileBackupSvc fm = new FileBackupSvc(hdfsSvc, backupDirectory);
         // hdfs and core site is required for file copy
 
         //mock
-        HdfsSvc hdfsSvc = new HdfsSvc(webHdfsHost, username);
+
         hdfsSvc.deleteFile(backupDirectory, true);
         hdfsSvc.deleteFile("/user/testFolder1", true);
         hdfsSvc.deleteFile("/user/testFolder2", true);
@@ -30,9 +32,8 @@ public class FileBackupExample {
 
         //backup1
         String backupLists [][]= {{"/user/testFolder1","/user/testFolder2"},{"/user/testFolder"}};
-        boolean removeSrc = true;
         for(String[] backupList: backupLists){
-            fm.backup("backup1",backupList, removeSrc);
+            fm.backup("backup1",backupList);
         }
 
         //get all backups

@@ -19,7 +19,7 @@ public class C2CliProperties extends C2Properties {
                 "projectName='" + projectName + '\'' +
                 "mavenProperties=" + getMavenProperties() +
                 ", gitProperties=" + getGitProperties() +
-                ", hadoopProperties=" + getHadoopProperties() +
+                ", hadoopProperties=" + getHadoopYarnProperties() +
                 '}';
     }
 }

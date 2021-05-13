@@ -87,11 +87,9 @@ hadoopYarnProperties:
               </configuration>'
   webHdfsHost: "http://localhost:9001"
   yarnHost: "http://localhost:8088"
-  username: "YSJ"
 sparkCheckpointProperties:
   kafkaProperties:
     kafkaHosts:
       - "http://localhost:9092"
   webHdfsProperties:
     webHdfsHost: "http://localhost:9001"
-    username: "YSJ"
