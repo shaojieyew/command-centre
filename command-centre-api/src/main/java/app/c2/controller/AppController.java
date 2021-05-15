@@ -1,6 +1,6 @@
 package app.c2.controller;
 
-import app.c2.Service.MultipartFileStorageService;
+import app.c2.service.MultipartFileStorageService;
 import app.c2.controller.exception.NotFoundExceptionResponse;
 import app.c2.model.App;
 import app.c2.model.AppInstance;

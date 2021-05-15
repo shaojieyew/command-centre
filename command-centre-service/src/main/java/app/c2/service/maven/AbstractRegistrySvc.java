@@ -1,7 +1,7 @@
-package app.c2.service.mvnRegistry;
+package app.c2.service.maven;
 
-import app.c2.service.mvnRegistry.downloader.ArtifactDownloader;
-import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.maven.downloader.ArtifactDownloader;
+import app.c2.service.maven.model.Package;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import java.io.File;

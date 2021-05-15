@@ -1,4 +1,4 @@
-package app.c2.service.mvnRegistry;
+package app.c2.service.maven;
 
 import app.c2.C2PlatformProperties;
 import app.c2.common.SpringContext;

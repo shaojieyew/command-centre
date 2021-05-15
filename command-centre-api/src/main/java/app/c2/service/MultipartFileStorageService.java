@@ -1,11 +1,9 @@
-package app.c2.Service;
+package app.c2.service;
 
 import app.c2.dao.FileDao;
 import app.c2.model.File;
 import app.c2.model.FileFactory;
 import app.c2.model.Project;
-import app.c2.service.FileStorageService;
-import app.c2.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

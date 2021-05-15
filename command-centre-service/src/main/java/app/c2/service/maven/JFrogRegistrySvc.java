@@ -1,6 +1,6 @@
-package app.c2.service.mvnRegistry;
+package app.c2.service.maven;
 
-import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.maven.model.Package;
 
 import java.util.List;
 import java.util.Optional;

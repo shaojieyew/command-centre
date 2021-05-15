@@ -1,8 +1,8 @@
 package example.artifact;
 
-import app.c2.service.mvnRegistry.AbstractRegistrySvc;
-import app.c2.service.mvnRegistry.GitlabRegistrySvc;
-import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.maven.AbstractRegistrySvc;
+import app.c2.service.maven.GitlabRegistrySvc;
+import app.c2.service.maven.model.Package;
 import app.c2.service.util.JarAnalyzer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

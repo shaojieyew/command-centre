@@ -1,4 +1,4 @@
-package app.c2.service.mvnRegistry.downloader;
+package app.c2.service.maven.downloader;
 import java.io.File;
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package app.c2.service.mvnRegistry.model;
+package app.c2.service.maven.model;
 
 import java.io.File;
 

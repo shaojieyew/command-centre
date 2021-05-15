@@ -1,9 +1,9 @@
-package app.c2.service.mvnRegistry;
+package app.c2.service.maven;
 
 import app.c2.common.http.HttpCaller;
 import app.c2.common.http.HttpCallerFactory;
 import app.c2.common.http.HttpUtil;
-import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.maven.model.Package;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.json.simple.JSONArray;
