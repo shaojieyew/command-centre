@@ -2,7 +2,7 @@ package app.cli;
 
 import app.cli.type.Component;
 import app.spec.nifi.NifiQueryKind;
-import app.spec.spark.AppDeploymentKind;
+import app.spec.spark.SparkDeploymentKind;
 import app.task.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +31,9 @@ public class StopCli extends Cli {
                 }
                 stopApp.startTask(this);
             }else{
-                List<AppDeploymentKind> appDeployments = getSpecFile().stream()
-                        .filter(s->s instanceof AppDeploymentKind)
-                        .map(s->(AppDeploymentKind)s)
+                List<SparkDeploymentKind> appDeployments = getSpecFile().stream()
+                        .filter(s->s instanceof SparkDeploymentKind)
+                        .map(s->(SparkDeploymentKind)s)
                         .collect(Collectors.toList());
                 stopApp.startTask(this, appDeployments);
             }
@@ -53,9 +53,9 @@ public class StopCli extends Cli {
                     .map(s->(NifiQueryKind)s)
                     .collect(Collectors.toList());
             stopNifi.startTask(this, nifiQueryKinds );
-            List<AppDeploymentKind> appDeployments = getSpecFile().stream()
-                    .filter(s->s instanceof AppDeploymentKind)
-                    .map(s->(AppDeploymentKind)s)
+            List<SparkDeploymentKind> appDeployments = getSpecFile().stream()
+                    .filter(s->s instanceof SparkDeploymentKind)
+                    .map(s->(SparkDeploymentKind)s)
                     .collect(Collectors.toList());
             stopApp.startTask(this, appDeployments);
         }

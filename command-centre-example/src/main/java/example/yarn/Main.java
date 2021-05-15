@@ -1,5 +1,5 @@
 package example.yarn;
-import app.c2.services.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvc;
 
 public class Main {
     public static void main(String arg[]) throws Exception {

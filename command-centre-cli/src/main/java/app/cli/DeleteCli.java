@@ -3,7 +3,7 @@ package app.cli;
 import app.cli.type.Component;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.resource.GroupResourceKind;
-import app.spec.spark.AppDeploymentKind;
+import app.spec.spark.SparkDeploymentKind;
 import app.task.DeleteApp;
 import app.task.DeleteFile;
 import app.task.DeleteNifiQuery;
@@ -38,9 +38,9 @@ public class DeleteCli extends Cli {
                 }
                 deleteApp.startTask(this);
             }else{
-                List<AppDeploymentKind> appDeployments = getSpecFile().stream()
-                        .filter(s->s instanceof AppDeploymentKind)
-                        .map(s->(AppDeploymentKind)s)
+                List<SparkDeploymentKind> appDeployments = getSpecFile().stream()
+                        .filter(s->s instanceof SparkDeploymentKind)
+                        .map(s->(SparkDeploymentKind)s)
                         .collect(Collectors.toList());
                 deleteApp.startTask(this, appDeployments);
             }
@@ -72,9 +72,9 @@ public class DeleteCli extends Cli {
             }
         }else{
 
-            List<AppDeploymentKind> appDeployments = getSpecFile().stream()
-                    .filter(s->s instanceof AppDeploymentKind)
-                    .map(s->(AppDeploymentKind)s)
+            List<SparkDeploymentKind> appDeployments = getSpecFile().stream()
+                    .filter(s->s instanceof SparkDeploymentKind)
+                    .map(s->(SparkDeploymentKind)s)
                     .collect(Collectors.toList());
             deleteApp.startTask(this, appDeployments);
 

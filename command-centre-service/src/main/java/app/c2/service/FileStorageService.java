@@ -6,13 +6,12 @@ import app.c2.model.App;
 import app.c2.model.File;
 import app.c2.model.FileFactory;
 import app.c2.model.Project;
-import app.c2.services.git.GitSvc;
-import app.c2.services.git.GitSvcFactory;
+import app.c2.service.git.GitSvc;
+import app.c2.service.git.GitSvcFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;

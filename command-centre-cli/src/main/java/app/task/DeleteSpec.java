@@ -6,8 +6,8 @@ import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
 import app.spec.resource.GroupResourceKind;
 import app.spec.resource.GroupResourceSpec;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
+import app.spec.spark.SparkDeploymentKind;
+import app.spec.spark.SparkDeploymentSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +28,9 @@ public class DeleteSpec extends Task{
 
     public void startTask(Cli cli, List<Kind> k) throws Exception {
         for(Kind kind :k){
-            if(kind instanceof AppDeploymentKind) {
-                List<AppDeploymentSpec> spec = kind.getSpec();
-                for (AppDeploymentSpec s : spec) {
+            if(kind instanceof SparkDeploymentKind) {
+                List<SparkDeploymentSpec> spec = kind.getSpec();
+                for (SparkDeploymentSpec s : spec) {
                     deleteApp.startTask(cli, s);
                 }
             }

@@ -1,6 +1,6 @@
 package example.spark;
 
-import app.c2.services.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvc;
 
 import java.io.IOException;
 

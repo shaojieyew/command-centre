@@ -1,7 +1,7 @@
 package app.task;
 
-import app.c2.services.kafka.SparkCheckpointSvc;
-import app.c2.services.kafka.SparkCheckpointSvcFactory;
+import app.c2.service.kafka.SparkCheckpointSvc;
+import app.c2.service.kafka.SparkCheckpointSvcFactory;
 import app.util.ConsoleHelper;
 import org.springframework.stereotype.Service;
 import java.util.*;

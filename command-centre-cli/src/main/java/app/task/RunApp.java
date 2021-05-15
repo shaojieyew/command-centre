@@ -2,8 +2,7 @@ package app.task;
 
 import app.cli.Cli;
 import app.c2.service.AppService;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
+import app.spec.spark.SparkDeploymentKind;
 import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class RunApp extends Task{
     String appName = null;
 
 
-    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+    public void startTask(Cli cli, List<SparkDeploymentKind> kinds) throws Exception {
         kinds.forEach(k->{
             k.getSpec().forEach(s-> {
                 try {

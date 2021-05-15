@@ -1,6 +1,6 @@
 package example.nifi;
 
-import app.c2.services.nifi.NifiSvc;
+import app.c2.service.nifi.NifiSvc;
 import com.davis.client.ApiException;
 import com.davis.client.model.ProcessGroupStatusDTO;
 import com.davis.client.model.ProcessorStatusDTO;

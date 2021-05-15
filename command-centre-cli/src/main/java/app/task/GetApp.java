@@ -6,8 +6,8 @@ import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.spec.resource.Resource;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
+import app.spec.spark.SparkDeploymentKind;
+import app.spec.spark.SparkDeploymentSpec;
 import app.util.ConsoleHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -29,8 +29,8 @@ public class GetApp extends Task {
     FileStorageService fileStorageService;
     @Autowired
     ProjectService projectService;
-    public AppDeploymentKind convertAppToSpec(App app) throws IOException {
-        AppDeploymentSpec spec = new AppDeploymentSpec();
+    public SparkDeploymentKind convertAppToSpec(App app) throws IOException {
+        SparkDeploymentSpec spec = new SparkDeploymentSpec();
         spec.setName(app.getName());
         spec.setJarGroupId(app.getJarGroupId());
         spec.setJarArtifactId(app.getJarArtifactId());
@@ -50,12 +50,12 @@ public class GetApp extends Task {
                 }).collect(Collectors.toList());
         spec.setResources(resources);
 
-        AppDeploymentKind appDeploymentKind = new AppDeploymentKind();
-        List<AppDeploymentSpec> specs = new ArrayList<>();
+        SparkDeploymentKind sparkDeploymentKind = new SparkDeploymentKind();
+        List<SparkDeploymentSpec> specs = new ArrayList<>();
         specs.add(spec);
-        appDeploymentKind.setSpec(specs);
-        appDeploymentKind.setKind("AppDeployment");
-        return appDeploymentKind;
+        sparkDeploymentKind.setSpec(specs);
+        sparkDeploymentKind.setKind("AppDeployment");
+        return sparkDeploymentKind;
     }
 
     @Override
@@ -63,9 +63,9 @@ public class GetApp extends Task {
             Optional<App> optionalApp = appService.findApp(cli.getProject().getId(), cli.getCliName());
             if(optionalApp.isPresent()){
                 App app = optionalApp.get();
-                AppDeploymentKind appDeploymentKind = convertAppToSpec(app);
+                SparkDeploymentKind sparkDeploymentKind = convertAppToSpec(app);
                 ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                String appSpec = mapper.writeValueAsString(appDeploymentKind);
+                String appSpec = mapper.writeValueAsString(sparkDeploymentKind);
                 ConsoleHelper.console.display(appSpec);
             }else{
                 throw new Exception("Invalid app name");

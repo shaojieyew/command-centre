@@ -1,8 +1,8 @@
-kind : AppDeployment
+kind : SparkDeployment
 spec:
   - name : abc-app
     jarGroupId : c2
-    jarArtifactId : spark-app
+    jarArtifactId : spark-app1
     jarVersion : 1.0.1-SNAPSHOT
     mainClass : app.SparkApp
     jarArgs :
@@ -24,7 +24,7 @@ spec:
 
   - name : spark-etl
     jarGroupId : c2
-    jarArtifactId : spark-app
+    jarArtifactId : spark-app1
     jarVersion : 1.0.1-SNAPSHOT
     mainClass : app.SparkApp
     jarArgs :

@@ -3,10 +3,11 @@ package app.c2.service;
 import app.c2.C2PlatformProperties;
 import app.c2.dao.AppDao;
 import app.c2.model.*;
-import app.c2.model.compositeKey.AppId;
-import app.c2.services.yarn.YarnSvc;
-import app.c2.services.yarn.YarnSvcFactory;
-import app.c2.services.yarn.model.YarnApp;
+import app.c2.model.compositeField.AppId;
+import app.c2.model.compositeField.SparkArgKeyValuePair;
+import app.c2.service.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvcFactory;
+import app.c2.service.yarn.model.YarnApp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class AppService {
         return appDao.save(app);
     }
 
-    public App save(String name, long projectId, String jarGroupId, String jarArtifactId, String jarVersion, String jarMainClass, List<String> jarArgs, Set<KeyValuePair> sparkArgs) throws IOException {
+    public App save(String name, long projectId, String jarGroupId, String jarArtifactId, String jarVersion, String jarMainClass, List<String> jarArgs, Set<SparkArgKeyValuePair> sparkArgs) throws IOException {
         App app = new App();
         app.setName(name);
         app.setProjectId(projectId);

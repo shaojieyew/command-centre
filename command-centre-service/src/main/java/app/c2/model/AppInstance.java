@@ -1,5 +1,6 @@
 package app.c2.model;
 
+import app.c2.model.compositeField.SparkArgKeyValuePair;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +8,6 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import javax.persistence.*;
 import java.io.IOException;
-import java.security.Key;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -140,19 +140,19 @@ public class AppInstance {
     this.jarArgs = new ObjectMapper().writeValueAsString(jarArg);
   }
 
-  public Set<KeyValuePair> getSparkArgs() throws JsonProcessingException {
+  public Set<SparkArgKeyValuePair> getSparkArgs() throws JsonProcessingException {
 
     if(this.sparkArgs==null){
       return new HashSet<>();
     }
-    TypeReference<HashSet<KeyValuePair>> typeRef
-            = new TypeReference<HashSet<KeyValuePair>>() {};
+    TypeReference<HashSet<SparkArgKeyValuePair>> typeRef
+            = new TypeReference<HashSet<SparkArgKeyValuePair>>() {};
     ObjectMapper mapper = new ObjectMapper();
-    HashSet<KeyValuePair> o = mapper.readValue(sparkArgs, typeRef);
+    HashSet<SparkArgKeyValuePair> o = mapper.readValue(sparkArgs, typeRef);
     return o;
   }
 
-  public void setSparkArgs(Set<KeyValuePair> sparkArg) throws JsonProcessingException {
+  public void setSparkArgs(Set<SparkArgKeyValuePair> sparkArg) throws JsonProcessingException {
     this.sparkArgs = new ObjectMapper().writeValueAsString(sparkArg);
   }
 

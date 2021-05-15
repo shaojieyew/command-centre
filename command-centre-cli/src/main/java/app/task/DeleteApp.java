@@ -1,19 +1,17 @@
 package app.task;
 
 import app.cli.Cli;
-import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
 import app.c2.service.SparkService;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
+import app.spec.spark.SparkDeploymentKind;
+import app.spec.spark.SparkDeploymentSpec;
 import app.util.ConsoleHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DeleteApp extends Task {
@@ -47,7 +45,7 @@ public class DeleteApp extends Task {
         super.startTask();
     }
 
-    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+    public void startTask(Cli cli, List<SparkDeploymentKind> kinds) throws Exception {
         kinds.forEach(s-> {
             try {
                 startTask(cli, s);
@@ -57,7 +55,7 @@ public class DeleteApp extends Task {
         });
     }
 
-    public void startTask(Cli cli, AppDeploymentKind kind) throws Exception {
+    public void startTask(Cli cli, SparkDeploymentKind kind) throws Exception {
         kind.getSpec().forEach(s-> {
             try {
                 startTask(cli, s);
@@ -67,7 +65,7 @@ public class DeleteApp extends Task {
         });
     }
 
-    public void startTask(Cli cli, AppDeploymentSpec spec) throws Exception {
+    public void startTask(Cli cli, SparkDeploymentSpec spec) throws Exception {
         this.cli = cli;
         this.appName = spec.getName();
         if(appName==null || appName.length()==0){

@@ -4,7 +4,7 @@ import app.c2.dao.ProjectDao;
 import app.c2.model.File;
 import app.c2.model.Project;
 import app.c2.properties.C2Properties;
-import app.c2.services.git.GitSvcFactory;
+import app.c2.service.git.GitSvcFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import org.eclipse.jgit.api.errors.GitAPIException;

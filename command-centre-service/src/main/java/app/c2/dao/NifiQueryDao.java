@@ -1,7 +1,7 @@
 package app.c2.dao;
 
 import app.c2.model.NifiQuery;
-import app.c2.model.compositeKey.NifiQueryId;
+import app.c2.model.compositeField.NifiQueryId;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;

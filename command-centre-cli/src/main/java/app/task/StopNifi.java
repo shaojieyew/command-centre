@@ -4,8 +4,6 @@ import app.cli.Cli;
 import app.c2.model.NifiQuery;
 import app.c2.service.AppService;
 import app.c2.service.NifiQueryService;
-import app.c2.services.nifi.NifiSvc;
-import app.cli.StopCli;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
 import app.util.ConsoleHelper;

@@ -1,15 +1,13 @@
 package example.artifact;
 
-import app.c2.services.mvnRegistry.AbstractRegistrySvc;
-import app.c2.services.mvnRegistry.GitlabRegistrySvc;
-import app.c2.services.mvnRegistry.model.Package;
-import app.c2.services.util.JarAnalyzer;
+import app.c2.service.mvnRegistry.AbstractRegistrySvc;
+import app.c2.service.mvnRegistry.GitlabRegistrySvc;
+import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.util.JarAnalyzer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

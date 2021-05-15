@@ -1,8 +1,7 @@
 package app.c2.model;
 
 
-import app.c2.model.compositeKey.NifiQueryId;
-import app.c2.model.compositeKey.SparkCheckpointId;
+import app.c2.model.compositeField.SparkCheckpointId;
 
 import javax.persistence.*;
 import java.io.Serializable;

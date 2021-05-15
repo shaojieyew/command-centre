@@ -3,7 +3,7 @@ package app.c2.controller;
 import app.c2.model.Project;
 import app.c2.properties.C2Properties;
 import app.c2.service.ProjectService;
-import app.c2.services.git.GitSvcFactory;
+import app.c2.service.git.GitSvcFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

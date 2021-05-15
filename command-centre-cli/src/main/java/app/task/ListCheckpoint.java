@@ -1,16 +1,9 @@
 package app.task;
 
-import app.c2.model.NifiQuery;
-import app.c2.properties.C2PropertiesLoader;
-import app.c2.service.NifiQueryService;
-import app.c2.services.kafka.SparkCheckpointSvc;
-import app.c2.services.kafka.SparkCheckpointSvcFactory;
-import app.cli.Cli;
+import app.c2.service.kafka.SparkCheckpointSvc;
+import app.c2.service.kafka.SparkCheckpointSvcFactory;
 import app.cli.LsCli;
-import app.util.ConsoleHelper;
 import app.util.PrintTable;
-import org.apache.kafka.common.TopicPartition;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

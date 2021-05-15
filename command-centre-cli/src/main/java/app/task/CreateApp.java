@@ -5,10 +5,9 @@ import app.c2.model.App;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.spec.Kind;
-import app.spec.Spec;
 import app.spec.resource.Resource;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
+import app.spec.spark.SparkDeploymentKind;
+import app.spec.spark.SparkDeploymentSpec;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,22 +18,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class CreateApp extends Task{
 
-    AppDeploymentSpec spec = null;
+    SparkDeploymentSpec spec = null;
     Cli cli = null;
     @Autowired CreateApp createApp;
-    public void startTask(Cli cli, List<AppDeploymentKind> kinds) throws Exception {
+    public void startTask(Cli cli, List<SparkDeploymentKind> kinds) throws Exception {
         for(Kind k : kinds){
             for(Object s: k.getSpec()){
-                createApp.startTask(cli, (AppDeploymentSpec) s);
+                createApp.startTask(cli, (SparkDeploymentSpec) s);
             }
         }
     }
-    public void startTask(Cli cli, AppDeploymentSpec spec) throws Exception {
+    public void startTask(Cli cli, SparkDeploymentSpec spec) throws Exception {
         this.cli=cli;
         this.spec = spec;
         startTask();
@@ -54,7 +52,7 @@ public class CreateApp extends Task{
     FileStorageService fileStorageService;
     @Autowired
     AppService appService;
-    private void createApp(Cli cli, AppDeploymentSpec spec) throws IOException, GitAPIException {
+    private void createApp(Cli cli, SparkDeploymentSpec spec) throws IOException, GitAPIException {
         Optional<App> appOptional = appService.findApp(cli.getProject().getId(), spec.getName());
         App app = new App();
         if(appOptional.isPresent()){

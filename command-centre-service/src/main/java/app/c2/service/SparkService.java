@@ -2,19 +2,20 @@ package app.c2.service;
 
 import app.c2.common.SystemUtil;
 import app.c2.model.AppInstance;
-import app.c2.model.KeyValuePair;
+import app.c2.model.compositeField.SparkArgKeyValuePair;
 import app.c2.model.Project;
 import app.c2.C2PlatformProperties;
 import app.c2.properties.C2Properties;
-import app.c2.services.mvnRegistry.AbstractRegistrySvc;
-import app.c2.services.mvnRegistry.RegistrySvcFactory;
-import app.c2.services.mvnRegistry.model.Package;
-import app.c2.services.util.FileManager;
-import app.c2.services.yarn.YarnSvc;
-import app.c2.services.yarn.YarnSvcFactory;
+import app.c2.service.mvnRegistry.AbstractRegistrySvc;
+import app.c2.service.mvnRegistry.RegistrySvcFactory;
+import app.c2.service.mvnRegistry.model.Package;
+import app.c2.service.util.FileManager;
+import app.c2.service.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvcFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -107,12 +108,14 @@ public class SparkService {
     }
 
 
-    private File getJar(C2Properties prop , String group, String artifact, String version){
+    private File getJar(C2Properties prop , String group, String artifact, String version) throws ArtifactResolutionException {
+        Package pkg = new Package();
+        pkg.setArtifact(artifact);
+        pkg.setGroup(group);
+        pkg.setPackage_type(Package.PackageType.MAVEN);
+        pkg.setVersion(version);
         for (AbstractRegistrySvc reg: RegistrySvcFactory.create(prop)){
-            Optional<Package> optionalPackage = reg.getPackage(group, artifact, version);
-            if(optionalPackage.isPresent()){
-                return reg.download(optionalPackage.get());
-            }
+            return reg.download(pkg);
         }
         return null;
     }
@@ -124,8 +127,8 @@ public class SparkService {
         return launcher;
     }
 
-    private SparkLauncher addSparkArgs(SparkLauncher launcher, Set<KeyValuePair> args){
-        for(KeyValuePair kv: args){
+    private SparkLauncher addSparkArgs(SparkLauncher launcher, Set<SparkArgKeyValuePair> args){
+        for(SparkArgKeyValuePair kv: args){
             launcher = launcher.addSparkArg(kv.getName(), kv.getValue());
         }
         return launcher;

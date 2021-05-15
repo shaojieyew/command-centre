@@ -1,7 +1,7 @@
 package app.c2.dao;
 
 import app.c2.model.App;
-import app.c2.model.compositeKey.AppId;
+import app.c2.model.compositeField.AppId;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;

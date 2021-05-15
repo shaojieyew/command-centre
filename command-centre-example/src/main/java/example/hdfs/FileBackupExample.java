@@ -2,9 +2,9 @@ package example.hdfs;
 
 import app.c2.properties.C2Properties;
 import app.c2.properties.C2PropertiesLoader;
-import app.c2.services.hdfs.FileBackupSvc;
-import app.c2.services.hdfs.HdfsSvc;
-import app.c2.services.hdfs.HdfsSvcFactory;
+import app.c2.service.hdfs.FileBackupSvc;
+import app.c2.service.hdfs.HdfsSvc;
+import app.c2.service.hdfs.HdfsSvcFactory;
 import com.google.common.io.Resources;
 
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ public class FileBackupExample {
     public static void main(String argp[]) throws Exception {
         String path = Resources.getResource("setting.yml").getPath();
         C2Properties c2PlatformProperties =  C2PropertiesLoader.load(path   );
-        HdfsSvc hdfsSvc = HdfsSvcFactory.create(c2PlatformProperties);
+        HdfsSvc hdfsSvc = HdfsSvcFactory.create(c2PlatformProperties.getHadoopYarnProperties());
         String backupDirectory = "/user/backmanager/backup";
         FileBackupSvc fm = new FileBackupSvc(hdfsSvc, backupDirectory);
         // hdfs and core site is required for file copy

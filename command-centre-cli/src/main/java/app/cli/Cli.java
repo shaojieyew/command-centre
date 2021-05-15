@@ -1,18 +1,14 @@
 package app.cli;
 
 import app.C2CliProperties;
-import app.Main;
 import app.c2.model.Project;
 import app.c2.service.ProjectService;
-import app.cli.type.Component;
 import app.spec.Kind;
 import app.spec.MetadataKind;
-import app.spec.Spec;
 import app.spec.SpecException;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.resource.GroupResourceKind;
-import app.spec.spark.AppDeploymentKind;
-import app.task.CreateSpec;
+import app.spec.spark.SparkDeploymentKind;
 import app.util.ConsoleHelper;
 import app.util.YamlLoader;
 import org.jboss.logging.Logger;
@@ -21,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -198,7 +193,7 @@ public abstract class Cli  implements Callable<Integer> {
     }
     abstract public Integer task() throws Exception;
 
-    final private static String KIND_APP_DEPLOYMENT="AppDeployment";
+    final private static String KIND_APP_DEPLOYMENT="SparkDeployment";
     final private static String KIND_GROUP_RESOURCE="GroupResource";
     final private static String KIND_NIFI_QUERY="NifiQuery";
 
@@ -208,8 +203,8 @@ public abstract class Cli  implements Callable<Integer> {
         Kind k = null;
         MetadataKind metadata =  new YamlLoader<>(MetadataKind.class).load(file.getAbsolutePath());
         if(metadata.getKind().toUpperCase().equalsIgnoreCase(KIND_APP_DEPLOYMENT.toUpperCase())){
-            LOG.info("file is AppDeploymentKind="+file.getAbsolutePath());
-            k = new YamlLoader<>(AppDeploymentKind.class).load(file.getAbsolutePath());
+            LOG.info("file is SparkDeploymentKind="+file.getAbsolutePath());
+            k = new YamlLoader<>(SparkDeploymentKind.class).load(file.getAbsolutePath());
             k.setFileOrigin(file);
             k.validate();
             return k;

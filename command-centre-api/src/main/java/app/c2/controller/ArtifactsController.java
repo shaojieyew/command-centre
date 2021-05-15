@@ -4,9 +4,9 @@ import app.c2.controller.exception.NotFoundExceptionResponse;
 import app.c2.model.Project;
 import app.c2.properties.C2Properties;
 import app.c2.service.ProjectService;
-import app.c2.services.mvnRegistry.AbstractRegistrySvc;
-import app.c2.services.mvnRegistry.RegistrySvcFactory;
-import app.c2.services.mvnRegistry.model.Package;
+import app.c2.service.mvnRegistry.AbstractRegistrySvc;
+import app.c2.service.mvnRegistry.RegistrySvcFactory;
+import app.c2.service.mvnRegistry.model.Package;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,7 +58,7 @@ public class ArtifactsController {
   public Package find(@PathVariable long projectId,
                       @PathVariable(name = "group") String group,
                       @PathVariable(name = "artifact") String artifact,
-                      @PathVariable(name = "version") Optional<String> version) throws JsonProcessingException {
+                      @PathVariable(name = "version") String version) throws JsonProcessingException {
 
     Package _package = null;
     Project project = projectService.findById(projectId).orElseGet(null);
@@ -68,9 +67,18 @@ public class ArtifactsController {
         C2Properties prop = (project.getEnv());
         List<AbstractRegistrySvc> services = RegistrySvcFactory.create(prop);
         for (AbstractRegistrySvc svc : services){
-          _package = svc.getPackage(group,artifact,version.orElse(null)).orElse(null);
-          if(_package!=null){
-            break;
+          Package pkg = new Package();
+          pkg.setArtifact(artifact);
+          pkg.setGroup(group);
+          pkg.setPackage_type(Package.PackageType.MAVEN);
+          pkg.setVersion(version);
+          try{
+            File file = svc.download(pkg);
+            if(file!=null){
+              break;
+            }
+          }catch (Exception e){
+
           }
         }
     }
@@ -89,24 +97,27 @@ public class ArtifactsController {
   public List<String> analyzeMainClass(@PathVariable long projectId,
     @PathVariable(name = "group") String group,
     @PathVariable(name = "artifact") String artifact,
-    @PathVariable(name = "version") Optional<String> version,
+    @PathVariable(name = "version") String version,
     @RequestParam(name = "filter",required=false ) String filter ) throws Exception {
 
-    Package _package = null;
-    AbstractRegistrySvc _svc = null;
     Project project = projectService.findById(projectId).orElseGet(null);
-    Map<Class, Method> mainClass = new HashMap<>();
+    Map<Class, Method> mainClasses = new HashMap<>();
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
         List<AbstractRegistrySvc> services = RegistrySvcFactory.create(prop);
         for (AbstractRegistrySvc svc : services){
-          _package = svc.getPackage(group,artifact,version.orElse(null)).orElse(null);
-          if(_package!=null){
-            _svc = svc;
-            File file = _svc.download(_package);
-            mainClass =  app.c2.services.util.JarAnalyzer.getMainMethods(file.getAbsolutePath());
+          Package pkg = new Package();
+          pkg.setArtifact(artifact);
+          pkg.setGroup(group);
+          pkg.setPackage_type(Package.PackageType.MAVEN);
+          pkg.setVersion(version);
+          try{
+            File file = svc.download(pkg);
+            mainClasses =  app.c2.service.util.JarAnalyzer.getMainMethods(file.getAbsolutePath());
+            break;
+          }catch (Exception e){
+
           }
-          break;
         }
     }
     if(filter==null){
@@ -114,7 +125,7 @@ public class ArtifactsController {
     }
 
     String finalFilter = filter;
-    return mainClass.keySet().stream().map(str->str.getName())
+    return mainClasses.keySet().stream().map(str->str.getName())
             .filter(str->str.toUpperCase().contains(finalFilter.toUpperCase()))
             .collect(Collectors.toList());
   }

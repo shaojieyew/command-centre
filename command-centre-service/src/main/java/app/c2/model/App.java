@@ -1,6 +1,7 @@
 package app.c2.model;
 
-import app.c2.model.compositeKey.AppId;
+import app.c2.model.compositeField.AppId;
+import app.c2.model.compositeField.SparkArgKeyValuePair;
 import app.c2.service.FileStorageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -138,18 +139,18 @@ public class App implements Serializable{
   }
 
 
-  public Set<KeyValuePair> getSparkArgs() throws JsonProcessingException {
+  public Set<SparkArgKeyValuePair> getSparkArgs() throws JsonProcessingException {
     if(this.sparkArgs==null){
       return new HashSet<>();
     }
-    TypeReference<HashSet<KeyValuePair>> typeRef
-            = new TypeReference<HashSet<KeyValuePair>>() {};
+    TypeReference<HashSet<SparkArgKeyValuePair>> typeRef
+            = new TypeReference<HashSet<SparkArgKeyValuePair>>() {};
     ObjectMapper mapper = new ObjectMapper();
-    HashSet<KeyValuePair> o = mapper.readValue(sparkArgs, typeRef);
+    HashSet<SparkArgKeyValuePair> o = mapper.readValue(sparkArgs, typeRef);
     return o;
   }
 
-  public void setSparkArgs(Set<KeyValuePair> sparkArg) throws JsonProcessingException {
+  public void setSparkArgs(Set<SparkArgKeyValuePair> sparkArg) throws JsonProcessingException {
     this.sparkArgs = new ObjectMapper().writeValueAsString(sparkArg);
   }
 

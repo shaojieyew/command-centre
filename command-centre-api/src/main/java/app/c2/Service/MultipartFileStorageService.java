@@ -1,29 +1,18 @@
 package app.c2.Service;
 
 import app.c2.dao.FileDao;
-import app.c2.dao.configuration.FileStorageProperties;
-import app.c2.model.App;
 import app.c2.model.File;
 import app.c2.model.FileFactory;
 import app.c2.model.Project;
-import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
 import app.c2.service.ProjectService;
-import app.c2.services.git.GitSvc;
-import app.c2.services.git.GitSvcFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MultipartFileStorageService {

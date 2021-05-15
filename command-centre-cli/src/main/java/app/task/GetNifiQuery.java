@@ -1,6 +1,5 @@
 package app.task;
 
-import app.c2.model.App;
 import app.c2.model.NifiQuery;
 import app.c2.service.AppService;
 import app.c2.service.FileStorageService;
@@ -9,9 +8,6 @@ import app.c2.service.ProjectService;
 import app.cli.Cli;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.nifi.NifiQuerySpec;
-import app.spec.resource.Resource;
-import app.spec.spark.AppDeploymentKind;
-import app.spec.spark.AppDeploymentSpec;
 import app.util.ConsoleHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -22,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class GetNifiQuery extends Task {
