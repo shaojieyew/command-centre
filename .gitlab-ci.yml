@@ -57,12 +57,12 @@ verify_jars:
   image: maven:3.3.9-jdk-8
   stage: verify-jars
   script:
-    - 'mvn --settings setting.xml -q -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-core,command-centre-api,spark-app verify'
+    - 'mvn --settings setting.xml -q -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-service,command-centre-cli,command-centre-api,spark-app verify'
 
 deploy:
   image: maven:3.3.9-jdk-8
   stage: publish-jars
   script:
-    - 'mvn -Dmaven.test.skip=true -q --settings setting.xml -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-core,command-centre-api,spark-app deploy'
+    - 'mvn -Dmaven.test.skip=true -q --settings setting.xml -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -pl command-centre-service,command-centre-cli,command-centre-api,spark-app deploy'
   only:
     - master

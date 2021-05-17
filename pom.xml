@@ -14,7 +14,7 @@
 		<module>command-centre-api</module>
 		<module>command-centre-service</module>
 		<module>command-centre-example</module>
-        <!--		<module>spark-app</module>-->
+        <module>spark-app</module>
     </modules>
 	<properties>
 		<frontend-src-dir>${project.basedir}/command-centre-ui</frontend-src-dir>

@@ -4,11 +4,8 @@ import app.cli.type.Action;
 import app.spec.Kind;
 import app.task.spark.ListSparkApp;
 import app.task.spark.RunSparkApps;
-import app.task.spark.StopSparkApp;
 import app.task.spark.StopSparkApps;
-import javafx.scene.paint.Stop;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
 
 import java.util.List;
 import java.util.stream.Collectors;
