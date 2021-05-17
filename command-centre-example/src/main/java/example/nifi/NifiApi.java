@@ -1,31 +1,31 @@
 package example.nifi;
 
-import c2.services.nifi.NifiSvc;
-import com.davis.client.model.ProcessGroupStatusDTO;
-import com.davis.client.model.ProcessorStatusDTO;
+import app.c2.service.nifi.NifiSvc;
+import app.c2.service.nifi.model.NifiComponent;
+import com.davis.client.ApiException;
 
-import java.util.Map;
+import java.util.Set;
 
 public class NifiApi {
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws Exception {
         NifiSvc svc = new NifiSvc("http://localhost:8081");
 
         // search for process group
-        Map<ProcessGroupStatusDTO, String> a= svc.findProcessGroup("");
+        Set<NifiComponent> a= svc.findNifiComponent("Ni.*/aa.*", NifiSvc.ProcessType.ProcessGroup.toString(), null);
         // search for processor
-        Map<ProcessorStatusDTO, String> b= svc.findProcessor("");
+        Set<NifiComponent> b= svc.findNifiComponent("Ni.*/.*", null, null);
         // start processor/stop processor
-        b.keySet().stream().forEach(k->{
+        b.stream().forEach(k->{
             try {
-                svc.updateRunStatus(k.getId(),NifiSvc.NIFI_RUN_STATUS_STOPPED);
+                svc.updateRunStatusById(k.getId(),NifiSvc.NIFI_RUN_STATUS_STOPPED, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
         // start processor/stop processor in group
-        svc.updateAllProcessInProcessGroup("52a1d34a-0177-1000-5c56-2147cff59308",NifiSvc.NIFI_RUN_STATUS_STOPPED,true);
+//        svc.updateAllProcessInProcessGroup("27281353-0179-1000-a523-953b88dae040",NifiSvc.NIFI_RUN_STATUS_STOPPED,true);
     }
 
 }

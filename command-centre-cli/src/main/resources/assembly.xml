@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+    <!-- Can be customized, here is the project environment -->
+    <!-- spring-boot-assembly-local-1.0.RELEASE.tar.gz  -->
+    <id>${project.version}</id>
+    <!-- The type of packaging, if there are N, N types of packages will be printed -->
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <files>
+        <file>
+            <source>${basedir}/target/${project.build.finalName}.jar</source>
+            <outputDirectory>boot/</outputDirectory>
+            <destName>${project.artifactId}.jar</destName>
+        </file>
+    </files>
+
+    <fileSets>
+        <!-- Output all files in the src/bin directory to the packaged bin directory -->
+        <fileSet>
+            <directory>${basedir}/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>**.sh</include>
+                <include>**.bat</include>
+            </includes>
+        </fileSet>
+
+        <!-- Specify to output the configuration file in target/classes to the config directory -->
+        <fileSet>
+            <directory>${basedir}/config</directory>
+            <outputDirectory>config</outputDirectory>
+            <fileMode>0644</fileMode>
+            <includes>
+                <include>**</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+</assembly>

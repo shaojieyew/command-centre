@@ -1,13 +1,12 @@
 package example.spark;
 
-import c2.properties.C2Properties;
-import c2.properties.C2PropertiesLoader;
-import c2.properties.GitProperties;
-import c2.services.git.GitSvc;
-import c2.services.mvnRegistry.GitlabRegistrySvc;
-import c2.services.mvnRegistry.model.Package;
+import app.c2.properties.C2Properties;
+import app.c2.properties.C2PropertiesLoader;
+import app.c2.properties.GitProperties;
+import app.c2.service.git.GitSvc;
+import app.c2.service.maven.GitlabRegistrySvc;
+import app.c2.service.maven.model.Package;
 import org.apache.commons.io.FileUtils;
-import org.apache.directory.api.util.Unicode;
 import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
 
@@ -53,34 +52,33 @@ public class Main {
         String hadoopConfDir = "tmp/project_"+projectId+"/hadoopConf";
         File hadoopConfDirFile = new File(hadoopConfDir);
         hadoopConfDirFile.mkdirs();
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/core-site.xml"), prop.getHadoopProperties().getCoreSite(),"UTF-8");
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/hdfs-site.xml"), prop.getHadoopProperties().getHdfsSite(),"UTF-8");
-        FileUtils.writeStringToFile(new File(hadoopConfDir+"/yarn-site.xml"), prop.getHadoopProperties().getYarnSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/core-site.xml"), prop.getHadoopYarnProperties().getCoreSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/hdfs-site.xml"), prop.getHadoopYarnProperties().getHdfsSite(),"UTF-8");
+        FileUtils.writeStringToFile(new File(hadoopConfDir+"/yarn-site.xml"), prop.getHadoopYarnProperties().getYarnSite(),"UTF-8");
         Map<String, String> env = new HashMap<>();
         env.put("HADOOP_CONF_DIR", hadoopConfDirFile.getAbsolutePath());
         setEnv(env);
 
-        String mavenRepoHost = prop.getMavenProperties().get(0).getHost();
+        String mavenRepoUrl = prop.getMavenProperties().get(0).getUrl();
         String mavenPrivateToken =  prop.getMavenProperties().get(0).getPrivateToken();
-        String gitLabProjectId = prop.getMavenProperties().get(0).getProjectId();
 
         // Download Jar from Maven
         String groupId = "c2";
         String artifactId = "spark-app";
-        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoHost,mavenPrivateToken,gitLabProjectId,"tmp/project_"+projectId+"/repository");
+        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoUrl,mavenPrivateToken,"tmp/project_"+projectId+"/repository");
         List<Package> packages = reg.getPackages(groupId,artifactId);
         for(Package p : packages){
             System.out.println(p.getGroup()+":"+p.getArtifact()+":"+p.getVersion());
         }
         Package pkg = reg.getPackages(groupId, artifactId).stream().findFirst().get();
-        String jarUrl = reg.download(pkg).getAbsolutePath();
+        String jarUrl = reg.download(pkg ).getAbsolutePath();
 
         // Download config from repo
         String configFile = "spark-app/src/main/resources/config.yml";
         String selectedBranch ="refs/heads/master";
         GitProperties repo = prop.getGitProperties().get(0);
-        GitSvc svc = new GitSvc(repo.getRemoteUrl(),repo.getToken());
-        File f = svc.getFile(selectedBranch,configFile,"tmp/project_"+projectId+"/file");
+        GitSvc svc = new GitSvc(repo.getUrl(),repo.getToken(),"tmp");
+        File f = svc.getFile(selectedBranch,configFile);
         System.out.println(f.getAbsolutePath());
         System.out.println(f.getName());
 

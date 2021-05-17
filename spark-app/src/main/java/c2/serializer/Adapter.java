@@ -1,4 +1,4 @@
-package c2.serializer;
+package app.c2.serializer;
 
 import java.util.Map;
 

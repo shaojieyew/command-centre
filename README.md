@@ -2,12 +2,13 @@
 
 | Project     | Description |
 | ----------- | ----------- |
+| command-centre-ui      |  frontend app      |
 | command-centre-api      |  command center api that builds around the command-centre-core |
-| command-centre-ui      |  command center frontend app      |
-| command-centre-core   |   a consolidation services that wraps around all the big data services; hadoop, yarn, spark, nifi and etc       |
+| command-centre-cli      |  command line application      |
+| command-centre-service   |   a consolidation services that wraps around all the big data services; hadoop, yarn, spark, nifi and etc       |
 | command-centre-database   |  docker project that builds a postgres docker image           |
 | spark-app   | simple spark application for testing job submission to cluster        |
-| spark-yarn-cluster   | docker project that builds a single node cluster with yarn, hadoop, spark, nifi and kafka installed        |
+| yarn-cluster   | docker project that builds a single node cluster with yarn, hadoop, spark, nifi and kafka installed        |
 | command-centre-example   |  command centre service examples      |
 
 ## Prequsite:
@@ -87,9 +88,8 @@ http://localhost:8080/ | Spark Web UI
 http://localhost:18080/ | SparkHistory Web UI
 #### Submit spark job
 ```
-spark-submit --master yarn --deploy-mode cluster --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.1 --executor-memory 1G --total-executor-cores 1 --num-executors 1
-    --files ./spark-app/src/main/resources/config.yml --class example.data.app.SparkApp ./spark-app/target/spark-app-1.0.0-SNAPSHOT.jar config.yml app1`
-
+cd spark-app/target
+spark-submit --master yarn --deploy-mode cluster --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.1 --executor-memory 1G --total-executor-cores 1 --num-executors 1 --files ../src/main/resources/config.yml --class app.StreamingSparkApp spark-app-1.0.1-SNAPSHOT.jar config.yml app1
 ```
 
 # Why command centre

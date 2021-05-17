@@ -1,8 +1,6 @@
 package example.spark;
 
-import c2.properties.C2Properties;
-import c2.properties.C2PropertiesLoader;
-import c2.services.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvc;
 
 import java.io.IOException;
 

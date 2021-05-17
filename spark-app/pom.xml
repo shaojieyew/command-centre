@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-app</artifactId>
     <inceptionYear>2008</inceptionYear>
-    <groupId>c2</groupId>
+    <groupId>app.c2</groupId>
     <version>1.0.1-SNAPSHOT</version>
     <properties>
         <scala.version>2.11.12</scala.version>

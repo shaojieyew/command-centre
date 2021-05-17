@@ -1,8 +1,8 @@
 package example.yarn;
-import c2.services.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvc;
 
 public class Main {
-    public static void main(String arg[]){
+    public static void main(String arg[]) throws Exception {
         YarnSvc.builder("http://localhost:8088")
                 .setApplicationId("application_1616240364888_0003")
                 .get()

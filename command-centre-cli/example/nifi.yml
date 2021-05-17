@@ -1,0 +1,13 @@
+kind : NifiQuery
+spec:
+  - name: query1
+    id: 7329430b-0179-1000-542f-778071798361
+    type: ProcessGroup
+
+  - name: query2
+    query: ^NiFi.*/aaa
+    type: ProcessGroup
+
+  - name: query3
+    query: "/"
+    type: GenerateFlowFile

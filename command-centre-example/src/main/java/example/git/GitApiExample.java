@@ -1,6 +1,6 @@
 package example.git;
 
-import c2.services.git.GitSvc;
+import app.c2.service.git.GitSvc;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -8,11 +8,11 @@ import java.util.List;
 
 public class GitApiExample {
 
-    static String tmpLocalRepository = "tmp/project_1/git/repository";
+    static String tmpLocalRepository = "tmp";
 
     public static void main(String arg[]) throws GitAPIException, IOException {
         String remoteUrl = "https://gitlab.com/mrysj/command-center.git";
-        GitSvc gitSvc = new GitSvc(remoteUrl,"B8UxzhjZiBDJK51ZVHxY");
+        GitSvc gitSvc = new GitSvc(remoteUrl,"B8UxzhjZiBDJK51ZVHxY", tmpLocalRepository);
         String configFile ="spark-app/src/main/resources/config.yml";
         String selectedBranch ="master";
 
@@ -36,7 +36,7 @@ public class GitApiExample {
         selectedBranch ="master2";
         String newUpdatedBranch ="master2";
         String commitMessage ="updated config";
-        gitSvc.updateFile( configFile,  output,  selectedBranch,  newUpdatedBranch,  commitMessage, tmpLocalRepository);
+        gitSvc.updateFile( configFile,  output,  selectedBranch,  newUpdatedBranch,  commitMessage);
     }
 
 }
