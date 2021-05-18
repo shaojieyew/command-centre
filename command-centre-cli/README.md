@@ -118,10 +118,32 @@ spec:
       - name : spark.executor.cores
         value : 1
     resources:
+      # example of reference file from git
       - name: config.yml
         source: https://gitlab.com/111/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
         type: git
 
+      # example of uploading file from local
+      - name: abc.keytab
+        source: C:/Desktop/abc.keytab
+        type: local
+
+      # example of passing in string content as file
+      - name: blacklist.yml
+        source: >
+            {
+                "blacklist": [
+                    {
+                    "field": "id"
+                    "value": "1234"
+                    },
+                    {
+                    "field": "name"
+                    "value": "asd"
+                    }
+                ]
+            }
+        type: string
   - name: spark-app2 
   ...
   - name: spark-app3 
@@ -153,12 +175,15 @@ Only listed application name in the spec files will be display
 ```
 c2.sh spark ls -f D:\command-centre\command-centre-cli\example
 
+# specifying the name of application would only show details of the spark application
+c2.sh spark ls --name spark-etl
+
 ```
 ### Start Spark Application
 ```
 c2.sh spark run -f D:\command-centre\command-centre-cli\example
 
-# only spark application with the exact name specified will be ran 
+# only spec of spark application with the exact name specified will be ran; case sensitive 
 c2.sh spark run -f D:\command-centre\command-centre-cli\example --name spark-app
 ```
 ### Stop Spark Application
@@ -166,8 +191,8 @@ Only listed application name in the spec files will be killed
 ```
 c2.sh spark stop -f D:\command-centre\command-centre-cli\example
 
-# only spark application with the exact name specified will be killed 
-c2.sh spark stop -f D:\command-centre\command-centre-cli\example --name spark-app
+# only spark application with the exact name specified will be killed; case sensitive 
+c2.sh spark stop --name spark-app
 ```
 ### List Nifi Processors
 ```

@@ -88,6 +88,7 @@ public class YarnSvc {
      * @return
      */
     public List<YarnApp> get() throws Exception {
+        List<YarnApp> list = new ArrayList<>();
         String queryUrl = url;
         String parameters = "";
         for(Map.Entry<String, String> entry : args.entrySet()) {
@@ -102,7 +103,6 @@ public class YarnSvc {
             queryUrl = queryUrl + "?"+parameters;
         }
 
-        List<YarnApp> list = new ArrayList<>();
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap<>();
         requestMap.put("content-type", MediaType.APPLICATION_JSON);
