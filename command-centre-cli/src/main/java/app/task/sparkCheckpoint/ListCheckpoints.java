@@ -25,7 +25,9 @@ public class ListCheckpoints extends Task {
 
     @Override
     protected void preTask() throws Exception {
-
+        if(cli.getCliQuery()==null){
+            throw new Exception("Missing checkpoint -q <path>");
+        }
     }
     List<SparkCheckpoint> result= new ArrayList<>();
 

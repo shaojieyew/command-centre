@@ -1,10 +1,7 @@
 package app.cli;
 
 import app.cli.type.Action;
-import app.task.sparkCheckpoint.BackupCheckpoints;
-import app.task.sparkCheckpoint.ListBackups;
-import app.task.sparkCheckpoint.ListCheckpoints;
-import app.task.sparkCheckpoint.RestoreCheckpoints;
+import app.task.sparkCheckpoint.*;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
@@ -22,10 +19,12 @@ public class CheckpointCli extends Cli {
 
     @Override
     public Integer task() throws Exception {
-
         if(!cliBackupMode){
             if(getCliAction().equalsIgnoreCase(Action.ls.toString())){
                 new ListCheckpoints(this).startTask();
+            }
+            if(getCliAction().equalsIgnoreCase(Action.get.toString())){
+                new GetCheckpoints(this).startTask();
             }
         }else{
             if(getCliAction().equalsIgnoreCase(Action.ls.toString())){
