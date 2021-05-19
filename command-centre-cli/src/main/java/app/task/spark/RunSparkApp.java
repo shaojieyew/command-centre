@@ -7,22 +7,65 @@ import app.c2.service.maven.MavenSvcFactory;
 import app.c2.service.maven.model.Package;
 import app.c2.service.spark.SparkSvc;
 import app.c2.service.spark.SparkSvcFactory;
+import app.c2.service.spark.model.SparkArgKeyValuePair;
 import app.cli.SparkCli;
 import app.spec.resource.Resource;
+import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RunSparkApp extends Task {
 
     SparkCli cli;
     SparkDeploymentSpec spec;
 
-    public RunSparkApp(SparkCli cli, SparkDeploymentSpec spec){
+    public RunSparkApp(SparkCli cli, SparkDeploymentKind kind, SparkDeploymentSpec spec){
         super();
+        if(spec.getArtifact()==null && kind.getArtifact()!=null){
+            spec.setArtifact(kind.getArtifact());
+        }
+        if(spec.getMainClass()==null && kind.getMainClass()!=null){
+            spec.setMainClass(kind.getMainClass());
+        }
+        if(spec.getJarArgs()==null && kind.getJarArgs()!=null){
+            spec.setJarArgs(kind.getJarArgs());
+        }
+        if(spec.getResources()==null && kind.getResources()!=null){
+            spec.setResources(kind.getResources());
+        }else{
+            if(spec.getResources()!=null && kind.getResources()!=null){
+                Set<String> names = spec.getResources().stream().map(s->s.getName().toUpperCase()).collect(Collectors.toSet());
+                for (Resource resource : kind.getResources()) {
+                    if(!names.contains(resource.getName().toUpperCase())){
+                        spec.getResources().add(resource);
+                    }
+                }
+            }
+        }
+
+        if(spec.getSparkArgs()==null && kind.getSparkArgs()!=null){
+            spec.setSparkArgs(kind.getSparkArgs());
+        }else{
+            if(spec.getSparkArgs()!=null && kind.getSparkArgs()!=null){
+                Set<String> sparkConfKey = spec.getSparkArgs().stream().map(s->s.getName().toUpperCase()).collect(Collectors.toSet());
+                for (SparkArgKeyValuePair sparkArg : kind.getSparkArgs()) {
+                    if(!sparkConfKey.contains(sparkArg.getName().toUpperCase())){
+                        spec.getSparkArgs().add(sparkArg);
+                    }
+                }
+            }
+        }
+
+        if(spec.getNamespace()==null && kind.getNamespace()!=null){
+            spec.setNamespace(kind.getNamespace());
+        }
         this.cli = cli;
         this.spec = spec;
     }
@@ -49,10 +92,16 @@ public class RunSparkApp extends Task {
         SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
 
         Package pkg = new Package();
-        pkg.setArtifact(spec.getJarArtifactId());
-        pkg.setGroup(spec.getJarGroupId());
+
+        String[] artifactParam = spec.getArtifact().split(":");
+        if(artifactParam.length<3){
+            throw new Exception("Invalid artifact '"+spec.getArtifact()+"'");
+        }
+
+        pkg.setGroup(artifactParam[0]);
+        pkg.setArtifact(artifactParam[1]);
+        pkg.setVersion(artifactParam[2]);
         pkg.setPackage_type(Package.PackageType.MAVEN);
-        pkg.setVersion(spec.getJarVersion());
         File jar = null;
         for (AbstractRegistrySvc abstractRegistrySvc : MavenSvcFactory.create(cli.getC2CliProperties())) {
             jar = abstractRegistrySvc.download(pkg);
@@ -82,11 +131,12 @@ public class RunSparkApp extends Task {
                         files.add(file);
                         break;
                     case "STRING":
-                        String filePath = cli.getC2CliProperties().getTmpDirectory()+"/spark/"+System.currentTimeMillis()+"/"+resource.getName();
-                        FileOutputStream fos = new FileOutputStream(filePath);
-                        DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
-                        outStream.writeUTF(resource.getSource());
-                        outStream.close();
+                        String basePath = cli.getC2CliProperties().getTmpDirectory()+"/spark/"+System.currentTimeMillis();
+                        FileUtils.forceMkdir(new File(basePath));
+                        String filePath = basePath+"/"+resource.getName();
+                        FileWriter myWriter = new FileWriter(filePath);
+                        myWriter.write(resource.getSource());
+                        myWriter.close();
                         file = new File(filePath);
                         files.add(file);
                         break;

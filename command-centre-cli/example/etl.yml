@@ -1,5 +1,35 @@
 kind : SparkDeployment
+artifact : "c2:spark-app:1.0.1-SNAPSHOT"
+mainClass : app.SparkApp
+sparkArgs :
+  - name : spark.driver.memory
+    value : 1G
+  - name : spark.executor.instances
+    value: 1
+  - name : spark.executor.memory
+    value : 1G
+  - name : spark.executor.cores
+    value : 1
+resources:
+  - name: config.yml
+    source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+    type: git
 spec:
+  - name : spark-etl1
+    jarArgs :
+      - config.yml
+      - app1
+    sparkArgs :
+      - name: spark.driver.memory
+        value: 2G
+    resources:
+      - name: config.yml
+        source: "Testing"
+        type: string
+      - name: config1.yml
+        source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+        type: git
+
   - name : spark-etl
     jarGroupId : c2
     jarArtifactId : spark-app

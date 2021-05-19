@@ -92,18 +92,37 @@ sparkCheckpointProperties:
 Spec files are declarative templates that defines the specification of instruction for managing Spark application and Nifi Processors. It is required to run most of the actions.
 
 Spec files can be included in a command by either specifying the file `-f C:/example/sparkEtl.yml` or directory `-f C:/example/sparkEtl`
-
+use `-rf` for recursive
 Only files that have the correct Spec file format will be included. Example below.
 
 ### SparkDeployment 
 This spec file define the attributes require to start the spark applications.
 ```
 kind : SparkDeployment
+
+# the parent files outside of spec field will be inherited by the spark deployment spec
+artifact : c2.spark-app.1.0.1-SNAPSHOT
+sparkArgs :
+ - name : spark.driver.memory
+   value : 2G
+artifact : c2.spark-app.1.0.1-SNAPSHOT
+mainClass : app.SparkApp
+jarArgs :
+  - config.yml
+sparkArgs :
+  - name : spark.driver.memory
+    value : 1G
+    ...
+resources:
+  - name: config.yml
+    source: https://gitlab.com/111/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
+    type: git
+  - name: abc.keytab
+    ....
+
 spec:
   - name : spark-app1
-    jarGroupId : c2
-    jarArtifactId : spark-app
-    jarVersion : 1.0.1-SNAPSHOT
+    artifact : c2.spark-app.1.0.1-SNAPSHOT
     mainClass : app.SparkApp
     jarArgs :
       - config.yml
@@ -144,6 +163,7 @@ spec:
                 ]
             }
         type: string
+
   - name: spark-app2 
   ...
   - name: spark-app3 
@@ -174,6 +194,9 @@ spec:
 Only listed application name in the spec files will be display
 ```
 c2.sh spark ls -f D:\command-centre\command-centre-cli\example
+
+# recursive file list
+c2.sh spark ls -rf D:\command-centre\command-centre-cli\example
 
 # specifying the name of application would only show details of the spark application
 c2.sh spark ls --name spark-etl
@@ -245,7 +268,7 @@ c2.sh checkpoint ls -q "\user\all_checkpoints" --show-backlog
 
 c2.sh checkpoint mv --backup -q "\user\all_checkpoints" 
 ```
-###List checkpoint backup
+### List checkpoint backup
 ```
 c2.sh checkpoint ls --backup 
 ```

@@ -1,6 +1,7 @@
 package app.task.spark;
 
 import app.cli.SparkCli;
+import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
@@ -35,7 +36,7 @@ public class RunSparkApps extends Task {
             if(appName!=null &&  !((SparkDeploymentSpec) spec).getName().equals(appName)){
                 return;
             }
-            RunSparkApp runSparkApp = new RunSparkApp(cli, (SparkDeploymentSpec) spec);
+            RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) spec);
             try {
                 runSparkApp.startTask();
             } catch (Exception e) {

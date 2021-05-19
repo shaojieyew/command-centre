@@ -7,6 +7,7 @@ import app.spec.SpecException;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.spark.SparkDeploymentKind;
 import app.util.ConsoleHelper;
+import app.util.FileHelper;
 import app.util.YamlLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,9 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 public abstract class Cli  implements Callable<Integer> {
 
@@ -35,6 +36,8 @@ public abstract class Cli  implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-f", "--file"}, description = "file location")
     private String cliFilePath = null;
+    @CommandLine.Option(names = {"-rf", "--recurse-file"}, description = "file location")
+    private String cliRecursiveFilePath = null;
 
     @CommandLine.Option(names = {"-n", "--name"}, description = "name")
     private String cliName = null;
@@ -72,6 +75,8 @@ public abstract class Cli  implements Callable<Integer> {
         this.args = args;
         return new CommandLine(this).execute(args);
     }
+
+
     @Override
     public Integer call() throws Exception {
         if(cliConfig==null){
@@ -84,16 +89,30 @@ public abstract class Cli  implements Callable<Integer> {
             return 0;
         }
 
-        if(cliFilePath != null) {
-            File file = new File(cliFilePath);
+        String dir = cliFilePath==null?cliRecursiveFilePath:cliFilePath;
+        boolean recursive = cliRecursiveFilePath!=null;
+
+        if(dir != null) {
+            File file = new File(dir);
+            Set<File> files = new HashSet<>();
+
+            if(file.isDirectory()){
+                if(recursive){
+                    files.addAll(FileHelper.listFileTree(file));
+                }else{
+                    files.addAll(Arrays.stream(file.listFiles()).collect(Collectors.toSet()));
+                }
+            }else{
+                files.add(file);
+            }
             if (!file.exists()) {
-                ConsoleHelper.console.display(new Exception(cliFilePath+" file not found"));
+                ConsoleHelper.console.display(new Exception(dir+" file not found"));
                 return 0;
             }
 
             if(file.isDirectory()){
                 LOG.info("loading files from directory="+file.getAbsolutePath());
-                for(File subFile: file.listFiles()){
+                for(File subFile: files){
                     try {
                         Kind kind = parseKind(subFile);
                         if(kind != null){
