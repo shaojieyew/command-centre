@@ -9,6 +9,7 @@ A tool to manage spark application and nifi processors using declarative templat
 - [Start Nifi Processors](#start-nifi-processors)
 - [Stop Nifi Processors](#stop-nifi-processors)
 - [List Spark checkpoints and Kafka offsets](#list-spark-checkpoints-and-kafka-offsets)
+- [Get Spark checkpoints offsets](#get-spark-checkpoints-offsets)
 - [Backup Spark checkpoint](#backup-spark-checkpoint)
 - [List checkpoint backup](#list-checkpoint-backup)
 - [Restore Spark checkpoint](#restore-spark-checkpoint)
@@ -100,7 +101,7 @@ This spec file define the attributes require to start the spark applications.
 ```
 kind : SparkDeployment
 
-# the parent files outside of spec field will be inherited by the spark deployment spec
+# the parent fields outside of spec field will be inherited by the spark deployment spec
 artifact : c2.spark-app.1.0.1-SNAPSHOT
 sparkArgs :
  - name : spark.driver.memory
@@ -254,12 +255,21 @@ c2.sh nifi stop --id 27281353-0179-1000-a523-953b88dae040
 c2.sh nifi stop --query "NiFi.*" --process-type ProcessGroup --root-processor
 ```
 ### List Spark checkpoints and Kafka offsets
+this will list all the checkpoints directory and their offsets within the query directory path
 ```
 # the directory or parent directory path of the checkpoint needs to be specified
 c2.sh checkpoint ls -q "\user\all_checkpoints" 
 
 # by having --show-backlog, only offsets of topic/partitions that have backlog will be listed
 c2.sh checkpoint ls -q "\user\all_checkpoints" --show-backlog
+```
+
+### Get Spark checkpoints offsets
+this print out the checkpoint file in the queried directory
+```
+# the directory or parent directory path of the checkpoint needs to be specified
+c2.sh checkpoint get -q "\user\all_checkpoints" 
+
 ```
 ### Backup Spark checkpoint
 !!! note that, this method will move the *all* the checkpoints in the directory to a backup directory; specified in setting.yml. It does not create a copy
