@@ -32,7 +32,7 @@ public abstract class Cli  implements Callable<Integer> {
     }
 
     @CommandLine.Option(names = {"-c", "--config"}, description = "config location")
-    private String cliConfig = System.getenv("C2_HOME")==null?null:System.getenv("C2_HOME")+"\\config\\setting.yml";
+    private String cliConfig = System.getenv("C2_HOME")==null?null:System.getenv("C2_HOME")+"//config//setting.yml";
 
     @CommandLine.Option(names = {"-f", "--file"}, description = "file location")
     private String cliFilePath = null;
