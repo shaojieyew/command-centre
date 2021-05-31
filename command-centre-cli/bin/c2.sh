@@ -1,3 +1,4 @@
 cd "$(dirname "$0")"
+cd ..
 export C2_HOME="${PWD}"
-java -jar boot\command-centre-cli.jar $*
+java -jar $C2_HOME/boot/command-centre-cli.jar $*
