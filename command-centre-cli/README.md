@@ -25,6 +25,8 @@ A tool to manage spark application and nifi processors using declarative templat
 By default, the application will read setting.yml from default path `<application directory>/config/setting.yml`
 
 To explicit specify setting use `-c D:/setting.yml` or `--config D:/config.yml`  
+
+include ` -Djava.security.krb5.conf=D:/krb5.conf` in c2.bat or c2.sh as JVM argument when using kerberos
 ```
 # tmpDirectory is use by application to store temporary files
 tmpDirectory: "D:/tmp"

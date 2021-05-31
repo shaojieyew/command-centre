@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class NifiSvc {
     private String nifiHost;
-
+    private ApiClient apiClient;
     public static FlowApi flowApi = null;
     private String principle;
     private String keytab;
@@ -43,16 +43,26 @@ public class NifiSvc {
 
     public NifiSvc(String nifiHost) {
         this.nifiHost = nifiHost;
-        ApiClient apiClient = new ApiClient().setBasePath(nifiHost+"/nifi-api");
+        apiClient = new ApiClient().setBasePath(nifiHost+"/nifi-api");
         flowApi = new FlowApi(apiClient);
     }
 
-    public void setPrinciple(String principle) {
-        this.principle = principle;
+    private void updateCredential() throws Exception {
+        if(principle!=null && keytab!=null){
+            String accessToken = requestTokenKerberos(principle, keytab);
+            apiClient.setAccessToken(accessToken);
+            flowApi = new FlowApi(apiClient);
+        }
     }
 
-    public void setKeytab(String keytab) {
+    public void setPrinciple(String principle) throws Exception {
+        this.principle = principle;
+        updateCredential();
+    }
+
+    public void setKeytab(String keytab) throws Exception {
         this.keytab = keytab;
+        updateCredential();
     }
 
     public void setUsername(String username) {

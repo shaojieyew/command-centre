@@ -154,7 +154,6 @@ public abstract class Cli  implements Callable<Integer> {
     final public static String KIND_APP_DEPLOYMENT="SparkDeployment";
     final public static String KIND_NIFI_QUERY="NifiQuery";
 
-
     private Kind parseKind(File file) throws IOException, SpecException {
         LOG.info("loading file="+file.getAbsolutePath());
         Kind k = null;

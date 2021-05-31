@@ -272,16 +272,16 @@ public class SparkCheckpointSvc {
         if(kafkaKerberosProperties!=null && kafkaKerberosProperties.getKeytab()!=null && kafkaKerberosProperties.getPrinciple()!=null){
             props.put("security.protocol","SASL_PLAINTEXT");
             JaasFileManager manager = new JaasFileManager();
+//            manager.addJaas(
+//                    new JaasFileManager.JaasConfiguration("KafkaServer",
+//                            kafkaKerberosProperties.getPrinciple(),
+//                            kafkaKerberosProperties.getKeytab(),
+//                            "kafka"));
             manager.addJaas(
-                    new JaasFileManager.JaasConfiguration("KafkaServer",
+                    new JaasFileManager.JaasConfiguration("KafkaClient",
                             kafkaKerberosProperties.getPrinciple(),
                             kafkaKerberosProperties.getKeytab(),
                             "kafka"));
-            manager.addJaas(
-                    new JaasFileManager.JaasConfiguration("Client",
-                            kafkaKerberosProperties.getPrinciple(),
-                            kafkaKerberosProperties.getKeytab(),
-                            "zookeeper"));
             manager.setJaasConfig(tmpDirectory+"\\jaas");
         }
 

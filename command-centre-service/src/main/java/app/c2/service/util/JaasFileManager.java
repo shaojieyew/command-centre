@@ -1,5 +1,7 @@
 package app.c2.service.util;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,11 +19,13 @@ public class JaasFileManager {
     }
 
     public void setJaasConfig(String tmpDirectory) throws IOException {
+        FileManager.clean(tmpDirectory, 1);
         String jaas_path = tmpDirectory+"\\jaas_"+System.currentTimeMillis()+".conf";
-        FileOutputStream fos = new FileOutputStream(jaas_path);
-        DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
-        outStream.writeUTF(getJaasStr());
-        outStream.close();
+        FileUtils.forceMkdirParent(new File(jaas_path));
+        FileWriter myWriter = new FileWriter(jaas_path);
+        String jaasStr = getJaasStr();
+        myWriter.write(jaasStr);
+        myWriter.close();
         System.setProperty("java.security.auth.login.config",jaas_path);
     }
 
@@ -80,6 +84,7 @@ public class JaasFileManager {
                     sb.append(option.getKey()+"=\""+option.getValue()+"\"\n");
                 }
             }
+            sb.append(";\n");
             sb.append("};");
             return sb.toString();
         }

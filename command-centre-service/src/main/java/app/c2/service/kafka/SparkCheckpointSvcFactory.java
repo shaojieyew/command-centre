@@ -9,7 +9,6 @@ import app.c2.service.hdfs.HdfsSvcFactory;
 public class SparkCheckpointSvcFactory {
     public static SparkCheckpointSvc create(C2Properties prop, String tmpDirectory){
         SparkCheckpointProperties cpProp = prop.getSparkCheckpointProperties();
-        cpProp.getWebHdfsProperties();
         HdfsSvc hdfsSvc = HdfsSvcFactory.create(prop.getSparkCheckpointProperties().getWebHdfsProperties());
         SparkCheckpointSvc sparkCheckpointSvc
                 = new SparkCheckpointSvc(hdfsSvc, prop.getSparkCheckpointProperties().getKafkaProperties().getKafkaHosts(), tmpDirectory);
