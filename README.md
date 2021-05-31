@@ -5,7 +5,7 @@
 | command-centre-ui      |  frontend app      |
 | command-centre-api      |  command center api that builds around the command-centre-core |
 | command-centre-cli      |  command line application      |
-| command-centre-service   |   a consolidation services that wraps around all the big data services; hadoop, yarn, spark, nifi and etc       |
+| command-centre-service   |   consolidated services; hadoop, yarn, spark, nifi, git, artifactory       |
 | command-centre-database   |  docker project that builds a postgres docker image           |
 | spark-app   | simple spark application for testing job submission to cluster        |
 | yarn-cluster   | docker project that builds a single node cluster with yarn, hadoop, spark, nifi and kafka installed        |
