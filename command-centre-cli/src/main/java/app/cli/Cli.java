@@ -84,8 +84,8 @@ public abstract class Cli  implements Callable<Integer> {
             return 0;
         }
         File config = new File(cliConfig);
-        if(!config.exists()){
-            ConsoleHelper.console.display(new Exception(cliConfig+" file not found"));
+        if(!config.getAbsoluteFile().exists()){
+            ConsoleHelper.console.display(new Exception(config.getAbsolutePath()+" file not found"));
             return 0;
         }
 
@@ -105,7 +105,7 @@ public abstract class Cli  implements Callable<Integer> {
             }else{
                 files.add(file);
             }
-            if (!file.exists()) {
+            if (!file.getAbsoluteFile().exists()) {
                 ConsoleHelper.console.display(new Exception(dir+" file not found"));
                 return 0;
             }

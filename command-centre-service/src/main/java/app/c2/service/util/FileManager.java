@@ -14,7 +14,7 @@ public class FileManager {
 
     public static void clean(String path, int olderThanHours) throws IOException {
         File targetPath = new File(path);
-        if(!targetPath.exists()){
+        if(!targetPath.getAbsoluteFile().exists()){
             return;
         }
         if(targetPath.isFile()){
