@@ -4,11 +4,13 @@ import app.c2.common.http.HttpCaller;
 import app.c2.common.http.HttpCallerFactory;
 import app.c2.common.http.HttpUtil;
 import app.c2.service.nifi.model.NifiComponent;
-import com.davis.client.ApiClient;
 import com.davis.client.ApiException;
-import com.davis.client.api.FlowApi;
 import com.davis.client.model.*;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import org.apache.hadoop.fs.InvalidRequestException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -29,30 +31,27 @@ import java.util.stream.Collectors;
 
 public class NifiSvc {
     private String nifiHost;
-    private ApiClient apiClient;
-    public static FlowApi flowApi = null;
     private String principle;
     private String keytab;
     private String username;
     private String password;
 
-    public static void main(String arg[]) throws ApiException {
+
+    private String token;
+    private long tokenLastUpdate = 0;
+
+    public static void main(String arg[]) throws Exception {
         NifiSvc nifiSvc = new NifiSvc("http://localhost:8081");
-        nifiSvc.getAllProcess("root", new ArrayList<String>(), new ArrayList<String>());
+        //Set<NifiComponent> s = nifiSvc.getAllProcess("root", new ArrayList<>(), new ArrayList<>());
+        nifiSvc.updateAllProcessInProcessGroup("ccc8f601-0179-1000-8752-432197b03963","STOPPED", false);
     }
 
     public NifiSvc(String nifiHost) {
         this.nifiHost = nifiHost;
-        apiClient = new ApiClient().setBasePath(nifiHost+"/nifi-api");
-        flowApi = new FlowApi(apiClient);
     }
 
     private void updateCredential() throws Exception {
-        if(principle!=null && keytab!=null){
-            String accessToken = requestTokenKerberos(principle, keytab);
-            apiClient.setAccessToken(accessToken);
-            flowApi = new FlowApi(apiClient);
-        }
+        updateToken();
     }
 
     public void setPrinciple(String principle) throws Exception {
@@ -118,7 +117,7 @@ public class NifiSvc {
      * @return
      */
 
-    public Set<NifiComponent> findProcessGroup(String patternString, String id) throws ApiException {
+    public Set<NifiComponent> findProcessGroup(String patternString, String id) throws ApiException, IOException, LoginException {
         Set<NifiComponent> result = findProcessGroup();
         return result
                 .stream()
@@ -140,7 +139,7 @@ public class NifiSvc {
      * @param patternString on empty or null return all processors
      * @return
      */
-    public Set<NifiComponent>  findProcessor(String patternString, String processType, String id) throws ApiException {
+    public Set<NifiComponent>  findProcessor(String patternString, String processType, String id) throws Exception {
         Set<NifiComponent> result= findProcess();
         return result
                 .stream()
@@ -163,7 +162,7 @@ public class NifiSvc {
 
     public void updateRunStatusById(String id, String status, String scope) throws Exception {
         try{
-            ProcessorStatusEntity process = getProcessor(id);
+            ProcessorEntity process = getProcessor(id);
             updateRunStatus( id,  status);
         } catch (ApiException e) {
             ProcessGroupStatusEntity process = getProcessGroup(id);
@@ -192,7 +191,7 @@ public class NifiSvc {
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpPut httpPut = new HttpPut(url);
         try {
-            String token = requestToken();
+            String token = updateToken();
             httpPut.addHeader("Authorization","Bearer "+token);
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,8 +225,12 @@ public class NifiSvc {
                 nonLeadProcessors = processGroup.getProcessGroupStatus().getAggregateSnapshot().getConnectionStatusSnapshots()
                         .stream().map(c->{
                             try {
-                                return getConnection( c.getId()).getConnectionStatus().getDestinationId();
+                                return getProcessConnection( c.getId()).getConnectionStatus().getDestinationId();
                             } catch (ApiException e) {
+                                e.printStackTrace();
+                            } catch (LoginException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
                                 e.printStackTrace();
                             }
                             return "";
@@ -264,12 +267,15 @@ public class NifiSvc {
             }
         } catch (ApiException e) {
             e.printStackTrace();
+        } catch (LoginException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
 
-
-    private Set<NifiComponent> findProcess() throws ApiException {
+    private Set<NifiComponent> findProcess() throws Exception {
         if(processCache==null || (System.currentTimeMillis()-lastUpdatedProcessCache)>15000L){
             processCache = getAllProcess("root", new ArrayList<String>(), new ArrayList<String>());
             lastUpdatedProcessCache = System.currentTimeMillis();
@@ -277,7 +283,7 @@ public class NifiSvc {
         return new HashSet<>(processCache);
     }
 
-    private Set<NifiComponent> findProcessGroup() throws ApiException {
+    private Set<NifiComponent> findProcessGroup() throws ApiException, IOException, LoginException {
         if(processGroupCache==null || (System.currentTimeMillis()-lastUpdatedProcessGroupCache)>15000L){
             processGroupCache = getAllProcessGroup("root", new ArrayList<String>(), new ArrayList<String>());
             lastUpdatedProcessGroupCache = System.currentTimeMillis();
@@ -285,7 +291,7 @@ public class NifiSvc {
         return new HashSet<>(processGroupCache);
     }
 
-    private Set<NifiComponent> getAllProcessGroup(String groupId, List<String> path, List<String> idLineage) throws ApiException {
+    private Set<NifiComponent> getAllProcessGroup(String groupId, List<String> path, List<String> idLineage) throws ApiException, IOException, LoginException {
         Set<NifiComponent> list = new HashSet<>();
             ProcessGroupStatusEntity processGroup = getProcessGroup(groupId);
             if(!groupId.equals("root")){
@@ -308,21 +314,22 @@ public class NifiSvc {
         return list;
     }
 
-    private Set<NifiComponent> getAllProcess(String groupId, List<String> path, List<String> idLineage) throws ApiException {
+    private Set<NifiComponent> getAllProcess(String groupId, List<String> path, List<String> idLineage) throws Exception {
         Set<NifiComponent> list = new HashSet<>();
         ProcessGroupStatusEntity processGroup = getProcessGroup(groupId);
         path.add(processGroup.getProcessGroupStatus().getName());
         idLineage.add(processGroup.getProcessGroupStatus().getId());
         for( ProcessorStatusSnapshotEntity processorStatusSnapshotEntity:processGroup.getProcessGroupStatus().getAggregateSnapshot().getProcessorStatusSnapshots() ){
             String processId = processorStatusSnapshotEntity.getId();
-            ProcessorStatusDTO processorStatusDTO = getProcessor(processId).getProcessorStatus();
+            ProcessorEntity nifiProcessor = getProcessor(processId);
             NifiComponent nifiComponent = new NifiComponent();
             nifiComponent.setFlowPath( String.join("/",path));
             nifiComponent.setFlowPathId( String.join("/",idLineage));
-            nifiComponent.setId(processorStatusDTO.getId());
-            nifiComponent.setName( processorStatusDTO.getName());
-            nifiComponent.setType( processorStatusDTO.getAggregateSnapshot().getType());
-            nifiComponent.setStatus(processorStatusDTO.getRunStatus());
+            nifiComponent.setId(nifiProcessor.getComponent().getId());
+            nifiComponent.setName( nifiProcessor.getComponent().getName());
+            String[]typePath = nifiProcessor.getComponent().getType().split("\\.");
+            nifiComponent.setType( typePath[typePath.length-1]);
+            nifiComponent.setStatus(nifiProcessor.getComponent().getState().toString());
             list.add(nifiComponent);
         }
         List<ProcessGroupStatusSnapshotEntity> groups = processGroup.getProcessGroupStatus().getAggregateSnapshot().getProcessGroupStatusSnapshots();
@@ -335,67 +342,105 @@ public class NifiSvc {
         return list;
     }
 
-    private ProcessorStatusEntity getProcessor(String id) throws ApiException {
-        return flowApi.getProcessorStatus(id, false, "");
+    private ProcessorEntity getProcessor(String id) throws Exception {
+        String s = requestProcessorJson(id);
+        s=s.replaceAll("\"statsLastRefreshed\":\"[^\"]*\",?","");
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                .registerModule(new JodaModule());
+
+        ProcessorEntity processor = objectMapper.readValue(s, ProcessorEntity.class);
+        return processor;
+//        return flowApi.getProcessorStatus(id, false, "");
     }
 
-    private ProcessGroupStatusEntity getProcessGroup(String id) throws ApiException {
-        return flowApi.getProcessGroupStatus(id, true, false, "");
+    private ProcessGroupStatusEntity getProcessGroup(String id) throws ApiException, IOException, LoginException {
+
+        String s = requestProcessGroupJson(id);
+        s=s.replaceAll("\"statsLastRefreshed\":\"[^\"]*\",?","");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                .registerModule(new JodaModule());
+
+        ProcessGroupStatusEntity processor = objectMapper.readValue(s, ProcessGroupStatusEntity.class);
+        return processor;
+       // return flowApi.getProcessGroupStatus(id, true, false, "");
     }
 
-    private ConnectionStatusEntity getConnection(String id) throws ApiException {
-        return flowApi.getConnectionStatus(id, false, "");
+    private ConnectionStatusEntity getProcessConnection(String id) throws ApiException, IOException, LoginException {
+
+        String s = requestConnectionsJson(id);
+        s=s.replaceAll("\"statsLastRefreshed\":\"[^\"]*\",?","");
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ConnectionStatusEntity processor = objectMapper.readValue(s, ConnectionStatusEntity.class);
+        return processor;
     }
 
-
-    private String requestToken() throws Exception {
+    private String updateToken() throws Exception {
         String token = null;
         if(username!=null && password!=null){
-            token = requestToken(username,password);
+            token = updateToken(username,password);
         }
         if(principle!=null && keytab!=null){
-            token = requestTokenKerberos(principle,keytab);
+            token = updateTokenKerberos(principle,keytab);
         }
         return token;
     }
 
-    private String requestToken(String username, String password) throws Exception {
+    private String updateToken(String username, String password) throws Exception {
+        if((System.currentTimeMillis()-tokenLastUpdate)<(1000*60*15) && token!=null && token.length()>0){
+            return token;
+        }
         String url = nifiHost+"/nifi-api"+"/access/token";
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("content-type",MediaType.APPLICATION_FORM_URLENCODED);
         httpPost.setEntity(new StringEntity(String.format("username=%s&password=%s",username, password)));
         HttpResponse response = HttpCallerFactory.create().execute(httpPost);
-        String token = HttpUtil.httpEntityToString(response.getEntity());
-        if(response.getStatusLine().getStatusCode()!=200){
-            throw new Exception(token);
-        }
+        token = HttpUtil.httpEntityToString(response.getEntity());
+        tokenLastUpdate = System.currentTimeMillis();
         return token;
     }
 
-    private String token;
-    private long tokenLastUpdate = 0;
-    private String requestTokenKerberos(String principle, String keytab) throws Exception {
-        if((System.currentTimeMillis()-tokenLastUpdate)<(1000*60*60) && token!=null && token.length()>0){
+    private String updateTokenKerberos(String principle, String keytab) throws Exception {
+        if((System.currentTimeMillis()-tokenLastUpdate)<(1000*60*15) && token!=null && token.length()>0){
             return token;
         }
         String url = nifiHost+"/nifi-api"+"/access/kerberos";
         HttpPost httpPost = new HttpPost(url);
         HttpResponse response = HttpCallerFactory.create(principle,keytab).execute(httpPost);
         token = HttpUtil.httpEntityToString(response.getEntity());
-        if(response.getStatusLine().getStatusCode()!=200){
-            throw new Exception(token);
-        }
         tokenLastUpdate = System.currentTimeMillis();
         return token;
     }
 
+    private String requestProcessGroupJson(String id) throws IOException, LoginException {
+        //String url = nifiHost+"/nifi-api"+"/flow/process-groups/"+id;
+        String url = nifiHost+"/nifi-api"+"/flow/process-groups/"+id+"/status";
+
+        return requestJson(url);
+    }
+    private String requestConnectionsJson(String id) throws IOException, LoginException {
+        //String url = nifiHost+"/nifi-api"+"/flow/process-groups/"+id;
+        String url = nifiHost+"/nifi-api"+"/flow/connections/"+id+"/status";
+
+        return requestJson(url);
+    }
+
     private String requestProcessorJson(String id) throws IOException, LoginException {
         String url = nifiHost+"/nifi-api"+"/processors/"+id;
+        return requestJson(url);
+    }
+
+    private String requestJson(String url) throws IOException, LoginException {
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpGet httpGet = new HttpGet(url);
         httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
         try {
-            String token = requestToken();
+            String token = updateToken();
             httpGet.addHeader("Authorization","Bearer "+token);
         } catch (Exception e) {
             e.printStackTrace();
@@ -408,10 +453,8 @@ public class NifiSvc {
         if(statusCode != 200){
             throw new InvalidRequestException(strResponse);
         }
-
         return strResponse;
     }
-
     public enum ProcessType {
         ProcessGroup
     }
