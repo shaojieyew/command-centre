@@ -14,6 +14,7 @@ import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -274,7 +275,8 @@ public class SparkCheckpointSvc {
         props.put("value.deserializer", ByteArrayDeserializer.class.getName());
 
         if(kafkaKerberosProperties!=null && kafkaKerberosProperties.getKeytab()!=null && kafkaKerberosProperties.getPrinciple()!=null){
-            props.put("security.protocol","SASL_PLAINTEXT");
+            props.put("security.protocol","SASL_SSL");
+
             JaasFileManager manager = new JaasFileManager();
 //            manager.addJaas(
 //                    new JaasFileManager.JaasConfiguration("KafkaServer",
@@ -286,7 +288,13 @@ public class SparkCheckpointSvc {
                             kafkaKerberosProperties.getPrinciple(),
                             kafkaKerberosProperties.getKeytab(),
                             "kafka"));
-            manager.setJaasConfig(tmpDirectory+"\\jaas");
+            manager.setJaasConfig(tmpDirectory+"/jaas");
+
+            if(kafkaKerberosProperties.getKrb5Conf()!=null){
+                System.setProperty("java.security.krb5.conf",kafkaKerberosProperties.getKrb5Conf());
+            }else{
+                System.setProperty("java.security.krb5.conf","/etc/krb5.conf");
+            }
         }
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);

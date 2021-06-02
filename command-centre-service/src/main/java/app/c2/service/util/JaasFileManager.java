@@ -20,14 +20,15 @@ public class JaasFileManager {
 
     public void setJaasConfig(String tmpDirectory) throws IOException {
         FileManager.clean(tmpDirectory, 1);
-        String jaas_path = tmpDirectory+"\\jaas_"+System.currentTimeMillis()+".conf";
+        String jaas_path = tmpDirectory+"/jaas_"+System.currentTimeMillis()+".conf";
         FileUtils.forceMkdirParent(new File(jaas_path));
         FileWriter myWriter = new FileWriter(jaas_path);
         String jaasStr = getJaasStr();
         myWriter.write(jaasStr);
         myWriter.close();
-        System.setProperty("java.security.auth.login.config",jaas_path);
+        System.setProperty("java.security.auth.login.config",new File(jaas_path).getAbsolutePath());
     }
+
 
     public String getJaasStr(){
         return String.join("\n", jaasConfigurations.stream().map(s->s.toString()).collect(Collectors.toSet()));
