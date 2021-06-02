@@ -11,8 +11,8 @@ public class JFrogRegistrySvc extends AbstractRegistrySvc {
 
     public final static String type = "jfrog";
 
-    public JFrogRegistrySvc(String url, String privateToken, String localRepository) {
-        super(url, privateToken, localRepository);
+    public JFrogRegistrySvc(String url, String username, String password, String privateToken, String localRepository) {
+        super(url,username, password, privateToken, localRepository);
     }
 
     @Override

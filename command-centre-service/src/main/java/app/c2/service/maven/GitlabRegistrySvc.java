@@ -22,8 +22,8 @@ public class GitlabRegistrySvc extends AbstractRegistrySvc {
     private String host;
     private String projectId;
 
-    public GitlabRegistrySvc(String url, String privateToken, String localRepository) {
-        super(url, privateToken, localRepository);
+    public GitlabRegistrySvc(String url, String username, String password, String privateToken, String localRepository) {
+        super(url, username,  password, privateToken, localRepository);
         Matcher hostMatcher = Pattern.compile("^(http[s]?:\\/\\/)?[a-zA-Z0-9\\.:]+").matcher(url);
         Matcher projectIdMatcher = Pattern.compile("\\/projects\\/[0-9]+\\/").matcher(url);
         hostMatcher.find();
