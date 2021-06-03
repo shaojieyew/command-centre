@@ -230,9 +230,13 @@ public class SparkCheckpointSvc {
         List<FileStatus> files = hdfsSvc.getFileStatusList(path+"/offsets");
         long maxOffset = Long.MIN_VALUE;
         for (FileStatus file : files) {
-            long folderOffset = Long.parseLong(file.getPathSuffix());
-            if(folderOffset>maxOffset){
-                maxOffset = folderOffset;
+            try{
+                long folderOffset = Long.parseLong(file.getPathSuffix());
+                if(folderOffset>maxOffset){
+                    maxOffset = folderOffset;
+                }
+            }catch (Exception e){
+                LOG.warn("invalid offset in checkpoint folder="+path+"/offsets/"+file.getPathSuffix());
             }
         }
         if(Long.MIN_VALUE<maxOffset){

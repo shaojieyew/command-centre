@@ -114,16 +114,28 @@ public class ArtifactDownloader {
      */
     public File download(String groupId, String artifactId,
                          String version, String classifier, String packaging) throws ArtifactResolutionException {
+        Authentication authentication = null;
+        AuthenticationBuilder auth = new AuthenticationBuilder();
+        if(username!=null)
+            auth.addUsername(username);
+        if(password!=null)
+            auth.addPassword(password);
+        if(privateKeyPath!=null)
+            auth.addPrivateKey( privateKeyPath, Optional.of(passPhase).orElse(""));
+        if(username!=null || password!=null || privateKeyPath!=null){
+            authentication=auth.build();
+        }
+
         RepositorySystem repositorySystem = newRepositorySystem();
         RepositorySystemSession session = newSession(repositorySystem,
-                new File(localRepoPath));
+                new File(localRepoPath), authentication);
         Artifact artifact = new DefaultArtifact(groupId, artifactId, classifier,
                 packaging, version);
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
         List<RemoteRepository> repositories = new ArrayList<>();
         RemoteRepository remoteRepository = new RemoteRepository.Builder(serverId,
-                "default", remoteRepoUrl).build();
+                "default", remoteRepoUrl).setAuthentication(authentication).build();
         repositories.add(remoteRepository);
         artifactRequest.setRepositories(repositories);
         File result;
@@ -153,7 +165,7 @@ public class ArtifactDownloader {
     }
 
     private RepositorySystemSession newSession(RepositorySystem system,
-                                               File localRepository)
+                                               File localRepository, Authentication authentication)
     {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils
                 .newSession();
@@ -164,16 +176,10 @@ public class ArtifactDownloader {
             session.setConfigProperties(configProps);
         }
 
-        AuthenticationBuilder auth = new AuthenticationBuilder();
-        if(username!=null)
-            auth.addUsername(username);
-        if(password!=null)
-            auth.addPassword(password);
-        if(privateKeyPath!=null)
-            auth.addPrivateKey( privateKeyPath, Optional.of(passPhase).orElse(""));
+
         if(username!=null ||password!=null || privateKeyPath!=null){
             DefaultAuthenticationSelector selector = new DefaultAuthenticationSelector();
-            selector.add(serverId, auth.build());
+            selector.add(serverId,authentication);
             session.setAuthenticationSelector(new ConservativeAuthenticationSelector( selector ));
         }
 
