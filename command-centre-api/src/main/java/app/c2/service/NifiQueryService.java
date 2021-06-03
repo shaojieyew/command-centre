@@ -60,7 +60,7 @@ public class NifiQueryService {
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
 
-            return NifiSvcFactory.create(prop).findNifiComponent(query, processType, null).stream().map(s->{
+            return NifiSvcFactory.create(prop).findNifiComponent(query, processType).stream().map(s->{
                 String name = s.getName();
                 String group = s.getFlowPath();
                 NifiComponent processorStatusDTO = s;
@@ -76,7 +76,7 @@ public class NifiQueryService {
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
 
-            return NifiSvcFactory.create(prop).findNifiComponent(query,NifiSvc.ProcessType.ProcessGroup.toString(),null).stream().map(s->{
+            return NifiSvcFactory.create(prop).findNifiComponent(query,NifiSvc.ProcessType.ProcessGroup.toString()).stream().map(s->{
                 String name = s.getName();
                 String group = s.getFlowPath();
                 NifiComponent processGroupStatusDTO = s;
@@ -130,7 +130,7 @@ public class NifiQueryService {
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
             NifiSvc svc = NifiSvcFactory.create(prop);
-            svc.findNifiComponent(query,processType, null).forEach(s->{
+            svc.findNifiComponent(query,processType).forEach(s->{
                 try {
                     if (processType == null || (!processType.equalsIgnoreCase(s.getType()))) {
                         svc.updateRunStatusById(s.getId(),status,null);
@@ -147,7 +147,7 @@ public class NifiQueryService {
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
             NifiSvc svc = NifiSvcFactory.create(prop);
-            for (NifiComponent nifiComponent : svc.findNifiComponent(query, null, null)) {
+            for (NifiComponent nifiComponent : svc.findNifiComponent(query, null)) {
                 if(onlyLeadingProcessor){
                     svc.updateRunStatusById(nifiComponent.getId(),status,NifiSvc.Scope.Root.toString());
                 }else{

@@ -13,9 +13,9 @@ public class NifiApi {
         NifiSvc svc = new NifiSvc("http://localhost:8081");
 
         // search for process group
-        Set<NifiComponent> a= svc.findNifiComponent("Ni.*/aa.*", NifiSvc.ProcessType.ProcessGroup.toString(), null);
+        Set<NifiComponent> a= svc.findNifiComponent("Ni.*/aa.*", NifiSvc.ProcessType.ProcessGroup.toString());
         // search for processor
-        Set<NifiComponent> b= svc.findNifiComponent("Ni.*/.*", null, null);
+        Set<NifiComponent> b= svc.findNifiComponent("Ni.*/.*", null);
         // start processor/stop processor
         b.stream().forEach(k->{
             try {

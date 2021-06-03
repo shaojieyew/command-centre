@@ -35,7 +35,9 @@ public abstract class UpdateNifiProcessorsStatus extends Task {
 
     List<NifiInfo> getNifiInfoWithNifiSvc(String processType, String queryName, String query, String id) throws Exception {
         List<NifiInfo> list = new ArrayList<>();
-        Set<NifiComponent> nifiComponents = nifiSvc.findNifiComponent(query, processType,id);
+        String keyword;
+        keyword = (id!=null && id.length()>0)?id:query;
+        Set<NifiComponent> nifiComponents = nifiSvc.findNifiComponent(keyword, processType);
         for(NifiComponent processor: nifiComponents) {
             if(id == null || processor.getId().equalsIgnoreCase(id)|| processor.getFlowPathId().endsWith(id)) {
                 NifiInfo info = new NifiInfo(processor,
@@ -59,7 +61,7 @@ public abstract class UpdateNifiProcessorsStatus extends Task {
             String filterProcessType = this.filterProcessType;
             boolean rootProcessorOnly = this.rootProcessorOnly;
 
-            if(query != null){
+            if(query != null || id !=null){
                 result.addAll(getNifiInfoWithNifiSvc(filterProcessType, queryName, query, id));
             }
 
