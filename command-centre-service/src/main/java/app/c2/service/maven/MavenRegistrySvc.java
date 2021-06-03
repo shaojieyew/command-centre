@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public class MavenRegistrySvc extends AbstractRegistrySvc {
 
-    public MavenRegistrySvc(String url, String privateToken, String localRepository) {
-        super(url, privateToken, localRepository);
+    public MavenRegistrySvc(String url, String username, String password, String privateToken, String localRepository) {
+        super(url, username,  password, privateToken, localRepository);
     }
 
     @Override

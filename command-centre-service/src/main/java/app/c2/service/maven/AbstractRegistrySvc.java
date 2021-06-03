@@ -14,10 +14,14 @@ public abstract class AbstractRegistrySvc {
     private String localRepository;
     private String remoteUrl;
     private String privateToken;
+    private String username;
+    private String password;
     ArtifactDownloader downloader = new ArtifactDownloader();
 
-    public AbstractRegistrySvc(String remoteUrl, String privateToken, String localRepository) {
+    public AbstractRegistrySvc(String remoteUrl, String username, String password, String privateToken, String localRepository) {
         this.remoteUrl = remoteUrl;
+        this.username = username;
+        this.password = password;
         this.privateToken = privateToken;
         this.localRepository = localRepository;
     }
@@ -81,10 +85,12 @@ public abstract class AbstractRegistrySvc {
         ArtifactDownloader downloader = new ArtifactDownloader();
         downloader.setRemoteRepoUrl(remoteUrl);
         if(privateToken!=null && privateToken.length()>0){
-            Map<String, String> headers = new HashMap<String, String>();
+            Map<String, String> headers = new HashMap<>();
             headers.put("PRIVATE-TOKEN",privateToken);
             downloader.setHeaders(headers);
         }
+        downloader.setUsername(username);
+        downloader.setPassword(password);
         downloader.setLocalRepoPath(localRepository);
         return downloader.download(pkg.getGroup(), pkg.getArtifact(),pkg.getVersion(),"","jar");
     }

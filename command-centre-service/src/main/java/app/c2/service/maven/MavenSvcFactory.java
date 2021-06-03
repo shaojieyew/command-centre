@@ -17,13 +17,13 @@ public class MavenSvcFactory {
         props.getMavenProperties().forEach(mvnProp->{
             switch(mvnProp.getType()){
                 case GitlabRegistrySvc.type:
-                    svcs.add(new GitlabRegistrySvc(mvnProp.getUrl(),mvnProp.getPrivateToken(),localRepository));
+                    svcs.add(new GitlabRegistrySvc(mvnProp.getUrl(),mvnProp.getUsername(), mvnProp.getPassword(), mvnProp.getPrivateToken(),localRepository));
                     break;
                 case JFrogRegistrySvc.type:
-                    svcs.add( new JFrogRegistrySvc(mvnProp.getUrl(),mvnProp.getPrivateToken(),localRepository));
+                    svcs.add( new JFrogRegistrySvc(mvnProp.getUrl(),mvnProp.getUsername(), mvnProp.getPassword(), mvnProp.getPrivateToken(),localRepository));
                     break;
                 default:
-                    svcs.add( new MavenRegistrySvc(mvnProp.getUrl(),mvnProp.getPrivateToken(),localRepository));
+                    svcs.add( new MavenRegistrySvc(mvnProp.getUrl(),mvnProp.getUsername(), mvnProp.getPassword(), mvnProp.getPrivateToken(),localRepository));
                     break;
             }
         });
