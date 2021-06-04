@@ -310,7 +310,7 @@ public class NifiSvc {
         if(processType!=null && processType.length()>0){
             results = results.stream().filter(p->{
                 String type = p.getType().split("\\.")[p.getType().split("\\.").length-1];
-                return p.getType().equalsIgnoreCase(type);
+                return processType.equalsIgnoreCase(type);
             }).collect(Collectors.toSet());
         }
 
