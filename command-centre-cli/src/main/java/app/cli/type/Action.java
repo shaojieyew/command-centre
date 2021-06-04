@@ -4,6 +4,7 @@ public enum Action {
     create,
     delete,
     run,
+    start,
     stop,
     ls,
     get,

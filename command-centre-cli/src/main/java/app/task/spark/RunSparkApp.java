@@ -16,6 +16,8 @@ import app.task.Task;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -116,6 +118,8 @@ public class RunSparkApp extends Task {
         if(spec.getResources()!=null) {
             for (Resource resource : spec.getResources()) {
                 File file;
+                String basePath = cli.getC2CliProperties().getTmpDirectory()+"/spark/"+System.currentTimeMillis();
+                File finalFile;
                 switch (resource.getType().toUpperCase()) {
                     case "GIT":
                         String[] sourceArr = resource.getSource().split("/-/");
@@ -124,21 +128,35 @@ public class RunSparkApp extends Task {
                         String path = sourceArr[2];
                         GitSvc gitSvc = GitSvcFactory.create(cli.getC2CliProperties(),remoteUrl);
                         file = gitSvc.getFile(branch, path);
-                        files.add(file);
+                        FileUtils.forceMkdir(new File(basePath));
+                        finalFile = new File(basePath,resource.getName());
+                        Files.copy(file.toPath(),
+                                finalFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                        files.add(finalFile);
                         break;
                     case "LOCAL":
                         file = new File(resource.getSource());
-                        files.add(file);
+                        FileUtils.forceMkdir(new File(basePath));
+                        finalFile = new File(basePath,resource.getName());
+                        Files.copy(file.toPath(),
+                                finalFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                        files.add(finalFile);
                         break;
                     case "STRING":
-                        String basePath = cli.getC2CliProperties().getTmpDirectory()+"/spark/"+System.currentTimeMillis();
                         FileUtils.forceMkdir(new File(basePath));
                         String filePath = basePath+"/"+resource.getName();
                         FileWriter myWriter = new FileWriter(filePath);
                         myWriter.write(resource.getSource());
                         myWriter.close();
                         file = new File(filePath);
-                        files.add(file);
+                        FileUtils.forceMkdir(new File(basePath));
+                        finalFile = new File(basePath,resource.getName());
+                        Files.copy(file.toPath(),
+                                finalFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                        files.add(finalFile);
                         break;
                     default:
                 }
@@ -146,6 +164,6 @@ public class RunSparkApp extends Task {
         }
 
         sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), jar, spec.getJarArgs(), spec.getSparkArgs(), files);
-
+        Thread.sleep(1000);
     }
 }

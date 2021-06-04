@@ -25,7 +25,7 @@ public class SparkCli extends Cli {
     public Integer task() throws Exception {
         if(getCliAction().equalsIgnoreCase(Action.ls.toString())){
             new ListSparkApp(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.run.toString())){
+        } else if(getCliAction().equalsIgnoreCase(Action.run.toString()) || getCliAction().equalsIgnoreCase(Action.start.toString())){
             new RunSparkApps(this).startTask();
         } else if(getCliAction().equalsIgnoreCase(Action.stop.toString())){
                 new StopSparkApps(this).startTask();

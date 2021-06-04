@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public class SparkSvc {
     String sparkHome;
@@ -53,7 +54,7 @@ public class SparkSvc {
                 launcher = launcher.addFile(file.getAbsolutePath());
             }
         }
-        return startSparkLauncher(launcher);
+        return start(launcher);
     }
 
     private String startSparkLauncher(SparkLauncher launcher) throws IOException {
@@ -69,6 +70,32 @@ public class SparkSvc {
         handler.disconnect();
 
         return applicationId;
+    }
+
+    private String start(SparkLauncher launcher) throws InterruptedException, IOException {
+        final String[]applicationId = {null};
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        launcher.startApplication(new SparkAppHandle.Listener() {
+            @Override
+            public void stateChanged(SparkAppHandle sparkAppHandle) {
+                if(countDownLatch.getCount()==0)
+                    return;
+                if(sparkAppHandle.getState().toString().equalsIgnoreCase("RUNNING")){
+                    applicationId[0] = sparkAppHandle.getAppId();
+                    countDownLatch.countDown();
+                }else if(sparkAppHandle.getState().isFinal()){
+                    countDownLatch.countDown();
+                }
+
+            }
+
+            @Override
+            public void infoChanged(SparkAppHandle sparkAppHandle) {
+
+            }
+        });
+        countDownLatch.await();
+        return applicationId[0];
     }
 
 }
