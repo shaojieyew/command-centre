@@ -10,6 +10,7 @@ import com.davis.client.ApiException;
 import com.davis.client.model.*;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.hadoop.fs.InvalidRequestException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,6 +139,9 @@ public class NifiSvc {
         if(keyword.length==0){
             keyword = new String[]{"",""};
         }
+        if(keyword[0].equals("*")){
+            throw new Exception("NiFi query cannot starts with *");
+        }
         Set<NifiComponent> results = new HashSet<>();
 
         String rootId = getProcessGroupStatus("root").getProcessGroupStatus().getId();
@@ -154,8 +158,8 @@ public class NifiSvc {
 
             if(i == keyword.length-1){
                 if(s.length()>0 && !s.equals("*")){
-                    SearchResultsEntity result = getSearchResult(s);
-                    List<NifiComponent> processorResults = result.getSearchResultsDTO().getProcessorResults().stream()
+                    SearchResultsEntity searchResult = getSearchResult(s);
+                    List<NifiComponent> processResults = searchResult.getSearchResultsDTO().getProcessorResults().stream()
                             .filter(p-> s.equalsIgnoreCase(p.getName()) || s.equalsIgnoreCase(p.getId()))
                             .filter(p-> finalLastGroupIds == null || finalLastGroupIds.contains(p.getGroupId()))
                             .map(p->{
@@ -165,9 +169,9 @@ public class NifiSvc {
                                 return nifiComponent;
                             })
                             .collect(Collectors.toList());
-                    results.addAll(processorResults);
+                    results.addAll(processResults);
 
-                    List<NifiComponent> groupResults = result
+                    List<NifiComponent> groupResults = searchResult
                             .getSearchResultsDTO()
                             .getProcessGroupResults().stream()
                             .filter(p-> s.equalsIgnoreCase(p.getName()) || s.equalsIgnoreCase(p.getId()))
@@ -181,6 +185,46 @@ public class NifiSvc {
                             })
                             .collect(Collectors.toList());
                     results.addAll(groupResults);
+
+                    if(searchResult.getSearchResultsDTO().getProcessGroupResults().size()==0 &&
+                    searchResult.getSearchResultsDTO().getProcessorResults().size()==0){
+                        for (String lastGroupId : lastGroupIds) {
+                            processResults = getProcessGroupStatus(lastGroupId)
+                                    .getProcessGroupStatus().getAggregateSnapshot()
+                                    .getProcessorStatusSnapshots()
+                                    .stream()
+                                    .filter(p->(Pattern.compile(s.trim()).matcher(p.getProcessorStatusSnapshot().getName()).find()))
+                                    .map(p -> {
+                                        NifiComponent nifiComponent = new NifiComponent();
+                                        nifiComponent.setId(p.getId());
+                                        nifiComponent.setName(p.getProcessorStatusSnapshot().getName());
+                                        return nifiComponent;
+                                    }).collect(Collectors.toList());
+                            groupResults = getProcessGroupStatus(lastGroupId)
+                                    .getProcessGroupStatus().getAggregateSnapshot()
+                                    .getProcessGroupStatusSnapshots()
+                                    .stream()
+                                    .filter(p-> {
+                                        try {
+                                            return (Pattern.compile(s.trim()).matcher(getProcessGroupStatus(p.getId()).getProcessGroupStatus().getName()).find());
+                                        } catch (ApiException | IOException | LoginException e) {
+                                        }
+                                        return false;
+                                    })
+                                    .map(p -> {
+                                        NifiComponent nifiComponent = new NifiComponent();
+                                        nifiComponent.setId(p.getId());
+                                        nifiComponent.setType(ProcessType.ProcessGroup.toString());
+                                        try {
+                                            nifiComponent.setName(getProcessGroupStatus(p.getId()).getProcessGroupStatus().getName());
+                                        } catch (ApiException | IOException | LoginException e) {
+                                        }
+                                        return nifiComponent;
+                                    }).collect(Collectors.toList());
+                            results.addAll(processResults);
+                            results.addAll(groupResults);
+                        }
+                    }
                 }else{
                     for (String lastGroupId : lastGroupIds) {
                         List<NifiComponent> processResults = getProcessGroupStatus(lastGroupId)
@@ -211,20 +255,43 @@ public class NifiSvc {
                 }
             }else{
                 if(s.length()>0 && !s.equals("*")){
-                    SearchResultsEntity result = getSearchResult(s);
-                    List<NifiComponent> groupResults = result
-                            .getSearchResultsDTO()
-                            .getProcessGroupResults().stream()
-                            .filter(p-> s.equalsIgnoreCase(p.getName()) || s.equalsIgnoreCase(p.getId()))
-                            .filter(p-> finalLastGroupIds == null || finalLastGroupIds.contains(p.getGroupId()))
-                            .map(p->{
-                                NifiComponent nifiComponent = new NifiComponent();
-                                nifiComponent.setId(p.getId());
-                                nifiComponent.setName(p.getName());
-                                return nifiComponent;
-                            })
-                            .collect(Collectors.toList());
-                    lastGroupIds = groupResults.stream().map(NifiComponent::getId).collect(Collectors.toList());
+                    SearchResultsEntity searchResult = getSearchResult(s);
+                    if(searchResult.getSearchResultsDTO().getProcessGroupResults().size()>0){
+                        List<NifiComponent> groupResults = searchResult
+                                .getSearchResultsDTO()
+                                .getProcessGroupResults().stream()
+                                .filter(p-> s.equalsIgnoreCase(p.getName()) || s.equalsIgnoreCase(p.getId()))
+                                .filter(p-> finalLastGroupIds == null || finalLastGroupIds.contains(p.getGroupId()))
+                                .map(p->{
+                                    NifiComponent nifiComponent = new NifiComponent();
+                                    nifiComponent.setId(p.getId());
+                                    nifiComponent.setName(p.getName());
+                                    return nifiComponent;
+                                })
+                                .collect(Collectors.toList());
+
+                        lastGroupIds = groupResults.stream().map(NifiComponent::getId).collect(Collectors.toList());
+                    }else {
+                        List<String> newLastGroupIds = new ArrayList<>();
+                        for (String lastGroupId : lastGroupIds) {
+                            List<String> groupIds = getProcessGroupStatus(lastGroupId)
+                                    .getProcessGroupStatus().getAggregateSnapshot()
+                                    .getProcessGroupStatusSnapshots()
+                                    .stream()
+                                    .filter(p->{
+                                        try {
+                                            return (Pattern.compile(s.trim()).matcher(getProcessGroupStatus(p.getId()).getProcessGroupStatus().getName()).find());
+                                        }catch (Exception e){
+
+                                        }
+                                        return false;
+                                    })
+                                    .map(ProcessGroupStatusSnapshotEntity::getId)
+                                    .collect(Collectors.toList());
+                            newLastGroupIds.addAll(groupIds);
+                        }
+                        lastGroupIds = newLastGroupIds;
+                    }
                 }else{
                     for (String lastGroupId : lastGroupIds) {
                         List<ProcessGroupStatusSnapshotEntity> g = getProcessGroupStatus(lastGroupId)
@@ -613,6 +680,7 @@ public class NifiSvc {
     }
 
     private String requestJson(String url) throws IOException, LoginException {
+        url = URIUtil.encodeQuery(url);
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpGet httpGet = new HttpGet(url);
         httpGet.addHeader("content-type",MediaType.APPLICATION_JSON);
