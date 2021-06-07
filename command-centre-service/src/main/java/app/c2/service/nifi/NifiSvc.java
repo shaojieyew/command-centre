@@ -397,7 +397,7 @@ public class NifiSvc {
         try{
             ProcessorEntity process = getProcessor(id);
             updateRunStatus( id,  status);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             ProcessGroupStatusEntity process = getProcessGroupStatus(id);
             boolean updateRootProcessorOnly = false;
             if(scope!=null){
