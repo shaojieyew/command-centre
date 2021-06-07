@@ -8,11 +8,15 @@ import app.c2.service.maven.model.Package;
 import app.c2.service.spark.SparkSvc;
 import app.c2.service.spark.SparkSvcFactory;
 import app.c2.service.spark.model.SparkArgKeyValuePair;
+import app.c2.service.yarn.YarnSvc;
+import app.c2.service.yarn.YarnSvcFactory;
+import app.c2.service.yarn.model.YarnApp;
 import app.cli.SparkCli;
 import app.spec.resource.Resource;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
+import jdk.nashorn.internal.runtime.options.Option;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -20,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -90,7 +95,13 @@ public class RunSparkApp extends Task {
 
     @Override
     protected void task() throws Exception {
-
+        YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
+        Optional<YarnApp> yarnAppOptional = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                .get().stream()
+                .filter(f->f.getName().equalsIgnoreCase(spec.getName())).findFirst();
+        if(yarnAppOptional.isPresent()){
+            throw new Exception("Spark application '"+spec.getName()+"' already submitted");
+        }
         SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
 
         Package pkg = new Package();
@@ -162,8 +173,6 @@ public class RunSparkApp extends Task {
                 }
             }
         }
-
         sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), jar, spec.getJarArgs(), spec.getSparkArgs(), files);
-        Thread.sleep(1000);
     }
 }
