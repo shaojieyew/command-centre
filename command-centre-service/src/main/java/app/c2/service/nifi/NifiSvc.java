@@ -49,54 +49,6 @@ public class NifiSvc {
         //nifiSvc.updateAllProcessInProcessGroup("ccc8f601-0179-1000-8752-432197b03963","STOPPED", false);
     }
 
-    private NifiComponent updateFlowPath(NifiComponent result) throws Exception {
-
-        Breadcrumb breadcrumb = null;
-        if(ProcessType.ProcessGroup.toString().equals(result.getType())){
-            String response = requestProcessGroupJson(result.getId());
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-                    .registerModule(new JodaModule());
-            ProcessGroupFlowBreadcumb processGroupStatusEntity = objectMapper.readValue(response, ProcessGroupFlowBreadcumb.class);
-            result.setId(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getId());
-            result.setName(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getName());
-            result.setType(ProcessType.ProcessGroup.toString());
-            result.setFlowPathId("");
-            result.setFlowPath("");
-            breadcrumb = processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getParentBreadcrumb();
-        }else{
-            ProcessorEntity processorEntity = getProcessor(result.getId());
-            result.setId(processorEntity.getId());
-            result.setName(processorEntity.getComponent().getName());
-            String typeP[] = processorEntity.getComponent().getType().split("\\.");
-            result.setType(typeP[typeP.length-1]);
-            result.setStatus(processorEntity.getStatus().getRunStatus());
-
-            String response = requestProcessGroupJson(processorEntity.getComponent().getParentGroupId());
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-                    .registerModule(new JodaModule());
-            ProcessGroupFlowBreadcumb processGroupStatusEntity = objectMapper.readValue(response, ProcessGroupFlowBreadcumb.class);
-            result.setFlowPathId(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getId());
-            result.setFlowPath(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getName());
-            breadcrumb = processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getParentBreadcrumb();
-        }
-        while(breadcrumb!=null){
-            Breadcrumb b =breadcrumb.getBreadcrumb();
-            if(result.getFlowPathId().length()==0){
-                result.setFlowPathId(b.getId());
-                result.setFlowPath(b.getName());
-            }else{
-                result.setFlowPathId(b.getId()+"/"+result.getFlowPathId());
-                result.setFlowPath(b.getName()+"/"+result.getFlowPath());
-            }
-            breadcrumb = breadcrumb.getParentBreadcrumb();
-        }
-        return result;
-    }
-
     public NifiSvc(String nifiHost) {
         this.nifiHost = nifiHost;
     }
@@ -317,6 +269,54 @@ public class NifiSvc {
         return results;
     }
 
+
+    private NifiComponent updateFlowPath(NifiComponent result) throws Exception {
+
+        Breadcrumb breadcrumb = null;
+        if(ProcessType.ProcessGroup.toString().equals(result.getType())){
+            String response = requestProcessGroupJson(result.getId());
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                    .registerModule(new JodaModule());
+            ProcessGroupFlowBreadcumb processGroupStatusEntity = objectMapper.readValue(response, ProcessGroupFlowBreadcumb.class);
+            result.setId(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getId());
+            result.setName(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getName());
+            result.setType(ProcessType.ProcessGroup.toString());
+            result.setFlowPathId("");
+            result.setFlowPath("");
+            breadcrumb = processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getParentBreadcrumb();
+        }else{
+            ProcessorEntity processorEntity = getProcessor(result.getId());
+            result.setId(processorEntity.getId());
+            result.setName(processorEntity.getComponent().getName());
+            String typeP[] = processorEntity.getComponent().getType().split("\\.");
+            result.setType(typeP[typeP.length-1]);
+            result.setStatus(processorEntity.getStatus().getRunStatus());
+
+            String response = requestProcessGroupJson(processorEntity.getComponent().getParentGroupId());
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                    .registerModule(new JodaModule());
+            ProcessGroupFlowBreadcumb processGroupStatusEntity = objectMapper.readValue(response, ProcessGroupFlowBreadcumb.class);
+            result.setFlowPathId(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getId());
+            result.setFlowPath(processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getBreadcrumb().getName());
+            breadcrumb = processGroupStatusEntity.getProcessGroupFlow().getBreadcrumb().getParentBreadcrumb();
+        }
+        while(breadcrumb!=null){
+            Breadcrumb b =breadcrumb.getBreadcrumb();
+            if(result.getFlowPathId().length()==0){
+                result.setFlowPathId(b.getId());
+                result.setFlowPath(b.getName());
+            }else{
+                result.setFlowPathId(b.getId()+"/"+result.getFlowPathId());
+                result.setFlowPath(b.getName()+"/"+result.getFlowPath());
+            }
+            breadcrumb = breadcrumb.getParentBreadcrumb();
+        }
+        return result;
+    }
 //    public Set<NifiComponent> findNifiComponent(String pattern, String processType, String id) throws Exception {
 //        Set<NifiComponent> result = new HashSet<>();
 //        Exception error =null;
@@ -679,7 +679,26 @@ public class NifiSvc {
         return requestJson(url);
     }
 
+    class RequestResponse{
+        String response;
+        long lastUpdate;
+
+        public RequestResponse(String response, long lastUpdate) {
+            this.response = response;
+            this.lastUpdate = lastUpdate;
+        }
+    }
+
+    Map<String, RequestResponse> responseCache = new HashMap<>();
+
     private String requestJson(String url) throws IOException, LoginException {
+        if(responseCache.containsKey(url)){
+            if(System.currentTimeMillis()-responseCache.get(url).lastUpdate<1000*60){
+                return responseCache.get(url).response;
+            }
+        }
+
+
         url = URIUtil.encodeQuery(url);
         HttpCaller httpCaller = HttpCallerFactory.create();
         HttpGet httpGet = new HttpGet(url);
@@ -702,6 +721,8 @@ public class NifiSvc {
         strResponse=strResponse.replaceAll(",\"statsLastRefreshed\":\"[^\"]*\"","");
         strResponse=strResponse.replaceAll("\"timestamp\":\"[^\"]*\",","");
         strResponse=strResponse.replaceAll(",\"timestamp\":\"[^\"]*\"","");
+
+        responseCache.put(url, new RequestResponse(strResponse, System.currentTimeMillis()));
         return strResponse;
     }
     public enum ProcessType {
