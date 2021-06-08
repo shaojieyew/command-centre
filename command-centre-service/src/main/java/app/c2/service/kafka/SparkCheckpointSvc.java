@@ -307,7 +307,11 @@ public class SparkCheckpointSvc {
         Set<TopicPartition> assignment;
         long startedTime = System.currentTimeMillis();
         while ((assignment = consumer.assignment()).isEmpty()) {
-            consumer.poll(Duration.ofMillis(500));
+            try{
+                consumer.poll(Duration.ofMillis(500));
+            }catch (Exception ex){
+                LOG.error(ex.getMessage());
+            }
             if(System.currentTimeMillis()-startedTime>(1000*30)){
                 throw new Exception("Could not get kafka offset");
             }
