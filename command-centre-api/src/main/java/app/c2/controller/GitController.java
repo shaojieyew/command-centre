@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/")
 public class GitController {
 
+  @Autowired private C2PlatformProperties c2PlatformProperties;
   @Autowired private ProjectService projectService;
 
   @Operation(summary = "Get list of repositories remote url using project repository setting")
@@ -33,7 +34,7 @@ public class GitController {
 
     if(project !=null && project.getEnv()!=null ) {
         C2Properties prop = (project.getEnv());
-        return GitSvcFactory.create(prop).stream().map(s->s.getRemoteUrl()).collect(Collectors.toList());
+        return GitSvcFactory.create(prop, c2PlatformProperties.getTmp()+"/git").stream().map(s->s.getRemoteUrl()).collect(Collectors.toList());
     }
     return new ArrayList();
   }
@@ -47,7 +48,7 @@ public class GitController {
 
     if(project !=null && project.getEnv()!=null ) {
         C2Properties prop = (project.getEnv());
-        return GitSvcFactory.create(prop, remoteUrl).getBranches();
+        return GitSvcFactory.create(prop, remoteUrl, c2PlatformProperties.getTmp()+"/git").getBranches();
     }
     return new ArrayList<String>();
   }
@@ -61,7 +62,7 @@ public class GitController {
     Project project = projectService.findById(projectId).orElseGet(null);
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
-        return new GitSvcFactory().create(prop, remoteUrl).getFilesPath(branch, filter);
+        return new GitSvcFactory().create(prop, remoteUrl, c2PlatformProperties.getTmp()+"/git").getFilesPath(branch, filter);
     }
     return new ArrayList<String>();
   }

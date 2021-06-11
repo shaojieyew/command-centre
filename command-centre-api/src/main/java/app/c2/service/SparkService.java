@@ -80,7 +80,7 @@ public class SparkService {
         pkg.setGroup(group);
         pkg.setPackage_type(Package.PackageType.MAVEN);
         pkg.setVersion(version);
-        for (AbstractRegistrySvc reg: MavenSvcFactory.create(prop)){
+        for (AbstractRegistrySvc reg: MavenSvcFactory.create(prop, c2PlatformProperties.getTmp()+"/maven")){
             return reg.download(pkg);
         }
         return null;

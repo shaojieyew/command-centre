@@ -10,15 +10,15 @@ import java.util.*;
  */
 public class GitSvcFactory {
 
-    public static List<GitSvc> create(C2Properties prop){
-        return new GitSvcFactory().createSvc(prop);
+    public static List<GitSvc> create(C2Properties prop, String tmpDir){
+        return new GitSvcFactory().createSvc(prop, tmpDir);
     }
-    public static GitSvc create(C2Properties prop, String remoteUrl){
-        return new GitSvcFactory().createSvc(prop, remoteUrl);
+    public static GitSvc create(C2Properties prop, String remoteUrl, String tmpDir){
+        return new GitSvcFactory().createSvc(prop, remoteUrl, tmpDir);
     }
 
-    public List<GitSvc> createSvc(C2Properties prop){
-        String localRepository = "tmp/git/repository";
+    public List<GitSvc> createSvc(C2Properties prop, String tmpDir){
+        String localRepository = tmpDir+"/git/repository";
         List<GitSvc> svcs = new ArrayList<>();
         prop.getGitProperties().forEach(gitProp->{
             String hash = DigestUtils.md5Hex((gitProp.getUrl()).getBytes());
@@ -28,8 +28,8 @@ public class GitSvcFactory {
         return svcs;
     }
 
-    public GitSvc createSvc(C2Properties prop, String remoteUrl){
-        List<GitSvc> svcs = createSvc(prop);
+    public GitSvc createSvc(C2Properties prop, String remoteUrl, String tmpDir){
+        List<GitSvc> svcs = createSvc(prop, tmpDir);
         return svcs.stream().filter(s->s.getRemoteUrl().equalsIgnoreCase(remoteUrl)).findFirst().orElseGet(null);
     }
 }

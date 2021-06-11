@@ -9,5 +9,6 @@ public enum Action {
     ls,
     get,
     mv,
-    restore,
+    check,
+    restore
 }

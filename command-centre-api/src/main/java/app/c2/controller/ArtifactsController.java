@@ -1,5 +1,6 @@
 package app.c2.controller;
 
+import app.c2.C2PlatformProperties;
 import app.c2.controller.exception.NotFoundExceptionResponse;
 import app.c2.model.Project;
 import app.c2.properties.C2Properties;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 public class ArtifactsController {
 
   @Autowired private ProjectService projectService;
+  @Autowired
+  C2PlatformProperties c2PlatformProperties;
 
   @Operation(summary = "Get list of artifact from registry using project mvn setting")
   @ApiResponses(value = {
@@ -37,7 +40,7 @@ public class ArtifactsController {
 
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
-        MavenSvcFactory.create(prop).forEach(svc->{
+        MavenSvcFactory.create(prop, c2PlatformProperties.getTmp()+"/maven").forEach(svc->{
           if(group.isPresent()){
             packages.addAll(svc.getPackages(group.get()));
           }else{
@@ -47,7 +50,6 @@ public class ArtifactsController {
     }
     return packages;
   }
-
 
   @Operation(summary = "Get a package from registry using project mvn setting")
   @ApiResponses(value = {
@@ -65,7 +67,7 @@ public class ArtifactsController {
 
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
-        List<AbstractRegistrySvc> services = MavenSvcFactory.create(prop);
+        List<AbstractRegistrySvc> services = MavenSvcFactory.create(prop,  c2PlatformProperties.getTmp()+"/maven");
         for (AbstractRegistrySvc svc : services){
           Package pkg = new Package();
           pkg.setArtifact(artifact);
@@ -104,7 +106,7 @@ public class ArtifactsController {
     Map<Class, Method> mainClasses = new HashMap<>();
     if(project !=null && project.getEnv()!=null) {
         C2Properties prop = (project.getEnv());
-        List<AbstractRegistrySvc> services = MavenSvcFactory.create(prop);
+        List<AbstractRegistrySvc> services = MavenSvcFactory.create(prop,  c2PlatformProperties.getTmp()+"/maven");
         for (AbstractRegistrySvc svc : services){
           Package pkg = new Package();
           pkg.setArtifact(artifact);

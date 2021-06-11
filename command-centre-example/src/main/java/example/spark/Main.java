@@ -65,7 +65,7 @@ public class Main {
         // Download Jar from Maven
         String groupId = "c2";
         String artifactId = "spark-app";
-        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoUrl,mavenPrivateToken,"tmp/project_"+projectId+"/repository");
+        GitlabRegistrySvc reg = new GitlabRegistrySvc(mavenRepoUrl,null,null,mavenPrivateToken,"tmp/project_"+projectId+"/repository");
         List<Package> packages = reg.getPackages(groupId,artifactId);
         for(Package p : packages){
             System.out.println(p.getGroup()+":"+p.getArtifact()+":"+p.getVersion());

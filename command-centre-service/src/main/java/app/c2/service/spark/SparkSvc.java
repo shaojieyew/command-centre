@@ -54,39 +54,38 @@ public class SparkSvc {
                 launcher = launcher.addFile(file.getAbsolutePath());
             }
         }
-        return start(launcher);
+        return startSparkLauncher(launcher);
     }
 
-    private String startSparkLauncher(SparkLauncher launcher) throws IOException {
-        SparkAppHandle handler = null;
-        String applicationId = null;
-        handler = launcher.startApplication();
-        while(!handler.getState().isFinal()){
-            applicationId = handler.getAppId();
-            if(applicationId!=null){
-                break;
-            }
-        }
-        handler.disconnect();
+//    private String startSparkLauncher(SparkLauncher launcher) throws IOException {
+//        SparkAppHandle handler = null;
+//        String applicationId = null;
+//        handler = launcher.startApplication();
+//        while(!handler.getState().isFinal()){
+//            applicationId = handler.getAppId();
+//            if(applicationId!=null){
+//                break;
+//            }
+//        }
+//        handler.disconnect();
+//
+//        return applicationId;
+//    }
 
-        return applicationId;
-    }
-
-    private String start(SparkLauncher launcher) throws InterruptedException, IOException {
+    private String startSparkLauncher(SparkLauncher launcher) throws InterruptedException, IOException {
         final String[]applicationId = {null};
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        launcher.startApplication(new SparkAppHandle.Listener() {
+        SparkAppHandle handle = launcher.startApplication(new SparkAppHandle.Listener() {
             @Override
             public void stateChanged(SparkAppHandle sparkAppHandle) {
-                if(countDownLatch.getCount()==0)
+                if (countDownLatch.getCount() == 0)
                     return;
-                if(sparkAppHandle.getState().toString().equalsIgnoreCase("RUNNING")){
+                if (sparkAppHandle.getState().toString().equalsIgnoreCase("RUNNING")) {
                     applicationId[0] = sparkAppHandle.getAppId();
                     countDownLatch.countDown();
-                }else if(sparkAppHandle.getState().isFinal()){
+                } else if (sparkAppHandle.getState().isFinal()) {
                     countDownLatch.countDown();
                 }
-
             }
 
             @Override
@@ -95,6 +94,7 @@ public class SparkSvc {
             }
         });
         countDownLatch.await();
+        handle.disconnect();
         return applicationId[0];
     }
 

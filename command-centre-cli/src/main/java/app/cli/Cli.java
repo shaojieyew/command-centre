@@ -15,6 +15,8 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -38,6 +40,13 @@ public abstract class Cli  implements Callable<Integer> {
     private String cliFilePath = null;
     @CommandLine.Option(names = {"-rf", "--recurse-file"}, description = "file location")
     private String cliRecursiveFilePath = null;
+
+    public String getCliFilePath() {
+        return cliFilePath;
+    }
+    public String getCliRecursiveFilePath() {
+        return cliRecursiveFilePath;
+    }
 
     @CommandLine.Option(names = {"-n", "--name"}, description = "name")
     private String cliName = null;
@@ -77,21 +86,7 @@ public abstract class Cli  implements Callable<Integer> {
     }
 
 
-    @Override
-    public Integer call() throws Exception {
-        if(cliConfig==null){
-            ConsoleHelper.console.display(new Exception("Env variable C2_HOME not set "));
-            return 0;
-        }
-        File config = new File(cliConfig);
-        if(!config.getAbsoluteFile().exists()){
-            ConsoleHelper.console.display(new Exception(config.getAbsolutePath()+" file not found"));
-            return 0;
-        }
-
-        String dir = cliFilePath==null?cliRecursiveFilePath:cliFilePath;
-        boolean recursive = cliRecursiveFilePath!=null;
-
+    public boolean loadFile(String dir, boolean recursive) throws IOException, SpecException {
         if(dir != null) {
             File file = new File(dir);
             Set<File> files = new HashSet<>();
@@ -107,7 +102,7 @@ public abstract class Cli  implements Callable<Integer> {
             }
             if (!file.getAbsoluteFile().exists()) {
                 ConsoleHelper.console.display(new Exception(dir+" file not found"));
-                return 0;
+                return false;
             }
 
             if(file.isDirectory()){
@@ -120,10 +115,11 @@ public abstract class Cli  implements Callable<Integer> {
                         }
                     } catch (SpecException e) {
                         ConsoleHelper.console.display(e);
-                        return 0;
-                    }catch (Exception e) {
-                        ConsoleHelper.console.display(e);
-                        return 0;
+                        return false;
+                    } catch (Exception e) {
+                        StringWriter errors = new StringWriter();
+                        e.printStackTrace(new PrintWriter(errors));
+                        LOG.warn(errors.toString());
                     }
                 }
             }else{
@@ -134,6 +130,27 @@ public abstract class Cli  implements Callable<Integer> {
                 }
             }
         }
+        return true;
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        if(cliConfig==null){
+            ConsoleHelper.console.display(new Exception("Env variable C2_HOME not set "));
+            return 0;
+        }
+        File config = new File(cliConfig);
+        if(!config.getAbsoluteFile().exists()){
+            ConsoleHelper.console.display(new Exception(config.getAbsolutePath()+" file not found"));
+            return 0;
+        }
+
+        String dir = cliFilePath==null?cliRecursiveFilePath:cliFilePath;
+        boolean recursive = cliRecursiveFilePath!=null;
+        if(!loadFile(dir, recursive)){
+            return 0;
+        }
+
 
         LOG.info("total file loaded="+specFile.size());
         LOG.info("loading config from="+config.getAbsolutePath());

@@ -16,22 +16,34 @@ import app.spec.resource.Resource;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
-import jdk.nashorn.internal.runtime.options.Option;
+import app.util.DateHelper;
+import app.util.YamlLoader;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RunSparkApp extends Task {
 
+    enum ResourceSourceType{
+        STRING, LOCAL, GIT
+    }
+
     SparkCli cli;
     SparkDeploymentSpec spec;
+
+    boolean saveSnapshot = true;
+
+    public boolean isSaveSnapshot() {
+        return saveSnapshot;
+    }
+
+    public void setSaveSnapshot(boolean saveSnapshot) {
+        this.saveSnapshot = saveSnapshot;
+    }
 
     public RunSparkApp(SparkCli cli, SparkDeploymentKind kind, SparkDeploymentSpec spec){
         super();
@@ -70,6 +82,10 @@ public class RunSparkApp extends Task {
             }
         }
 
+        if(spec.getEnableHealthCheck()==null && kind.getEnableHealthCheck()!=null){
+            spec.setEnableHealthCheck(kind.getEnableHealthCheck());
+        }
+
         if(spec.getNamespace()==null && kind.getNamespace()!=null){
             spec.setNamespace(kind.getNamespace());
         }
@@ -95,84 +111,143 @@ public class RunSparkApp extends Task {
 
     @Override
     protected void task() throws Exception {
+        String jobName = spec.getName();
+
         YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
         Optional<YarnApp> yarnAppOptional = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                 .get().stream()
-                .filter(f->f.getName().equalsIgnoreCase(spec.getName())).findFirst();
+                .filter(f->f.getName().equalsIgnoreCase(jobName)).findFirst();
         if(yarnAppOptional.isPresent()){
-            throw new Exception("Spark application '"+spec.getName()+"' already submitted");
+            throw new Exception("Spark application '"+jobName+"' already submitted");
         }
         SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
 
-        Package pkg = new Package();
-
-        String[] artifactParam = spec.getArtifact().split(":");
-        if(artifactParam.length<3){
-            throw new Exception("Invalid artifact '"+spec.getArtifact()+"'");
-        }
-
-        pkg.setGroup(artifactParam[0]);
-        pkg.setArtifact(artifactParam[1]);
-        pkg.setVersion(artifactParam[2]);
-        pkg.setPackage_type(Package.PackageType.MAVEN);
         File jar = null;
-        for (AbstractRegistrySvc abstractRegistrySvc : MavenSvcFactory.create(cli.getC2CliProperties())) {
-            jar = abstractRegistrySvc.download(pkg);
-            if(jar!=null){
-                break;
+        File artifactJar = new File(spec.getArtifact());
+        if(artifactJar.exists() && artifactJar.isFile()){
+            jar = artifactJar;
+        }else{
+            Package pkg = new Package();
+
+            String[] artifactParam = spec.getArtifact().split(":");
+            if(artifactParam.length<3){
+                throw new Exception("Invalid artifact '"+spec.getArtifact()+"'");
             }
-        }
-        if(jar==null){
-            throw new Exception("Artifact not found");
-        }
-        List<File> files = new ArrayList<>();
-        if(spec.getResources()!=null) {
-            for (Resource resource : spec.getResources()) {
-                File file;
-                String basePath = cli.getC2CliProperties().getTmpDirectory()+"/spark/"+System.currentTimeMillis();
-                File finalFile;
-                switch (resource.getType().toUpperCase()) {
-                    case "GIT":
-                        String[] sourceArr = resource.getSource().split("/-/");
-                        String remoteUrl = sourceArr[0];
-                        String branch = sourceArr[1];
-                        String path = sourceArr[2];
-                        GitSvc gitSvc = GitSvcFactory.create(cli.getC2CliProperties(),remoteUrl);
-                        file = gitSvc.getFile(branch, path);
-                        FileUtils.forceMkdir(new File(basePath));
-                        finalFile = new File(basePath,resource.getName());
-                        Files.copy(file.toPath(),
-                                finalFile.toPath(),
-                                StandardCopyOption.REPLACE_EXISTING);
-                        files.add(finalFile);
-                        break;
-                    case "LOCAL":
-                        file = new File(resource.getSource());
-                        FileUtils.forceMkdir(new File(basePath));
-                        finalFile = new File(basePath,resource.getName());
-                        Files.copy(file.toPath(),
-                                finalFile.toPath(),
-                                StandardCopyOption.REPLACE_EXISTING);
-                        files.add(finalFile);
-                        break;
-                    case "STRING":
-                        FileUtils.forceMkdir(new File(basePath));
-                        String filePath = basePath+"/"+resource.getName();
-                        FileWriter myWriter = new FileWriter(filePath);
-                        myWriter.write(resource.getSource());
-                        myWriter.close();
-                        file = new File(filePath);
-                        FileUtils.forceMkdir(new File(basePath));
-                        finalFile = new File(basePath,resource.getName());
-                        Files.copy(file.toPath(),
-                                finalFile.toPath(),
-                                StandardCopyOption.REPLACE_EXISTING);
-                        files.add(finalFile);
-                        break;
-                    default:
+            pkg.setGroup(artifactParam[0]);
+            pkg.setArtifact(artifactParam[1]);
+            pkg.setVersion(artifactParam[2]);
+            pkg.setPackage_type(Package.PackageType.MAVEN);
+
+            for (AbstractRegistrySvc abstractRegistrySvc : MavenSvcFactory.create(cli.getC2CliProperties(), cli.getC2CliProperties().getTmpDirectory())) {
+                jar = abstractRegistrySvc.download(pkg);
+                if(jar!=null){
+                    break;
                 }
             }
         }
-        sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), jar, spec.getJarArgs(), spec.getSparkArgs(), files);
+
+        if(jar==null){
+            throw new Exception("Artifact not found");
+        }
+        List<File> resources = new ArrayList<>();
+        if(spec.getResources()!=null) {
+            for (Resource resource : spec.getResources()) {
+                File file;
+                String basePath = cli.getC2CliProperties().getTmpDirectory()+ String.format("/%s/%s/%s", cli.getSparkSubmitDir(), jobName, DateHelper.getDateString());
+                File finalFile;
+
+                if(resource.getType().equalsIgnoreCase(ResourceSourceType.GIT.name())){
+                    String[] sourceArr = resource.getSource().split("/-/");
+                    String remoteUrl = sourceArr[0];
+                    String branch = sourceArr[1];
+                    String path = sourceArr[2];
+                    GitSvc gitSvc = GitSvcFactory.create(cli.getC2CliProperties(),remoteUrl, cli.getC2CliProperties().getTmpDirectory());
+                    file = gitSvc.getFile(branch, path);
+                    FileUtils.forceMkdir(new File(basePath));
+                    finalFile = new File(basePath,resource.getName());
+                    Files.copy(file.toPath(),
+                            finalFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    resources.add(finalFile);
+                }
+                if(resource.getType().equalsIgnoreCase(ResourceSourceType.LOCAL.name())){
+                    file = new File(resource.getSource());
+                    FileUtils.forceMkdir(new File(basePath));
+                    finalFile = new File(basePath,resource.getName());
+                    Files.copy(file.toPath(),
+                            finalFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    resources.add(finalFile);
+                }
+                if(resource.getType().equalsIgnoreCase(ResourceSourceType.STRING.name())){
+                    FileUtils.forceMkdir(new File(basePath));
+                    String filePath = String.format("%s/%s", basePath, resource.getName());
+                    FileWriter myWriter = new FileWriter(filePath);
+                    myWriter.write(resource.getSource());
+                    myWriter.close();
+                    file = new File(filePath);
+                    FileUtils.forceMkdir(new File(basePath));
+                    finalFile = new File(basePath,resource.getName());
+                    Files.copy(file.toPath(),
+                            finalFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    resources.add(finalFile);
+                }
+            }
+        }
+        sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), jar, spec.getJarArgs(), spec.getSparkArgs(), resources);
+        if(saveSnapshot){
+            saveSnapshot(cli, spec,jar, resources);
+        }
+    }
+
+    private void saveSnapshot(SparkCli cli, SparkDeploymentSpec spec, File jar, List<File> resources) throws IOException {
+        String sparkAppSnapshotDirectory = String.format("%s/%s/%s", cli.getSparkSubmitDir(),spec.getName(), DateHelper.getDateString() );
+        //copy artifact
+        File artifactJar = new File(spec.getArtifact());
+        if(artifactJar.exists() && artifactJar.isFile()){
+            if(!artifactJar.getAbsolutePath().contains(new File(cli.getSparkSubmitJarDir()).getAbsolutePath())){
+                File newJar = new File(String.format("%s/%s", sparkAppSnapshotDirectory,jar.getName()));
+                FileUtils.copyFile(jar, newJar);
+                spec.setArtifact(newJar.getAbsolutePath());
+            }
+        }else{
+            String jarDirectory = cli.getSparkSubmitJarDir();
+            int index = 0;
+            for (String s : spec.getArtifact().split(":")) {
+                if(index==0){
+                    for (String s1 : s.split("\\.")) {
+                        jarDirectory = jarDirectory +"/"+s1;
+                    }
+                }else{
+                    jarDirectory = jarDirectory +"/"+s;
+                }
+                index++;
+            }
+            File newJar = new File(String.format("%s/%s/%s", cli.getSparkSubmitJarDir(),jarDirectory,jar.getName()));
+            FileUtils.copyFile(jar, newJar);
+            spec.setArtifact(newJar.getAbsolutePath());
+        }
+
+        // copy resources
+        List<Resource> resourcesList = new ArrayList<>();
+        for (File oldResourceFile : resources) {
+            File newResourceFile = new File(String.format("%s/%s", sparkAppSnapshotDirectory, oldResourceFile.getName()));
+            FileUtils.copyFile(oldResourceFile, newResourceFile);
+            Resource resource = new Resource();
+            resource.setName(newResourceFile.getName());
+            resource.setType(RunSparkApp.ResourceSourceType.LOCAL.name());
+            resource.setSource(newResourceFile.getAbsolutePath());
+            resourcesList.add(resource);
+        }
+        spec.setResources(resourcesList);
+
+        SparkDeploymentKind sparkDeploymentKind = new SparkDeploymentKind();
+        List<SparkDeploymentSpec> specs = new ArrayList<>();
+        specs.add(spec);
+        sparkDeploymentKind.setSpec(specs);
+        sparkDeploymentKind.setKind(cli.KIND_APP_DEPLOYMENT);
+        YamlLoader yml = new YamlLoader(SparkDeploymentKind.class);
+        yml.write(sparkDeploymentKind, String.format("%s/%s.yml", sparkAppSnapshotDirectory, spec.getName()));
     }
 }

@@ -31,4 +31,10 @@ public class YamlLoader<T> {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return mapper.readValue(content, this.type);
     }
+    public void write(T t, String path) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        File file = new File(path);
+        mapper.writeValue(file, t);
+    }
 }

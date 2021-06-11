@@ -5,9 +5,7 @@ import app.cli.type.Component;
 import app.util.ConsoleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
-
 public class Main  {
     private static final Logger logger  = LoggerFactory
             .getLogger(Main.class);
@@ -31,6 +29,9 @@ public class Main  {
             }
             if(option.equalsIgnoreCase(Component.checkpoint.toString())){
                 new CheckpointCli().execute(cliArgs);
+            }
+            if(option.equalsIgnoreCase(Component.sparkhealth.toString())){
+                new SparkHealthCli().execute(cliArgs);
             }
         } else {
             ConsoleHelper.console.display("Invalid argument");

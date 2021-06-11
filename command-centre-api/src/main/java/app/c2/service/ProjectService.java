@@ -1,5 +1,6 @@
 package app.c2.service;
 
+import app.c2.C2PlatformProperties;
 import app.c2.dao.ProjectDao;
 import app.c2.model.File;
 import app.c2.model.Project;
@@ -20,7 +21,7 @@ public class ProjectService {
 
   @Autowired private ProjectDao projectDao;
   @Autowired private FileStorageService fileStorageService;
-
+ @Autowired private C2PlatformProperties c2PlatformProperties;
   public List<Project> findAll() {
     return (List<Project>) projectDao.findAll();
   }
@@ -54,7 +55,7 @@ public class ProjectService {
     Optional<Project> project = findById(projectId);
     if(project.isPresent() && project.get().getEnv()!=null) {
       C2Properties prop = project.get().getEnv();
-      return GitSvcFactory.create(prop, remoteUrl).getFileAsString(branch, filePath);
+      return GitSvcFactory.create(prop, remoteUrl,  c2PlatformProperties.getTmp()+"/git").getFileAsString(branch, filePath);
     }
     return null;
   }

@@ -24,9 +24,6 @@ spec:
         value: 2G
     resources:
       - name: config.yml
-        source: "Testing"
-        type: string
-      - name: config1.yml
         source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
         type: git
 
@@ -51,3 +48,4 @@ spec:
       - name: config.yml
         source: https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/src/main/resources/config.yml
         type: git
+    enableHealthCheck: true

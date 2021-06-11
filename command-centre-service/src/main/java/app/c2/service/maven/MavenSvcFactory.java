@@ -7,13 +7,13 @@ import java.util.List;
 
 public class MavenSvcFactory {
 
-    public static List<AbstractRegistrySvc> create(C2Properties props){
-        return new MavenSvcFactory().createSvc(props);
+    public static List<AbstractRegistrySvc> create(C2Properties props, String tmpDir){
+        return new MavenSvcFactory().createSvc(props, tmpDir);
     }
 
-    public List<AbstractRegistrySvc> createSvc(C2Properties props){
+    public List<AbstractRegistrySvc> createSvc(C2Properties props, String tmpDir){
         List<AbstractRegistrySvc> svcs = new ArrayList<>();
-        String localRepository = "tmp/maven/repository";
+        String localRepository = tmpDir+"/maven/repository";
         props.getMavenProperties().forEach(mvnProp->{
             switch(mvnProp.getType()){
                 case GitlabRegistrySvc.type:

@@ -1,5 +1,6 @@
 package app.c2.service;
 
+import app.c2.C2PlatformProperties;
 import app.c2.dao.FileDao;
 import app.c2.dao.configuration.FileStorageProperties;
 import app.c2.model.App;
@@ -32,6 +33,8 @@ public class FileStorageService {
     ProjectService projectService;
     @Autowired
     AppService appService;
+    @Autowired
+    C2PlatformProperties c2PlatformProperties;
 
     public List<File> findByProjectId(long projectId) {
         return fileDao.findByProjectId(projectId);
@@ -218,14 +221,13 @@ public class FileStorageService {
     public File saveFile(String remoteUrl, String branch, String filePath, long projectId) throws IOException, GitAPIException {
         return saveFile( remoteUrl,  branch,  filePath,  projectId,   filePath.split("/")[filePath.split("/").length-1]);
     }
-
     public File saveFile(String remoteUrl, String branch, String filePath, long projectId, String filename) throws IOException, GitAPIException {
         Optional<Project> projectOptional = projectService.findById(projectId);
         if(!projectOptional.isPresent()){
             return null;
         }
         Project project = projectOptional.get();
-        GitSvc gitSvc = GitSvcFactory.create(project.getEnv(),remoteUrl);
+        GitSvc gitSvc = GitSvcFactory.create(project.getEnv(),remoteUrl,  c2PlatformProperties.getTmp()+"/git");
         String content = gitSvc.getFileAsString(branch, filePath);
         //String filename = filePath.split("/")[filePath.split("/").length-1];
         File f = FileFactory.createFromString(content,"text/plain",filename ,projectId,remoteUrl+"/-/"+branch+"/-/"+filePath, FileFactory.SOURCE_TYPE_GIT);

@@ -17,6 +17,7 @@ public class SparkDeploymentKind extends Kind<SparkDeploymentSpec> {
     private Set<SparkArgKeyValuePair> sparkArgs;
     private List<Resource> resources;
     private String namespace;
+    private String enableHealthCheck;
 
     public String getArtifact() {
         return artifact;
@@ -64,6 +65,14 @@ public class SparkDeploymentKind extends Kind<SparkDeploymentSpec> {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getEnableHealthCheck() {
+        return enableHealthCheck;
+    }
+
+    public void setEnableHealthCheck(String enableHealthCheck) {
+        this.enableHealthCheck = enableHealthCheck;
     }
 
     public void validate() throws SpecException {

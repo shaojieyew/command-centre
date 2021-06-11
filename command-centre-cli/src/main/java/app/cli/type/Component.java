@@ -4,5 +4,6 @@ public enum Component {
     spark,
     nifi,
     file,
-    checkpoint
+    checkpoint,
+    sparkhealth
 }

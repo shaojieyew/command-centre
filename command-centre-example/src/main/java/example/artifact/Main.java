@@ -17,7 +17,7 @@ public class Main {
         Logger.getRootLogger().setLevel(Level.OFF);
         AbstractRegistrySvc reg = new GitlabRegistrySvc(
                 "https://gitlab.com/api/v4/projects/25819110/packages/maven",
-                "B8UxzhjZiBDJK51ZVHxY",
+                null,null, "B8UxzhjZiBDJK51ZVHxY",
                 "tmp/project_1/maven/repository");
         List<Package> packages = reg.getPackages("c2","spark-app");
         for(Package p : packages){
