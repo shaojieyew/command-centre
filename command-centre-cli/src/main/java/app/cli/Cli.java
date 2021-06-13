@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -86,7 +87,8 @@ public abstract class Cli  implements Callable<Integer> {
     }
 
 
-    public boolean loadFile(String dir, boolean recursive) throws IOException, SpecException {
+    public List<Kind> loadFile(String dir, boolean recursive) throws IOException, SpecException {
+        List<Kind> specsKind = new ArrayList<>();
         if(dir != null) {
             File file = new File(dir);
             Set<File> files = new HashSet<>();
@@ -102,7 +104,6 @@ public abstract class Cli  implements Callable<Integer> {
             }
             if (!file.getAbsoluteFile().exists()) {
                 ConsoleHelper.console.display(new Exception(dir+" file not found"));
-                return false;
             }
 
             if(file.isDirectory()){
@@ -115,7 +116,6 @@ public abstract class Cli  implements Callable<Integer> {
                         }
                     } catch (SpecException e) {
                         ConsoleHelper.console.display(e);
-                        return false;
                     } catch (Exception e) {
                         StringWriter errors = new StringWriter();
                         e.printStackTrace(new PrintWriter(errors));
@@ -126,11 +126,11 @@ public abstract class Cli  implements Callable<Integer> {
                 LOG.info("loading file="+file.getAbsolutePath());
                 Kind kind = parseKind(file);
                 if(kind != null){
-                    specFile.add(kind);
+                    specsKind.add(kind);
                 }
             }
         }
-        return true;
+        return specsKind;
     }
 
     @Override
@@ -147,10 +147,7 @@ public abstract class Cli  implements Callable<Integer> {
 
         String dir = cliFilePath==null?cliRecursiveFilePath:cliFilePath;
         boolean recursive = cliRecursiveFilePath!=null;
-        if(!loadFile(dir, recursive)){
-            return 0;
-        }
-
+        specFile.addAll(loadFile(dir, recursive));
 
         LOG.info("total file loaded="+specFile.size());
         LOG.info("loading config from="+config.getAbsolutePath());

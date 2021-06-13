@@ -1,7 +1,6 @@
 package app.task.spark;
 
 import app.cli.SparkCli;
-import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
@@ -25,7 +24,7 @@ public class HealthCheckSparkApps extends Task {
 
     @Override
     protected void preTask() throws Exception {
-        cli.loadSubmittedApp();
+
     }
 
     @Override
@@ -34,11 +33,15 @@ public class HealthCheckSparkApps extends Task {
 
     @Override
     protected void task() throws Exception {
-        cli.getSpecFile().forEach(kind -> kind.getSpec().forEach(spec->{
+        SparkCli.getSpecsFromSparkKind(cli.getSubmittedAppSpec()).forEach(spec->{
+
+        });
+
+        cli.getSubmittedAppSpec().forEach(kind -> kind.getSpec().forEach(spec->{
             SparkDeploymentSpec sparkDeploymentSpec = (SparkDeploymentSpec) spec;
             if(sparkDeploymentSpec.getEnableHealthCheck()!=null
                     && sparkDeploymentSpec.getEnableHealthCheck().equalsIgnoreCase("true")){
-                RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, sparkDeploymentSpec);
+                RunSparkApp runSparkApp = new RunSparkApp(cli, sparkDeploymentSpec);
                 runSparkApp.setSaveSnapshot(false);
                 try {
                     runSparkApp.startTask();

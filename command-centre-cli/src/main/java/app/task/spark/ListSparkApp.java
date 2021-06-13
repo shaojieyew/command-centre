@@ -4,6 +4,7 @@ import app.c2.service.yarn.YarnSvc;
 import app.c2.service.yarn.YarnSvcFactory;
 import app.c2.service.yarn.model.YarnApp;
 import app.cli.SparkCli;
+import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
@@ -20,6 +21,8 @@ public class ListSparkApp extends Task {
     public static Logger logger = LoggerFactory.getLogger(ListSparkApp.class);
 
     SparkCli cli;
+    List<SparkDeploymentSpec> specs;
+    List<SparkDeploymentSpec> submittedAppSpec;
     public ListSparkApp(SparkCli cli){
         super();
         this.cli = cli;
@@ -32,8 +35,13 @@ public class ListSparkApp extends Task {
 
     @Override
     protected void preTask() {
+        submittedAppSpec = SparkCli.getSpecsFromSparkKind(cli.getSubmittedAppSpec());
         if(cli.getCliFilePath() == null && cli.getCliRecursiveFilePath()==null){
-            cli.loadSubmittedApp();
+            specs = submittedAppSpec;
+        }else{
+            specs = SparkCli.getSpecsFromSparkKind(cli.getSpecFile().stream().filter(k->k instanceof SparkDeploymentKind)
+                    .map(k->(SparkDeploymentKind)k)
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -47,12 +55,14 @@ public class ListSparkApp extends Task {
         String yarnAppId;
         String yarnStatus;
         String startedTime;
+        boolean healthCheck;
 
-        public AppStatus(String name, String yarnAppId, String yarnStatus, String startedTime) {
+        public AppStatus(String name, String yarnAppId, String yarnStatus, String startedTime, boolean healthCheck) {
             this.name = name;
             this.yarnAppId = yarnAppId;
             this.yarnStatus = yarnStatus;
             this.startedTime = startedTime;
+            this.healthCheck= healthCheck;
         }
     }
     DateFormat df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
@@ -62,46 +72,61 @@ public class ListSparkApp extends Task {
         String inputName = cli.getCliName();
 
         YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
-        List<YarnApp> apps = null;
+        List<YarnApp> remoteApps = null;
         try{
-            apps = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            remoteApps = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                     .get();
         }catch (Exception ex){
             ConsoleHelper.console.display(ex);
         }
-        List<YarnApp> finalApps = apps;
+        List<YarnApp> finalRemoteApp = remoteApps;
         List<AppStatus> appStatuses = new ArrayList<>();
         if(inputName==null){
-            List<SparkDeploymentSpec> specs =
-                    (List<SparkDeploymentSpec>) cli.getSpecFile().stream().flatMap(k->k.getSpec().stream())
-                            .collect(Collectors.toList());
             appStatuses = specs
                     .stream()
-                    .map(s->{
+                    .map(spec->{
                         String appId = "-";
                         String yarnStatus = "-";
                         String startedTime = "-";
-                        if(finalApps == null){
+                        if(finalRemoteApp == null){
                             appId = "UNKNOWN";
                             yarnStatus = "UNKNOWN";
                             startedTime = "UNKNOWN";
                         }else{
-                            Optional<YarnApp> optionalYarnApp = finalApps.stream().filter(a->a.getName().equalsIgnoreCase(s.getName())).findFirst();
+                            Optional<YarnApp> optionalYarnApp = finalRemoteApp.stream().filter(a->a.getName().equalsIgnoreCase(spec.getName())).findFirst();
                             if(optionalYarnApp.isPresent()){
                                 appId = optionalYarnApp.get().getId();
                                 yarnStatus = optionalYarnApp.get().getState();
                                 startedTime = df.format(new Date(optionalYarnApp.get().getStartedTime()));
                             }
                         }
-                        return new AppStatus(s.getName(),appId,yarnStatus,startedTime);
+
+
+                        boolean isHealthCheckEnable = submittedAppSpec.stream()
+                                .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(spec.getName()))
+                                .anyMatch(appSpec->appSpec.getEnableHealthCheck().equalsIgnoreCase("true"));
+
+                        return new AppStatus(spec.getName(),
+                                appId,
+                                yarnStatus,
+                                startedTime,
+                                isHealthCheckEnable);
                     }).collect(Collectors.toList());
         }else{
-            if(finalApps==null){
-                appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN"));
+            boolean isHealthCheckEnable = submittedAppSpec.stream()
+                    .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName))
+                    .anyMatch(appSpec->appSpec.getEnableHealthCheck().equalsIgnoreCase("true"));
+
+            if(finalRemoteApp==null){
+                appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN", isHealthCheckEnable));
             }else{
-                Optional<YarnApp> yarnApp = apps.stream().filter(a->a.getName().equalsIgnoreCase(inputName)).findFirst();
+                Optional<YarnApp> yarnApp = remoteApps.stream().filter(a->a.getName().equalsIgnoreCase(inputName)).findFirst();
                 if(yarnApp.isPresent()){
-                    appStatuses.add(new AppStatus(yarnApp.get().getName(),yarnApp.get().getId(),yarnApp.get().getState(),df.format(new Date(yarnApp.get().getStartedTime()))));
+                    appStatuses.add(new AppStatus(yarnApp.get().getName(),
+                            yarnApp.get().getId(),
+                            yarnApp.get().getState(),
+                            df.format(new Date(yarnApp.get().getStartedTime())),
+                            isHealthCheckEnable));
                 }else{
                     ConsoleHelper.console.display("Input name '"+inputName+"' not found");
                 }
@@ -113,6 +138,7 @@ public class ListSparkApp extends Task {
         header.add("yarnAppId");
         header.add("yarnStatus");
         header.add("startedTime");
+        header.add("healthCheck");
         new PrintableTable(appStatuses, header,"Spark Applications").show();
     }
 }

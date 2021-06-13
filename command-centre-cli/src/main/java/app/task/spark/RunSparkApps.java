@@ -33,16 +33,16 @@ public class RunSparkApps extends Task {
 
     @Override
     protected void task() throws Exception {
-        cli.getSpecFile().forEach(kind -> kind.getSpec().forEach(spec->{
-            if(appName!=null &&  !((SparkDeploymentSpec) spec).getName().equals(appName)){
+        SparkCli.getSpecsFromKind(cli.getSpecFile()).forEach(spec -> {
+            if(appName!=null &&  !(spec).getName().equals(appName)){
                 return;
             }
-            RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) spec);
+            RunSparkApp runSparkApp = new RunSparkApp(cli, spec);
             try {
                 runSparkApp.startTask();
             } catch (Exception e) {
                 ConsoleHelper.console.display(e);
             }
-        }));
+        } );
     }
 }

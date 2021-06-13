@@ -45,50 +45,8 @@ public class RunSparkApp extends Task {
         this.saveSnapshot = saveSnapshot;
     }
 
-    public RunSparkApp(SparkCli cli, SparkDeploymentKind kind, SparkDeploymentSpec spec){
+    public RunSparkApp(SparkCli cli, SparkDeploymentSpec spec){
         super();
-        if(spec.getArtifact()==null && kind.getArtifact()!=null){
-            spec.setArtifact(kind.getArtifact());
-        }
-        if(spec.getMainClass()==null && kind.getMainClass()!=null){
-            spec.setMainClass(kind.getMainClass());
-        }
-        if(spec.getJarArgs()==null && kind.getJarArgs()!=null){
-            spec.setJarArgs(kind.getJarArgs());
-        }
-        if(spec.getResources()==null && kind.getResources()!=null){
-            spec.setResources(kind.getResources());
-        }else{
-            if(spec.getResources()!=null && kind.getResources()!=null){
-                Set<String> names = spec.getResources().stream().map(s->s.getName().toUpperCase()).collect(Collectors.toSet());
-                for (Resource resource : kind.getResources()) {
-                    if(!names.contains(resource.getName().toUpperCase())){
-                        spec.getResources().add(resource);
-                    }
-                }
-            }
-        }
-
-        if(spec.getSparkArgs()==null && kind.getSparkArgs()!=null){
-            spec.setSparkArgs(kind.getSparkArgs());
-        }else{
-            if(spec.getSparkArgs()!=null && kind.getSparkArgs()!=null){
-                Set<String> sparkConfKey = spec.getSparkArgs().stream().map(s->s.getName().toUpperCase()).collect(Collectors.toSet());
-                for (SparkArgKeyValuePair sparkArg : kind.getSparkArgs()) {
-                    if(!sparkConfKey.contains(sparkArg.getName().toUpperCase())){
-                        spec.getSparkArgs().add(sparkArg);
-                    }
-                }
-            }
-        }
-
-        if(spec.getEnableHealthCheck()==null && kind.getEnableHealthCheck()!=null){
-            spec.setEnableHealthCheck(kind.getEnableHealthCheck());
-        }
-
-        if(spec.getNamespace()==null && kind.getNamespace()!=null){
-            spec.setNamespace(kind.getNamespace());
-        }
         this.cli = cli;
         this.spec = spec;
     }

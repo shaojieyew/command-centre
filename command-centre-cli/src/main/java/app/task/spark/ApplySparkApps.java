@@ -33,16 +33,16 @@ public class ApplySparkApps extends Task {
 
     @Override
     protected void task() throws Exception {
-        cli.getSpecFile().forEach(kind -> kind.getSpec().forEach(spec->{
-            if(appName!=null &&  !((SparkDeploymentSpec) spec).getName().equals(appName)){
+        SparkCli.getSpecsFromKind( cli.getSpecFile()).forEach(spec->{
+            if(appName!=null &&  !( spec).getName().equals(appName)){
                 return;
             }
-            ApplySparkApp runSparkApp = new ApplySparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) spec);
+            ApplySparkApp runSparkApp = new ApplySparkApp(cli, spec);
             try {
                 runSparkApp.startTask();
             } catch (Exception e) {
                 ConsoleHelper.console.display(e);
             }
-        }));
+        });
     }
 }

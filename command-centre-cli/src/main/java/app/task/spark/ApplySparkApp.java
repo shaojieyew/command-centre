@@ -8,8 +8,8 @@ import app.spec.spark.SparkDeploymentSpec;
 
 public class ApplySparkApp extends RunSparkApp {
 
-    public ApplySparkApp(SparkCli cli, SparkDeploymentKind kind, SparkDeploymentSpec spec) {
-        super(cli, kind, spec);
+    public ApplySparkApp(SparkCli cli,  SparkDeploymentSpec spec) {
+        super(cli,  spec);
     }
 
     @Override
