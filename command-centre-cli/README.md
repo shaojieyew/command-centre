@@ -13,6 +13,7 @@ A tool to manage spark application and nifi processors using declarative templat
 - [Backup Spark checkpoint](#backup-spark-checkpoint)
 - [List checkpoint backup](#list-checkpoint-backup)
 - [Restore Spark checkpoint](#restore-spark-checkpoint)
+- [Spark Application Health Check](#spark-app-health-check)
 
 ## Setup
 
@@ -199,26 +200,39 @@ spec:
 ### List Spark Application
 Only listed application name in the spec files will be display
 ```
+
 c2.sh spark ls -f D:\command-centre\command-centre-cli\example
 
 # recursive file list
 c2.sh spark ls -rf D:\command-centre\command-centre-cli\example
 
-# specifying the name of application would only show details of the spark application
+# specifying the name to filter the list
 c2.sh spark ls --name spark-etl
+
+# without specifying any parameters, it will show list of spark application that was ran 
+c2.sh spark ls 
 
 ```
 ### Start Spark Application
+Each time an application launched via "c2 spark run",the details of the application will be stored in a snapshot folder (to be use for recovery) 
 ```
+# only job that are not running will be launched
 c2.sh spark run -f D:\command-centre\command-centre-cli\example
 
-# only spec of spark application with the exact name specified will be ran; case sensitive 
+# using apply would stop any current job with and relaunch
+c2.sh spark apply -f D:\command-centre\command-centre-cli\example
+
+# only specified app with exact name will be ran (case sensitive)
 c2.sh spark run -f D:\command-centre\command-centre-cli\example --name spark-app
+
 ```
 ### Stop Spark Application
-Only listed application name in the spec files will be killed
 ```
+# all the spark listed in spec files will be killed and removed from snapshot folder; this would stop the healthcheck
 c2.sh spark stop -f D:\command-centre\command-centre-cli\example
+
+# only matched 
+c2.sh spark stop  -f D:\command-centre\command-centre-cli\example --name spark-app
 
 # only spark application with the exact name specified will be killed; case sensitive 
 c2.sh spark stop --name spark-app

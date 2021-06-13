@@ -1,37 +1,20 @@
 package app.task.spark;
 
 import app.cli.SparkCli;
-import app.spec.SpecException;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HealthCheckSparkApps extends Task {
 
     SparkCli cli;
+    public static Logger logger = LoggerFactory.getLogger(HealthCheckSparkApps.class);
 
-    public HealthCheckSparkApps(SparkCli cli) throws IOException, SpecException {
+    public HealthCheckSparkApps(SparkCli cli) {
         super();
-        for (File sparkSubmitDir : new File(cli.getSparkSubmitDir()).listFiles()) {
-            long max = Long.MIN_VALUE;
-            for (File file : sparkSubmitDir.listFiles()) {
-                try{
-                    long date = Long.parseLong(file.getName());
-                    if(date>max){
-                        max = date;
-                    }
-                }catch (Exception e){
-
-                }
-            }
-            String dir = String.format("%s\\%s", sparkSubmitDir.getAbsolutePath(),  max);
-            cli.loadFile(dir, false);
-        }
         this.cli = cli;
     }
 
@@ -42,6 +25,7 @@ public class HealthCheckSparkApps extends Task {
 
     @Override
     protected void preTask() throws Exception {
+        cli.loadSubmittedApp();
     }
 
     @Override
@@ -54,7 +38,7 @@ public class HealthCheckSparkApps extends Task {
             SparkDeploymentSpec sparkDeploymentSpec = (SparkDeploymentSpec) spec;
             if(sparkDeploymentSpec.getEnableHealthCheck()!=null
                     && sparkDeploymentSpec.getEnableHealthCheck().equalsIgnoreCase("true")){
-                RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) sparkDeploymentSpec);
+                RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, sparkDeploymentSpec);
                 runSparkApp.setSaveSnapshot(false);
                 try {
                     runSparkApp.startTask();

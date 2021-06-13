@@ -6,12 +6,12 @@ import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
 
-public class RunSparkApps extends Task {
+public class ApplySparkApps extends Task {
 
     SparkCli cli;
     String appName;
 
-    public RunSparkApps(SparkCli cli){
+    public ApplySparkApps(SparkCli cli){
         super();
         this.cli = cli;
         appName = cli.getCliName();
@@ -19,7 +19,7 @@ public class RunSparkApps extends Task {
 
     @Override
     protected String getTaskName() {
-        return "Run Spark Applications";
+        return "Apply Spark Applications";
     }
 
     @Override
@@ -37,7 +37,7 @@ public class RunSparkApps extends Task {
             if(appName!=null &&  !((SparkDeploymentSpec) spec).getName().equals(appName)){
                 return;
             }
-            RunSparkApp runSparkApp = new RunSparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) spec);
+            ApplySparkApp runSparkApp = new ApplySparkApp(cli,  (SparkDeploymentKind) kind, (SparkDeploymentSpec) spec);
             try {
                 runSparkApp.startTask();
             } catch (Exception e) {

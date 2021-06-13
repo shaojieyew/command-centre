@@ -8,13 +8,16 @@ import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
 import app.util.PrintableTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 public class ListSparkApp extends Task {
+
+    public static Logger logger = LoggerFactory.getLogger(ListSparkApp.class);
 
     SparkCli cli;
     public ListSparkApp(SparkCli cli){
@@ -29,7 +32,9 @@ public class ListSparkApp extends Task {
 
     @Override
     protected void preTask() {
-
+        if(cli.getCliFilePath() == null && cli.getCliRecursiveFilePath()==null){
+            cli.loadSubmittedApp();
+        }
     }
 
     @Override
@@ -90,7 +95,6 @@ public class ListSparkApp extends Task {
                         }
                         return new AppStatus(s.getName(),appId,yarnStatus,startedTime);
                     }).collect(Collectors.toList());
-
         }else{
             if(finalApps==null){
                 appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN"));

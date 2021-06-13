@@ -26,12 +26,11 @@ public class StopSparkApp extends Task {
         appName = cli.getCliName();
     }
 
-    public void setAppName(String appName) {
+    public StopSparkApp(SparkCli cli, String appName){
+        super();
+        this.cli = cli;
+        appId = cli.getCliId();
         this.appName = appName;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
     }
 
     @Override
@@ -58,7 +57,7 @@ public class StopSparkApp extends Task {
     @Override
     protected void task() throws Exception {
         YarnSvc yarnSvc =  YarnSvcFactory.create(cli.getC2CliProperties());
-        if(appName!=null){
+        if(appName!=null) {
             yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                     .get().stream()
                     .filter(f->f.getName().equals(appName))
@@ -73,7 +72,7 @@ public class StopSparkApp extends Task {
             if(runningCount==0){
                 deleteSnapshot(appName);
             }
-        }else if(appId!=null){
+        } else if(appId!=null) {
             YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId)
                     .kill();
             Optional<YarnApp> app =  YarnSvcFactory
@@ -88,6 +87,9 @@ public class StopSparkApp extends Task {
     }
 
     private void deleteSnapshot(String appName) throws IOException {
-        FileUtils.deleteDirectory(new File(String.format("%s/%s",cli.getSparkSubmitDir() , appName)));
+        File f = new File(String.format("%s/%s",cli.getSparkSubmitDir() , appName));
+        if(f.exists() && f.isDirectory()){
+            FileUtils.deleteDirectory(f);
+        }
     }
 }

@@ -103,6 +103,14 @@ public class RunSparkApp extends Task {
         if(spec==null){
             throw new Exception("Invalid application spec");
         }
+        String appName = spec.getName();
+        YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
+        Optional<YarnApp> yarnAppOptional = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                .get().stream()
+                .filter(f->f.getName().equalsIgnoreCase(appName)).findFirst();
+        if(yarnAppOptional.isPresent()){
+            throw new Exception("Spark application '"+appName+"' already submitted");
+        }
     }
 
     @Override
@@ -111,15 +119,8 @@ public class RunSparkApp extends Task {
 
     @Override
     protected void task() throws Exception {
-        String jobName = spec.getName();
+        String appName = spec.getName();
 
-        YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
-        Optional<YarnApp> yarnAppOptional = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                .get().stream()
-                .filter(f->f.getName().equalsIgnoreCase(jobName)).findFirst();
-        if(yarnAppOptional.isPresent()){
-            throw new Exception("Spark application '"+jobName+"' already submitted");
-        }
         SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
 
         File jar = null;
@@ -153,7 +154,7 @@ public class RunSparkApp extends Task {
         if(spec.getResources()!=null) {
             for (Resource resource : spec.getResources()) {
                 File file;
-                String basePath = cli.getC2CliProperties().getTmpDirectory()+ String.format("/%s/%s/%s", cli.getSparkSubmitDir(), jobName, DateHelper.getDateString());
+                String basePath = cli.getC2CliProperties().getTmpDirectory()+ String.format("/%s/%s/%s", cli.getSparkSubmitDir(), appName, DateHelper.getDateString());
                 File finalFile;
 
                 if(resource.getType().equalsIgnoreCase(ResourceSourceType.GIT.name())){

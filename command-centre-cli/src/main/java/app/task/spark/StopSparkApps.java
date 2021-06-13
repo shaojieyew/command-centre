@@ -29,13 +29,17 @@ public class StopSparkApps extends Task {
 
     @Override
     protected void task() throws Exception {
-        if(cli.getSpecFile().size()==0){
+        if(cli.getCliRecursiveFilePath()==null && cli.getCliFilePath()==null){
             new StopSparkApp(cli).startTask();
         }else{
-            cli.getSpecFile().forEach(kind -> kind.getSpec().forEach(spec->{
-                StopSparkApp stopSparkApp = new StopSparkApp(cli);
+            cli.getSpecFile().forEach(kind -> kind.getSpec().stream()
+                    .filter(spec->{
+                        return (cli.getCliName()==null
+                                || cli.getCliName().equalsIgnoreCase(((SparkDeploymentSpec)spec).getName()));
+                    })
+                    .forEach(spec->{
+                StopSparkApp stopSparkApp = new StopSparkApp(cli,((SparkDeploymentSpec)spec).getName());
                 try {
-                    stopSparkApp.setAppName(((SparkDeploymentSpec)spec).getName());
                     stopSparkApp.startTask();
                 } catch (Exception e) {
                     ConsoleHelper.console.display(e);

@@ -12,10 +12,14 @@ import org.apache.http.entity.StringEntity;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 public class YarnSvc {
@@ -25,6 +29,7 @@ public class YarnSvc {
     String principle = null;
     String keytab = null;
 
+    public static Logger logger = LoggerFactory.getLogger(YarnSvc.class);
     public static YarnSvc builder(String host){
         return new YarnSvc(host);
     }
@@ -179,12 +184,10 @@ public class YarnSvc {
             }else{
                 return false;
             }
-        } catch (LoginException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch ( Exception e) {
+            StringWriter errors = new StringWriter();
+            e.printStackTrace(new PrintWriter(errors));
+            logger.error(errors.toString());
         }
         return false;
     }
