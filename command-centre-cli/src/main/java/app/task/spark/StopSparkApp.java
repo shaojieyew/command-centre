@@ -1,19 +1,21 @@
 package app.task.spark;
-import app.c2.service.yarn.YarnSvc;
 import app.c2.service.yarn.YarnSvcFactory;
 import app.c2.service.yarn.model.YarnApp;
 import app.cli.SparkCli;
 import app.task.Task;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class StopSparkApp extends Task {
+
+    public static final Logger logger = LoggerFactory.getLogger(StopSparkApp.class);
 
     SparkCli cli;
     String appName;
@@ -56,16 +58,16 @@ public class StopSparkApp extends Task {
 
     @Override
     protected void task() throws Exception {
-        YarnSvc yarnSvc =  YarnSvcFactory.create(cli.getC2CliProperties());
         if(appName!=null) {
-            yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                     .get().stream()
                     .filter(f->f.getName().equals(appName))
                     .forEach(s->{
+                        logger.info("kill applicationid={}",s.getId());
                         YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
                                 .kill();
                     });
-            long runningCount = yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            long runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                     .get().stream()
                     .filter(f->f.getName().equals(appName))
                     .count();
@@ -73,14 +75,12 @@ public class StopSparkApp extends Task {
                 deleteSnapshot(appName);
             }
         } else if(appId!=null) {
-            YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId)
-                    .kill();
-            Optional<YarnApp> app =  YarnSvcFactory
-                    .create(cli.getC2CliProperties())
-                    .setApplicationId(appId).get().stream().findFirst();
+            Optional<YarnApp> app =  YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId).get().stream().findFirst();
             if(app.isPresent() &&
                     !Arrays.stream("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING".split(","))
                             .collect(Collectors.toList()).contains(app.get().getState())){
+                logger.info("kill applicationid={}",appId);
+                YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId).kill();
                 deleteSnapshot(app.get().getName());
             }
         }

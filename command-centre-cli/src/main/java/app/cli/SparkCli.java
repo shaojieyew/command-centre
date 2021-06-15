@@ -8,6 +8,7 @@ import app.spec.resource.Resource;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.spark.*;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,7 @@ public class SparkCli extends Cli {
 
     public List<Kind> getSpecFile() {
         return super.getSpecFile().stream()
-                .filter(k->k.getKind().toUpperCase().equalsIgnoreCase(Cli.KIND_APP_DEPLOYMENT.toUpperCase()))
+                .filter(k->k.getKind().equalsIgnoreCase(Cli.KIND_APP_DEPLOYMENT))
                 .collect(Collectors.toList());
     }
 
@@ -46,12 +48,17 @@ public class SparkCli extends Cli {
         }
         return 0;
     }
+
     public static Logger logger = LoggerFactory.getLogger(SparkCli.class);
-    public List<SparkDeploymentKind> getSubmittedAppSpec(){
+    public List<SparkDeploymentKind> getSubmittedAppSpec() throws IOException {
         List<SparkDeploymentKind> kinds = new ArrayList<>();
-        for (File sparkSubmitDir : new File(getSparkSubmitDir()).listFiles()) {
+        File dir = new File(getSparkSubmitDir());
+        if(!dir.exists() || !dir.isDirectory()){
+            return kinds;
+        }
+        for (File sparkSubmitDir : Objects.requireNonNull(dir.listFiles())) {
             long max = Long.MIN_VALUE;
-            for (File file : sparkSubmitDir.listFiles()) {
+            for (File file : Objects.requireNonNull(sparkSubmitDir.listFiles())) {
                 try{
                     long date = Long.parseLong(file.getName());
                     if(date>max){
@@ -63,9 +70,9 @@ public class SparkCli extends Cli {
             }
 
             if(max>Long.MIN_VALUE){
-                String dir = String.format("%s\\%s", sparkSubmitDir.getAbsolutePath(),  max);
+                String appDir = String.format("%s\\%s", sparkSubmitDir.getAbsolutePath(),  max);
                 try {
-                    kinds.addAll(loadFile(dir, false)
+                    kinds.addAll(loadFile(appDir, false)
                             .stream()
                             .filter(k->k instanceof SparkDeploymentKind)
                             .map(k->(SparkDeploymentKind)k)

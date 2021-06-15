@@ -12,6 +12,7 @@ import app.util.PrintableTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,7 +35,7 @@ public class ListSparkApp extends Task {
 
 
     @Override
-    protected void preTask() {
+    protected void preTask() throws IOException {
         submittedAppSpec = SparkCli.getSpecsFromSparkKind(cli.getSubmittedAppSpec());
         if(cli.getCliFilePath() == null && cli.getCliRecursiveFilePath()==null){
             specs = submittedAppSpec;

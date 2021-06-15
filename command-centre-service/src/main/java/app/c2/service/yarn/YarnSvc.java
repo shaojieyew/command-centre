@@ -111,38 +111,40 @@ public class YarnSvc {
         String strResponse = "";
         HashMap<String,String> requestMap = new HashMap<>();
         requestMap.put("content-type", MediaType.APPLICATION_JSON);
-            HttpGet httpGet = new HttpGet(queryUrl);
-            httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
-            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
-            HttpResponse response= httpCaller.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            strResponse = HttpUtil.httpEntityToString(response.getEntity());
-            if(statusCode != 200){
-                throw new Exception(strResponse);
-            }
+        HttpGet httpGet = new HttpGet(queryUrl);
+        httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
+        HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject)parser.parse(strResponse);
-            JSONObject jsonAppsObject = (JSONObject)json.get("apps");
-            if(jsonAppsObject==null){
-                ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                if(json.get("app")!=null){
-                    YarnApp app = mapper.readValue((json.get("app")).toString(), YarnApp.class);
-                    list.add(app);
-                }
-                return list;
-            }
+        HttpResponse response= httpCaller.execute(httpGet);
+        int statusCode = response.getStatusLine().getStatusCode();
+        strResponse = HttpUtil.httpEntityToString(response.getEntity());
+        if(statusCode != 200){
+            logger.error("failed to get yarn app list, queryUrl={}", queryUrl);
+            throw new Exception(strResponse);
+        }
 
-            JSONArray jsonAppObject = (JSONArray)jsonAppsObject.get("app");
-            for (int i =0;i<jsonAppObject.size();i++ ){
-
-                ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                YarnApp app = mapper.readValue((jsonAppObject.get(i)).toString(), YarnApp.class);
+        JSONParser parser = new JSONParser();
+        JSONObject json = (JSONObject)parser.parse(strResponse);
+        JSONObject jsonAppsObject = (JSONObject)json.get("apps");
+        if(jsonAppsObject==null){
+            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            if(json.get("app")!=null){
+                YarnApp app = mapper.readValue((json.get("app")).toString(), YarnApp.class);
                 list.add(app);
             }
+            return list;
+        }
+
+        JSONArray jsonAppObject = (JSONArray)jsonAppsObject.get("app");
+        for (int i =0;i<jsonAppObject.size();i++ ){
+
+            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            YarnApp app = mapper.readValue((jsonAppObject.get(i)).toString(), YarnApp.class);
+            list.add(app);
+        }
         return list;
     }
 
@@ -164,6 +166,7 @@ public class YarnSvc {
     public boolean kill(){
         try {
             if (applicationId == null) {
+                logger.info("failed to kill yarn application, applicationId is empty");
                 return false;
             }
             String queryUrl = url + "/" + applicationId + "/state";
@@ -177,11 +180,12 @@ public class YarnSvc {
             httpPut.setHeader("Content-type", MediaType.APPLICATION_JSON);
 
             HttpResponse response = httpCaller.execute(httpPut);
-
             String body = HttpUtil.httpEntityToString(response.getEntity());
+
             if(body.equalsIgnoreCase(requestJson)){
                 return true;
             }else{
+                logger.info("failed to kill application, applicationId={}", applicationId);
                 return false;
             }
         } catch ( Exception e) {
