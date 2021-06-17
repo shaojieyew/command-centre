@@ -70,7 +70,7 @@ public class SparkCli extends Cli {
             }
 
             if(max>Long.MIN_VALUE){
-                String appDir = String.format("%s\\%s", sparkSubmitDir.getAbsolutePath(),  max);
+                String appDir = String.format("%s/%s", sparkSubmitDir.getAbsolutePath(),  max);
                 try {
                     kinds.addAll(loadFile(appDir, false)
                             .stream()
