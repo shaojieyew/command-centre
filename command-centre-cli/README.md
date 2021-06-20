@@ -1,22 +1,39 @@
 ## Command center CLI
-A tool to manage spark application and nifi processors using declarative templates
+A tool to manage spark applications and nifi processors using declarative templates
 
-### Functionalities
-- [List Spark Application](#list-spark-application)
-- [Start Spark Application](#start-spark-application)  
-- [Stop Spark Application](#stop-spark-application) 
-- [List Nifi Processors](#list-nifi-processors)
-- [Start Nifi Processors](#start-nifi-processors)
-- [Stop Nifi Processors](#stop-nifi-processors)
-- [List Spark checkpoints and Kafka offsets](#list-spark-checkpoints-and-kafka-offsets)
-- [Get Spark checkpoints offsets](#get-spark-checkpoints-offsets)
-- [Backup Spark checkpoint](#backup-spark-checkpoint)
-- [List checkpoint backup](#list-checkpoint-backup)
-- [Restore Spark checkpoint](#restore-spark-checkpoint)
-- [Spark Application Health Check](#spark-app-health-check)
+### Content
+- [System Design](#system-design)
+- [Installation](#installation)
+    - [Build and Install](#build-and-install)
+    - [Configuration](#configuration)
+- [Spec Files](#spec-files)
+    - [Nifi Query Specification](#nifi-query-specification)
+    - [Spark Deployment Specification](#spark-deployment-specification)
+- [Example Command](#examples)
+    - [List Spark Application](#list-spark-application)
+    - [Start Spark Application](#start-spark-application)  
+    - [Stop Spark Application](#stop-spark-application) 
+    - [List Nifi Processors](#list-nifi-processors)
+    - [Start Nifi Processors](#start-nifi-processors)
+    - [Stop Nifi Processors](#stop-nifi-processors)
+    - [List Spark checkpoints and Kafka offsets](#list-spark-checkpoints-and-kafka-offsets)
+    - [Get Spark checkpoints offsets](#get-spark-checkpoints-offsets)
+    - [Backup Spark checkpoint](#backup-spark-checkpoint)
+    - [List checkpoint backup](#list-checkpoint-backup)
+    - [Restore Spark checkpoint](#restore-spark-checkpoint)
+    - [Spark Application Health Check](#spark-app-health-check)
 
-## Setup
+### System Design
+![alt text](https://drive.google.com/uc?export=view&id=1WNm5EaPBoa66PdtXi1420iLCIVqPX-C_)
 
+Components:
+- User could enter command with spec (specification) files that contain the details of execution 
+- The Command Centre Cli takes input from user and run tasks specific to the command.
+- Setting.yml tells Command Centre where and how it can interact with other internal and external component.
+
+## Installation
+
+### Build and install
 1. `mvn clean package`
 2. extract command-centre-cli/target/command-centre-cli-0.0.1-SNAPSHOT.zip to desire location
 3. add the extracted command-centre-cli-0.0.1-SNAPSHOT/bin directory to OS environment path
@@ -32,17 +49,20 @@ include ` -Djava.security.krb5.conf=D:/krb5.conf` in c2.bat or c2.sh as JVM argu
 # tmpDirectory is use by application to store temporary files
 tmpDirectory: "D:/tmp"
 
+# sparkSnapshotDirectory is use by application to store launched spark application's resources and specification
+sparkSnapshotDirectory: "D:/spark/snapshot"
+
 # sparkHome is required for spark-submit 
 sparkHome:  "D:/spark-2.4.1-bin-hadoop2.7"
 
 # maven repository setting
 mavenProperties:
   - url: "https://gitlab.com/api/v4/projects/111111/packages/maven"
-    privateToken: "SAd6FTHRVdfgertGTFW325G"
+    privateToken: "11111111111111111111111"
     type: "gitlab" # jfrog / gitlab - optional field, witout it, wouldm eans lesson functionalities
 
-  - url: "https://gitlab.com/api/v4/projects/2222/packages/maven"
-    privateToken: "SAd6FTHRVdfgertGTFW325G"
+  - url: "https://gitlab.com/api/v4/projects/222222/packages/maven"
+    privateToken: "22222222222222222222222"
 
 # nifi setting
 nifiProperties:
@@ -53,11 +73,11 @@ nifiProperties:
 
 # git repositiories for resource reference
 gitProperties:
-  - url: "https://gitlab.com/111/command-centre.git"
-    token: "SAd6FTHRVdfgertGTFW325G"
+  - url: "https://gitlab.com/111/spark-etl-project.git"
+    token: "11111111111111111111111"
 
-  - url: "https://github.com/222/command-centre.git"
-    token: "SADdfhge213Dw"
+  - url: "https://github.com/222/etl-configuration.git"
+    token: "22222222222222222222222"
 
 # yarn cluster for running spark application
 hadoopYarnProperties:
@@ -99,7 +119,7 @@ Spec files can be included in a command by either specifying the file `-f C:/exa
 use `-rf` for recursive
 Only files that have the correct Spec file format will be included. Example below.
 
-### SparkDeployment 
+### Spark Deployment Specification 
 This spec file define the attributes require to start the spark applications.
 ```
 kind : SparkDeployment
@@ -176,7 +196,7 @@ spec:
   - name: spark-app3 
   ...
 ```
-### NifiQuery
+### Nifi Query Specification
 This spec file defines query on Nifi processors. Actions will be applied to the queried processors/process groups
 ```
 kind : NifiQuery
@@ -188,11 +208,11 @@ spec:
                 # when root is specify, only processors that do not have any inflow will be updated
 
   - name: query2
-    query: ^NiFi.*/aaa
+    query: NiFi.*/aa
     type: ProcessGroup
 
   - name: query3
-    query: "/"
+    query: "/GenerateFlowFile"
     type: GenerateFlowFile
 
 ```
