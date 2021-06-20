@@ -45,7 +45,7 @@ public class ListCheckpoints extends Task {
             });
         }).filter(r->{
             if(cli.isCliShowBacklogOnly()){
-                return r.offsetBacklog>0;
+                return r.getOffsetBacklog()>0;
             }else{
                 return true;
             }

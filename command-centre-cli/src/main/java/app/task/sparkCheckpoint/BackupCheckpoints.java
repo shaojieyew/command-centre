@@ -45,16 +45,16 @@ public class BackupCheckpoints extends Task {
             });
         }).filter(r->{
             if(cli.isCliShowBacklogOnly()){
-                return r.offsetBacklog>0;
+                return r.getOffsetBacklog()>0;
             }else{
                 return true;
             }
-        }).map(f->f.checkpointPath).distinct().collect(Collectors.toList());
+        }).map(f->f.getCheckpointPath()).distinct().collect(Collectors.toList());
 
         if(checkpointPaths.size()==0){
             ConsoleHelper.console.display(new Exception("No checkpoint directory found"));
         }else{
-            String backupName = "CheckpointBackup"+System.currentTimeMillis();
+            String backupName = BackupCheckpoints.class.getName()+"_"+System.currentTimeMillis();
             if(cli.getCliName()!=null){
                 backupName = cli.getCliName();
             }

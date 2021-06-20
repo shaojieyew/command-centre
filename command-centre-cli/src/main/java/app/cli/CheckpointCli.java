@@ -1,6 +1,9 @@
 package app.cli;
 
 import app.cli.type.Action;
+import app.task.hdfs.BackupDirectory;
+import app.task.hdfs.ListBackups;
+import app.task.hdfs.RestoreBackups;
 import app.task.sparkCheckpoint.*;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -31,10 +34,10 @@ public class CheckpointCli extends Cli {
                 new ListBackups(this).startTask();
             }
             if(getCliAction().equalsIgnoreCase(Action.mv.toString())){
-                new BackupCheckpoints(this).startTask();
+                new BackupDirectory(this).startTask();
             }
             if(getCliAction().equalsIgnoreCase(Action.restore.toString())){
-                new RestoreCheckpoints(this).startTask();
+                new RestoreBackups(this).startTask();
             }
         }
         return 0;
