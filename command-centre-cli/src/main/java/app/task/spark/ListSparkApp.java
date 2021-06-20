@@ -114,9 +114,14 @@ public class ListSparkApp extends Task {
                                 isHealthCheckEnable);
                     }).collect(Collectors.toList());
         }else{
-            boolean isHealthCheckEnable = submittedAppSpec.stream()
-                    .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName))
-                    .anyMatch(appSpec->appSpec.getEnableHealthCheck().equalsIgnoreCase("true"));
+            Optional<SparkDeploymentSpec> submittedSpec = submittedAppSpec.stream()
+                    .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName)).findFirst();
+            boolean isHealthCheckEnable = false;
+            if(submittedSpec.isPresent()){
+                isHealthCheckEnable = submittedAppSpec.stream()
+                        .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName))
+                        .anyMatch(appSpec->"true".equalsIgnoreCase(appSpec.getEnableHealthCheck()));
+            }
 
             if(finalRemoteApp==null){
                 appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN", isHealthCheckEnable));

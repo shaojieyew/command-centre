@@ -112,7 +112,7 @@ public abstract class Cli  implements Callable<Integer> {
                     try {
                         Kind kind = parseKind(subFile);
                         if(kind != null){
-                            specFile.add(kind);
+                            specsKind.add(kind);
                         }
                     } catch (SpecException e) {
                         ConsoleHelper.console.display(e);
