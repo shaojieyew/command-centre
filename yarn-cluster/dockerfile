@@ -26,7 +26,7 @@ RUN tar xfz /apache-zookeeper.tar.gz --one-top-level=zookeeper --strip-component
 RUN mv /zookeeper /usr/local/zookeeper
 RUN rm /apache-zookeeper.tar.gz
 
-RUN wget -O /apache-kafka.tar.gz -q https://apachemirror.sg.wuchna.com/kafka/2.6.2/kafka_2.12-2.6.2.tgz
+RUN wget -O /apache-kafka.tar.gz -q https://downloads.apache.org/kafka/2.6.2/kafka_2.12-2.6.2.tgz
 RUN tar xfz /apache-kafka.tar.gz --one-top-level=kafka --strip-components 1
 RUN mv /kafka /usr/local/kafka
 RUN rm /apache-kafka.tar.gz
