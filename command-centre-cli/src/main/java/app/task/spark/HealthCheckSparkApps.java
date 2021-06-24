@@ -41,9 +41,9 @@ public class HealthCheckSparkApps extends Task {
             SparkDeploymentSpec sparkDeploymentSpec = (SparkDeploymentSpec) spec;
             if(sparkDeploymentSpec.getEnableHealthCheck()!=null
                     && sparkDeploymentSpec.getEnableHealthCheck().equalsIgnoreCase("true")){
-                RunSparkApp runSparkApp = new RunSparkApp(cli, sparkDeploymentSpec);
-                runSparkApp.setSaveSnapshot(false);
                 try {
+                    RunSparkApp runSparkApp = new RunSparkApp(cli, sparkDeploymentSpec);
+                    runSparkApp.setSaveSnapshot(false);
                     runSparkApp.startTask();
                 } catch (Exception e) {
                     ConsoleHelper.console.display(e);
