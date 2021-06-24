@@ -24,7 +24,7 @@ A tool to manage spark applications and nifi processors using declarative templa
     - [Spark Application Health Check](#spark-app-health-check)
 
 ### System Design
-![alt text](https://drive.google.com/uc?export=view&id=1WNm5EaPBoa66PdtXi1420iLCIVqPX-C_)
+![plot](./documentation/c2-cli-design.png)
 
 Components:
 - User could enter command with spec (specification) files that contain the details of execution 
