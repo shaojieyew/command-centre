@@ -263,17 +263,12 @@ c2.sh nifi ls -f D:\command-centre\command-centre-cli\example
 
 # instead of using spec files, query or Nifi Component id can be specified inline 
 c2.sh nifi ls --query "processgroup1/abc/*" --process-type GenerateFlowFiles
-c2.sh nifi ls --query "27281353-0179-1000-a523-953b88dae040/abc/*" --process-type GenerateFlowFiles
 
-# query that start with '/' signify the root processGroup of which is 'NiFi Flow'
-# query without '/' will match component of any level
-c2.sh nifi ls --query "/aa" --process-type ProcessGroup
-
-# using id, regex, '*' and component Name at the same time
-c2.sh nifi ls --query "/27281353-0179-1000-a523-953b88dae040/^Test.*123$/*/ListHDFS" --process-type ProcessGroup
+# using regex, and component Name at the same time
+c2.sh nifi ls --query "^/Test.*123/*/ListHDFS$" --process-type ProcessGroup
 
 # using Nifi component id
-c2.sh nifi ls --id 27281353-0179-1000-a523-953b88dae040
+c2.sh nifi ls --id 27281353-0179-1000-a523-953b88dae040  --process-type ProcessGroup
 ```
 ### Start Nifi Processors
 ```
