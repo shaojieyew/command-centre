@@ -5,7 +5,7 @@ mavenProperties:
     privateToken: "B8UxzhjZiBDJK51ZVHxY"
     type: "gitlab"
 nifiProperties:
-  host: "http://localhost:8081"
+  host: "http://localhost:8080"
 gitProperties:
   - url: "https://gitlab.com/c2cc1/command-centre.git"
     token: "B8UxzhjZiBDJK51ZVHxY"

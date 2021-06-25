@@ -6,9 +6,26 @@ public class NifiComponent {
     String id;
     String name;
     String flowPath;
-    String flowPathId;
     String type;
     String status;
+    String groupId;
+    String group;
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
     public String getId() {
         return id;
@@ -34,13 +51,6 @@ public class NifiComponent {
         this.flowPath = flowPath;
     }
 
-    public String getFlowPathId() {
-        return flowPathId;
-    }
-
-    public void setFlowPathId(String flowPathId) {
-        this.flowPathId = flowPathId;
-    }
 
     public String getType() {
         return type;
@@ -59,15 +69,34 @@ public class NifiComponent {
     }
 
     @Override
+    public String toString() {
+        return "NifiComponent{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", flowPath='" + flowPath + '\'' +
+                ", type='" + type + '\'' +
+                ", status='" + status + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", group='" + group + '\'' +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof NifiComponent)) return false;
         NifiComponent that = (NifiComponent) o;
-        return getId().equals(that.getId());
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getName(), that.getName()) &&
+                Objects.equals(getFlowPath(), that.getFlowPath()) &&
+                Objects.equals(getType(), that.getType()) &&
+                Objects.equals(getStatus(), that.getStatus()) &&
+                Objects.equals(getGroupId(), that.getGroupId()) &&
+                Objects.equals(group, that.group);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(getId(), getName(), getFlowPath(), getType(), getStatus(), getGroupId(), group);
     }
 }

@@ -2,6 +2,7 @@ package app.task.nifi;
 
 import app.c2.service.nifi.NifiSvc;
 import app.c2.service.nifi.NifiSvcFactory;
+import app.c2.service.nifi.NifiSvcV2;
 import app.c2.service.nifi.model.NifiComponent;
 import app.cli.NifiCli;
 import app.spec.Kind;
@@ -36,10 +37,11 @@ public class ListNifiProcessors extends Task {
         String keyword;
         keyword = (id!=null && id.length()>0)?id:query;
         List<NifiInfo> list = new ArrayList<>();
-        NifiSvc nifiSvc = NifiSvcFactory.create(cli.getC2CliProperties());
+        NifiSvcV2 nifiSvc = NifiSvcFactory.create(cli.getC2CliProperties());
         Set<NifiComponent> nifiComponents = nifiSvc.findNifiComponent(keyword, processType);
+
         for(NifiComponent processor: nifiComponents) {
-            if(id == null || processor.getId().equalsIgnoreCase(id)|| processor.getFlowPathId().endsWith(id)) {
+            if(id == null || processor.getId().equalsIgnoreCase(id)) {
                 NifiInfo info = new NifiInfo(processor,
                         queryName,
                         query);

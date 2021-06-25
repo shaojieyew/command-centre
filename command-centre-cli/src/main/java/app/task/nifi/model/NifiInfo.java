@@ -59,16 +59,6 @@ public class NifiInfo extends NifiComponent {
     }
 
     @Override
-    public String getFlowPathId() {
-        return flowPathId;
-    }
-
-    @Override
-    public void setFlowPathId(String flowPathId) {
-        this.flowPathId = flowPathId;
-    }
-
-    @Override
     public String getType() {
         return type;
     }
@@ -92,7 +82,6 @@ public class NifiInfo extends NifiComponent {
         this.id = nifiComponent.getId() ;
         this.name = nifiComponent.getName();
         this.flowPath = nifiComponent.getFlowPath();
-        this.flowPathId = nifiComponent.getFlowPathId();
         this.type = nifiComponent.getType();
         this.status = nifiComponent.getStatus();
         this.query = query;
