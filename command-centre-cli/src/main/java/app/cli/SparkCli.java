@@ -8,7 +8,6 @@ import app.spec.resource.Resource;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.spark.*;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,19 +84,39 @@ public class SparkCli extends Cli {
         return kinds;
     }
 
+    /**
+     * returns location of snapshot directory for spark spec and resources
+     * @return
+     */
     public String getSparkSubmitDir(){
         return  getC2CliProperties().getSparkSnapshotDirectory()+"/"+SPARK_SUBMIT_DIR;
     }
+
+    /**
+     * returns location of snapshot directory for jar binaries
+     * @return
+     */
     public String getSparkSubmitJarDir(){
         return  getC2CliProperties().getSparkSnapshotDirectory()+"/"+SPARK_SUBMIT_JAR_DIR;
     }
 
+    /**
+     * this method override and filter out all the Spark Kinds
+     * @param kinds
+     * @return
+     */
     public static List<SparkDeploymentSpec> getSpecsFromKind(List<Kind> kinds){
         return  getSpecsFromSparkKind(kinds.stream()
                 .filter(k->k instanceof SparkDeploymentKind)
                 .map(k->(SparkDeploymentKind)k)
                 .collect(Collectors.toList()));
     }
+
+    /**
+     * this method flatten nested Spec in Kind
+     * @param kinds
+     * @return list of flattened Spark Spec
+     */
     public static List<SparkDeploymentSpec> getSpecsFromSparkKind(List<SparkDeploymentKind> kinds){
         return kinds.stream()
                 .filter(k->k instanceof SparkDeploymentKind)

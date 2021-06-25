@@ -6,6 +6,7 @@ import app.spec.MetadataKind;
 import app.spec.SpecException;
 import app.spec.nifi.NifiQueryKind;
 import app.spec.spark.SparkDeploymentKind;
+import app.task.Housekeeper;
 import app.util.ConsoleHelper;
 import app.util.FileHelper;
 import app.util.YamlLoader;
@@ -17,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -75,14 +75,15 @@ public abstract class Cli  implements Callable<Integer> {
     public List<Kind> getSpecFile() {
         return specFile;
     }
+
+    private C2CliProperties c2CliProperties = null;
+
     public C2CliProperties getC2CliProperties() {
         return c2CliProperties;
     }
-    private C2CliProperties c2CliProperties = null;
 
-    private String []args;
+
     public int execute(String[] args){
-        this.args = args;
         return new CommandLine(this).execute(args);
     }
 
@@ -155,6 +156,8 @@ public abstract class Cli  implements Callable<Integer> {
 
         LOG.info("init project env properties");
         LOG.info(c2CliProperties.toString());
+
+        Housekeeper.houseKeep(c2CliProperties.getTmpDirectory());
 
         try{
             return task();

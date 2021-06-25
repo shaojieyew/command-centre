@@ -19,7 +19,7 @@ public class JaasFileManager {
     }
 
     public void setJaasConfig(String tmpDirectory) throws IOException {
-        FileManager.clean(tmpDirectory, 1);
+         FileManager.clean(tmpDirectory, 1, false);
         String jaas_path = tmpDirectory+"/jaas_"+System.currentTimeMillis()+".conf";
         FileUtils.forceMkdirParent(new File(jaas_path));
         FileWriter myWriter = new FileWriter(jaas_path);

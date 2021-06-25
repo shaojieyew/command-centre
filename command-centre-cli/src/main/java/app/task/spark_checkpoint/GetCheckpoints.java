@@ -1,14 +1,12 @@
-package app.task.sparkCheckpoint;
+package app.task.spark_checkpoint;
 
 import app.c2.service.kafka.SparkCheckpointSvc;
 import app.c2.service.kafka.SparkCheckpointSvcFactory;
 import app.cli.CheckpointCli;
 import app.task.Task;
 import app.util.ConsoleHelper;
-import app.util.PrintableTable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class GetCheckpoints extends Task {
 

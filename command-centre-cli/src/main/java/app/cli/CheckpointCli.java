@@ -4,7 +4,7 @@ import app.cli.type.Action;
 import app.task.hdfs.BackupDirectory;
 import app.task.hdfs.ListBackups;
 import app.task.hdfs.RestoreBackups;
-import app.task.sparkCheckpoint.*;
+import app.task.spark_checkpoint.*;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 

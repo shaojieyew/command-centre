@@ -1,4 +1,4 @@
-package app.task.sparkCheckpoint;
+package app.task.spark_checkpoint;
 
 public  class SparkCheckpoint{
     private String checkpointPath;

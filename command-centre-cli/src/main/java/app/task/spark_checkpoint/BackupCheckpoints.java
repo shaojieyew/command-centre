@@ -1,35 +1,35 @@
-package app.task.sparkCheckpoint;
+package app.task.spark_checkpoint;
 
+import app.c2.service.hdfs.FileBackupSvc;
+import app.c2.service.kafka.CheckpointBackupSvcFactory;
 import app.c2.service.kafka.SparkCheckpointSvc;
 import app.c2.service.kafka.SparkCheckpointSvcFactory;
 import app.cli.CheckpointCli;
 import app.task.Task;
-import app.util.PrintableTable;
+import app.util.ConsoleHelper;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ListCheckpoints extends Task {
+public class BackupCheckpoints extends Task {
 
     CheckpointCli cli;
-    public ListCheckpoints(CheckpointCli cli){
+    public BackupCheckpoints(CheckpointCli cli){
         this.cli = cli;
     }
 
     @Override
     protected String getTaskName() {
-        return "Listing Spark Streaming Checkpoint";
+        return "Moving Checkpoints to Backup folder";
     }
-
-
 
     @Override
     protected void preTask() throws Exception {
-        if(cli.getCliQuery()==null){
-            throw new Exception("Missing checkpoint -q <path>");
-        }
+
     }
-    List<SparkCheckpoint> result= new ArrayList<>();
 
     @Override
     protected void task() throws Exception {
@@ -39,7 +39,7 @@ public class ListCheckpoints extends Task {
         SparkCheckpointSvc sparkCheckpointSvc
                 = SparkCheckpointSvcFactory.create(cli.getC2CliProperties(), cli.getC2CliProperties().getTmpDirectory());
         Map<String, Map<String, Long>> listResult = sparkCheckpointSvc.getKafkaBacklogWithCheckpoints(checkpointLocations);
-        result = listResult.entrySet().stream().flatMap(e->{
+        List<String> checkpointPaths = listResult.entrySet().stream().flatMap(e->{
             return e.getValue().entrySet().stream().map(topicPartitionLongEntry -> {
                 return new SparkCheckpoint(e.getKey(), topicPartitionLongEntry.getKey(), topicPartitionLongEntry.getValue());
             });
@@ -49,16 +49,23 @@ public class ListCheckpoints extends Task {
             }else{
                 return true;
             }
-        }).collect(Collectors.toList());
-    }
+        }).map(f->f.getCheckpointPath()).distinct().collect(Collectors.toList());
 
+        if(checkpointPaths.size()==0){
+            ConsoleHelper.console.display(new Exception("No checkpoint directory found"));
+        }else{
+            String backupName = BackupCheckpoints.class.getName()+"_"+System.currentTimeMillis();
+            if(cli.getCliName()!=null){
+                backupName = cli.getCliName();
+            }
+
+            FileBackupSvc fileBackupSvc = CheckpointBackupSvcFactory.create(cli.getC2CliProperties());
+            fileBackupSvc.backup(backupName,checkpointPaths);
+        }
+    }
 
     @Override
     public void postTask(){
-        List<String> columns = new ArrayList<>();
-        columns.add("checkpointPath");
-        columns.add("topic");
-        columns.add("offsetBacklog");
-        new PrintableTable<SparkCheckpoint>(result, columns).show();
+
     }
 }

@@ -174,7 +174,7 @@ public class GitSvc {
         if( new File(tmpDirectory).exists() &&  !new File(tmpDirectory).isFile()){
             // delete folders older than 2hours
             try {
-                FileManager.clean(tmpDirectory, 2);
+                FileManager.clean(tmpDirectory, 2, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -286,7 +286,7 @@ public class GitSvc {
         if( new File(tmpDirectory).exists() &&  !new File(tmpDirectory).isFile()){
             // delete folders older than 2hours
             try {
-                FileManager.clean(tmpDirectory, 2);
+                FileManager.clean(tmpDirectory, 2, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }

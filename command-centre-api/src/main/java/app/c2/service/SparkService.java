@@ -103,7 +103,7 @@ public class SparkService {
     private  List<File> createTempFiles(AppInstance appInstance, Map<String, app.c2.model.File> tmpFiles, boolean inheritProjectFiles) throws IOException {
         String baseDir = c2PlatformProperties.getTmp()+"/project_"+appInstance.getProjectId()+"/spark-submit";
         if (new File(baseDir).getAbsoluteFile().exists()) {
-            FileManager.clean(baseDir, 2);
+            FileManager.clean(baseDir, 2, false);
         }
         if (!new File(baseDir).getAbsoluteFile().exists()) {
             Files.createDirectories(Paths.get(baseDir));

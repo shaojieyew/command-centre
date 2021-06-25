@@ -9,10 +9,10 @@ import java.util.Arrays;
 public class FileManager {
 
     public static void clean(String path) throws IOException {
-        clean(path, 24);
+        clean(path, 24, true);
     }
 
-    public static void clean(String path, int olderThanHours) throws IOException {
+    public static void clean(String path, int olderThanHours, boolean keepRootFolder) throws IOException {
         File targetPath = new File(path);
         if(!targetPath.getAbsoluteFile().exists()){
             return;
@@ -29,7 +29,7 @@ public class FileManager {
                     e.printStackTrace();
                 }
             });
-            if(targetPath.listFiles().length==0){
+            if(targetPath.listFiles().length==0 && !keepRootFolder){
                 FileUtils.deleteDirectory(targetPath);
             }
         }
