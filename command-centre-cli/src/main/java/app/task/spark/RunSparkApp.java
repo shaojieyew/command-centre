@@ -7,7 +7,6 @@ import app.c2.service.maven.MavenSvcFactory;
 import app.c2.service.maven.model.Package;
 import app.c2.service.spark.SparkSvc;
 import app.c2.service.spark.SparkSvcFactory;
-import app.c2.service.spark.model.SparkArgKeyValuePair;
 import app.c2.service.yarn.YarnSvc;
 import app.c2.service.yarn.YarnSvcFactory;
 import app.c2.service.yarn.model.YarnApp;
@@ -20,11 +19,14 @@ import app.util.DateHelper;
 import app.util.YamlLoader;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class RunSparkApp extends Task {
 

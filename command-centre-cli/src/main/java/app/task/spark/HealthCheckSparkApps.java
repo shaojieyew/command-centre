@@ -33,9 +33,6 @@ public class HealthCheckSparkApps extends Task {
 
     @Override
     protected void task() throws Exception {
-        SparkCli.getSpecsFromSparkKind(cli.getSubmittedAppSpec()).forEach(spec->{
-
-        });
 
         cli.getSubmittedAppSpec().forEach(kind -> kind.getSpec().forEach(spec->{
             SparkDeploymentSpec sparkDeploymentSpec = (SparkDeploymentSpec) spec;
