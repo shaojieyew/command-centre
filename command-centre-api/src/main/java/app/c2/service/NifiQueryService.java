@@ -7,6 +7,7 @@ import app.c2.model.compositeField.NifiQueryId;
 import app.c2.properties.C2Properties;
 import app.c2.service.nifi.NifiSvc;
 import app.c2.service.nifi.NifiSvcFactory;
+import app.c2.service.nifi.NifiSvcV2;
 import app.c2.service.nifi.model.NifiComponent;
 import com.davis.client.ApiException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -129,7 +130,7 @@ public class NifiQueryService {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
-            NifiSvc svc = NifiSvcFactory.create(prop);
+            NifiSvcV2 svc = NifiSvcFactory.create(prop);
             svc.findNifiComponent(query,processType).forEach(s->{
                 try {
                     if (processType == null || (!processType.equalsIgnoreCase(s.getType()))) {
@@ -146,7 +147,7 @@ public class NifiQueryService {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
-            NifiSvc svc = NifiSvcFactory.create(prop);
+            NifiSvcV2 svc = NifiSvcFactory.create(prop);
             for (NifiComponent nifiComponent : svc.findNifiComponent(query, null)) {
                 if(onlyLeadingProcessor){
                     svc.updateRunStatusById(nifiComponent.getId(),status,NifiSvc.Scope.Root.toString());
@@ -168,7 +169,7 @@ public class NifiQueryService {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
-            NifiSvc svc = NifiSvcFactory.create(prop);
+            NifiSvcV2 svc = NifiSvcFactory.create(prop);
             if(onlyLeadingProcessor){
                 svc.updateRunStatusById(groupId,status,NifiSvc.Scope.Root.toString());
             }else{
@@ -188,7 +189,7 @@ public class NifiQueryService {
         Optional<Project> project = projectService.findById(projectId);
         if(project.isPresent() && project.get().getEnv()!=null) {
             C2Properties prop = project.get().getEnv();
-            NifiSvc svc = NifiSvcFactory.create(prop);
+            NifiSvcV2 svc = NifiSvcFactory.create(prop);
             svc.updateRunStatusById(id, status,null);
         }
     }
