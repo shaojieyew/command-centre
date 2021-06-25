@@ -40,7 +40,7 @@ public abstract class UpdateNifiProcessorsStatus extends Task {
         keyword = (id!=null && id.length()>0)?id:query;
         Set<NifiComponent> nifiComponents = nifiSvc.findNifiComponent(keyword, processType);
         for(NifiComponent processor: nifiComponents) {
-            if(id == null || processor.getId().equalsIgnoreCase(id)) {
+            if(id == null || processor.getId().equalsIgnoreCase(id) || processor.getGroupId().equalsIgnoreCase(id)) {
                 NifiInfo info = new NifiInfo(processor,
                         queryName,
                         query);

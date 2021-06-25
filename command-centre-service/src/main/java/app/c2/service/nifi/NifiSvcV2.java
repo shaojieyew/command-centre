@@ -17,7 +17,7 @@ public class NifiSvcV2 extends AbstractNifiSvc {
 
     public static void main(String arg[]) throws Exception {
         NifiSvcV2 nifiSvc = new NifiSvcV2("http://localhost:8080");
-        nifiSvc.findNifiComponent("DDD$","ProcessGroup")
+        nifiSvc.findNifiComponent("41659bc4-017a-1000-f7c7-5a40a3605662","ProcessGroup")
                 .stream().forEach(System.out::println);
     }
 
@@ -37,22 +37,21 @@ public class NifiSvcV2 extends AbstractNifiSvc {
         String finalProcessType = processType;
         return listSummary()
                 .filter(nifiComponent ->{
-
+                    boolean matchingProcessType = true;
+                    if(!StringUtils.isEmpty(finalProcessType)){
+                        matchingProcessType = finalProcessType.equalsIgnoreCase(nifiComponent.getType());
+                    }
                     if(finalPattern.equals(nifiComponent.getId())
                             || finalPattern.equals(nifiComponent.getGroupId())){
-                        return true;
+                        return matchingProcessType;
                     }
 
-                    boolean isProcessGroup = false;
-                    isProcessGroup = ProcessType.ProcessGroup.name().equalsIgnoreCase(nifiComponent.getType());
+                   // boolean isProcessGroup = false;
+                    //isProcessGroup = ProcessType.ProcessGroup.name().equalsIgnoreCase(nifiComponent.getType());
                     if(finalProcessType.equalsIgnoreCase(ProcessType.ProcessGroup.name())){
-                        return Pattern.compile(finalPattern.trim()).matcher(nifiComponent.getFlowPath()).find() && isProcessGroup;
+                        return Pattern.compile(finalPattern.trim()).matcher(nifiComponent.getFlowPath()).find() && matchingProcessType;
                     }else{
-                        boolean matchingProcessType = true;
-                        if(!StringUtils.isEmpty(finalProcessType)){
-                            matchingProcessType = finalProcessType.equalsIgnoreCase(nifiComponent.getType());
-                        }
-                        return Pattern.compile(finalPattern.trim()).matcher(nifiComponent.getFlowPath()).find() && matchingProcessType && !isProcessGroup;
+                        return Pattern.compile(finalPattern.trim()).matcher(nifiComponent.getFlowPath()).find() && matchingProcessType ;
                     }
                 })
                 .collect(Collectors.toSet());
