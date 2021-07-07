@@ -67,21 +67,24 @@ public class StopSparkApp extends Task {
                         YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
                                 .kill();
                     });
-            long runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            if(YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
                     .get().stream()
-                    .filter(f->f.getName().equals(appName))
-                    .count();
-            if(runningCount==0){
+                    .noneMatch(f->f.getName().equals(appName))){
                 deleteSnapshot(appName);
             }
         } else if(appId!=null) {
-            Optional<YarnApp> app =  YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId).get().stream().findFirst();
-            if(app.isPresent() &&
-                    !Arrays.stream("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING".split(","))
-                            .collect(Collectors.toList()).contains(app.get().getState())){
-                logger.info("kill applicationid={}",appId);
-                YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(appId).kill();
-                deleteSnapshot(app.get().getName());
+            YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                    .get().stream()
+                    .filter(f->f.getId().equals(appId))
+                    .forEach(s->{
+                        logger.info("kill applicationid={}",s.getId());
+                        YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
+                        .kill();
+            });
+            if(YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+                    .get().stream()
+                    .noneMatch(f->f.getId().equals(appId))){
+                deleteSnapshot(appName);
             }
         }
     }
