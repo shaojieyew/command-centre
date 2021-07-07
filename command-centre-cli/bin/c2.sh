@@ -20,9 +20,10 @@ do
       fi
     fi
   fi
+  args+=("${arg}")
 done
 
 #cd "$(pwd)/$(dirname "$0")/.."
 cd "$(dirname "$0")/.."
 export C2_HOME=$(pwd)
-java -jar $C2_HOME/boot/command-centre-cli.jar ${args[@]}
+java -jar $C2_HOME/boot/command-centre-cli.jar "${args[@]}"
