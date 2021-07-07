@@ -172,7 +172,7 @@ public class YarnSvc {
             String queryUrl = url + "/" + applicationId + "/state";
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
-            String requestJson = "{\"state\": \"KILLED\"}";
+            String requestJson = "{\"state\": \"RUNNING\"}";
             HttpPut httpPut = new HttpPut(queryUrl);
             StringEntity entity = new StringEntity(requestJson, "UTF-8");
             httpPut.setEntity(entity);
@@ -185,8 +185,9 @@ public class YarnSvc {
             if(body.equalsIgnoreCase(requestJson)){
                 return true;
             }else{
-                logger.info("failed to kill application, applicationId={}", applicationId);
-                return false;
+                String error = "failed to kill application, applicationId="+applicationId+", response="+body;
+                logger.info(error);
+                throw new RuntimeException(error);
             }
         } catch ( Exception e) {
             StringWriter errors = new StringWriter();
