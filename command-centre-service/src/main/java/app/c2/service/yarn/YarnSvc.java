@@ -172,7 +172,7 @@ public class YarnSvc {
             String queryUrl = url + "/" + applicationId + "/state";
             HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
 
-            String requestJson = "{\"state\": \"RUNNING\"}";
+            String requestJson = "{\"state\": \"KILLED\"}";
             HttpPut httpPut = new HttpPut(queryUrl);
             StringEntity entity = new StringEntity(requestJson, "UTF-8");
             httpPut.setEntity(entity);
