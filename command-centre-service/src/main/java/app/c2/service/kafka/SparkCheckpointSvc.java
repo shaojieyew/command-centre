@@ -308,16 +308,16 @@ public class SparkCheckpointSvc {
         long startedTime = System.currentTimeMillis();
         while ((assignment = consumer.assignment()).isEmpty()) {
             try{
-                consumer.poll(Duration.ofMillis(500));
-            }catch (Exception ex){
+                consumer.poll(Duration.ofMillis(1000));
+            }catch (Throwable ex){
                 LOG.error(ex.getMessage());
             }
             if(System.currentTimeMillis()-startedTime>(1000*30)){
-                throw new Exception("Could not get kafka offset");
+                break;
             }
         }
         Map<TopicPartition, Long> offsets = new HashMap<>();
-        consumer.endOffsets(assignment).forEach((partition, offset) -> offsets.put(partition,offset));
+        consumer.endOffsets(assignment).forEach(offsets::put);
         return offsets;
     }
 }
