@@ -173,7 +173,8 @@ public class AppInstanceService {
         if(!projectOpt.isPresent()){
             throw new Exception("Invalid ProjectId");
         }
-        return YarnSvcFactory.create(projectOpt.get().getEnv()).setApplicationId(appId).kill();
+        YarnSvcFactory.create(projectOpt.get().getEnv()).setApplicationId(appId).kill();
+        return true;
     }
 
 

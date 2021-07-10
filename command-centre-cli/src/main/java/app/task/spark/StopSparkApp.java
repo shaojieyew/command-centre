@@ -3,15 +3,14 @@ import app.c2.service.yarn.YarnSvcFactory;
 import app.c2.service.yarn.model.YarnApp;
 import app.cli.SparkCli;
 import app.task.Task;
+import app.util.ConsoleHelper;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class StopSparkApp extends Task {
 
@@ -56,37 +55,60 @@ public class StopSparkApp extends Task {
     protected void postTask() throws Exception {
     }
 
+    public static String YARN_RUNNING_STATE ="NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING";
+
     @Override
     protected void task() throws Exception {
         if(appName!=null) {
-            YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
                     .get().stream()
                     .filter(f->f.getName().equals(appName))
                     .forEach(s->{
                         logger.info("kill applicationid={}",s.getId());
-                        YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
-                                .kill();
+                        try {
+                            YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
+                                    .kill();
+                        } catch (Exception e) {
+                            ConsoleHelper.console.display(e);
+                        }
                     });
-            long runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                    .get().stream()
-                    .filter(f->f.getName().equals(appName))
-                    .count();
+            int count = 0;
+            long runningCount = 0;
+
+            do{
+                runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
+                        .get().stream()
+                        .filter(f->f.getName().equals(appName))
+                        .count();
+                count++;
+            } while(count<3 && runningCount >0);
+
             if(runningCount==0){
                 deleteSnapshot(appName);
+            }else{
+                throw new RuntimeException("Failed to stop application appName = "+appName);
             }
         } else if(appId!=null) {
-            Optional<YarnApp> app =  YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+            Optional<YarnApp> app =  YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
                     .get().stream()
                     .filter(f->f.getId().equals(appId)).findAny();
             if(app.isPresent()){
                 YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(app.get().getId())
                         .kill();
-                long runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
-                        .get().stream()
-                        .filter(f->f.getName().equals(app.get().getName()))
-                        .count();
+                int count = 0;
+                long runningCount = 0;
+                do{
+                    runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
+                            .get().stream()
+                            .filter(f->f.getName().equals(app.get().getName()))
+                            .count();
+                    count++;
+                } while(count<3 && runningCount >0);
+
                 if(runningCount==0){
                     deleteSnapshot(app.get().getName());
+                }else{
+                    throw new RuntimeException("Failed to stop application appId = "+appId);
                 }
             }
         }

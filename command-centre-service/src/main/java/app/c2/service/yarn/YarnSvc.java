@@ -23,7 +23,7 @@ import java.io.StringWriter;
 import java.util.*;
 
 public class YarnSvc {
-    String url;
+    String []urls;
     String applicationId;
     Map<String, String> args = new HashMap<>();
     String principle = null;
@@ -34,7 +34,10 @@ public class YarnSvc {
         return new YarnSvc(host);
     }
     public YarnSvc(String host){
-        url= host+"/ws/v1/cluster/apps";
+        urls = new String[]{host};
+    }
+    public YarnSvc(String[] hosts){
+        urls = hosts;
     }
 
     public YarnSvc setPrinciple(String principle) {
@@ -89,63 +92,73 @@ public class YarnSvc {
     }
 
     /**
-     * get list of yarn application
+     * get list of yarn application from yarn api
      * @return
      */
     public List<YarnApp> get() throws Exception {
-        List<YarnApp> list = new ArrayList<>();
-        String queryUrl = url;
-        String parameters = "";
-        for(Map.Entry<String, String> entry : args.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            parameters = parameters +key+"="+value+ "&";
-        }
-        if(applicationId!=null&&applicationId.length()>0){
-            queryUrl = queryUrl+"/"+applicationId;
-        }
-        if(parameters.length()>0){
-            queryUrl = queryUrl + "?"+parameters;
-        }
 
-        String strResponse = "";
-        HashMap<String,String> requestMap = new HashMap<>();
-        requestMap.put("content-type", MediaType.APPLICATION_JSON);
+        Exception exception = null;
 
-        HttpGet httpGet = new HttpGet(queryUrl);
-        httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
-        HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
+        for(String url : urls){
+            try{
+                List<YarnApp> list = new ArrayList<>();
+                String queryUrl = url+"/ws/v1/cluster/apps";
+                String parameters = "";
+                for(Map.Entry<String, String> entry : args.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
+                    parameters = parameters +key+"="+value+ "&";
+                }
+                if(applicationId!=null&&applicationId.length()>0){
+                    queryUrl = queryUrl+"/"+applicationId;
+                }
+                if(parameters.length()>0){
+                    queryUrl = queryUrl + "?"+parameters;
+                }
 
-        HttpResponse response= httpCaller.execute(httpGet);
-        int statusCode = response.getStatusLine().getStatusCode();
-        strResponse = HttpUtil.httpEntityToString(response.getEntity());
-        if(statusCode != 200){
-            logger.error("failed to get yarn app list, queryUrl={}", queryUrl);
-            throw new Exception(strResponse);
-        }
+                String strResponse = "";
+                HashMap<String,String> requestMap = new HashMap<>();
+                requestMap.put("content-type", MediaType.APPLICATION_JSON);
 
-        JSONParser parser = new JSONParser();
-        JSONObject json = (JSONObject)parser.parse(strResponse);
-        JSONObject jsonAppsObject = (JSONObject)json.get("apps");
-        if(jsonAppsObject==null){
-            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            if(json.get("app")!=null){
-                YarnApp app = mapper.readValue((json.get("app")).toString(), YarnApp.class);
-                list.add(app);
+                HttpGet httpGet = new HttpGet(queryUrl);
+                httpGet.setHeader("content-type",MediaType.APPLICATION_JSON);
+                HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
+
+                HttpResponse response= httpCaller.execute(httpGet);
+                int statusCode = response.getStatusLine().getStatusCode();
+                strResponse = HttpUtil.httpEntityToString(response.getEntity());
+                if(statusCode != 200){
+                    logger.error("failed to get yarn app list, queryUrl={}", queryUrl);
+                    throw new Exception(strResponse);
+                }
+
+                JSONParser parser = new JSONParser();
+                JSONObject json = (JSONObject)parser.parse(strResponse);
+                JSONObject jsonAppsObject = (JSONObject)json.get("apps");
+                if(jsonAppsObject==null){
+                    ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    if(json.get("app")!=null){
+                        YarnApp app = mapper.readValue((json.get("app")).toString(), YarnApp.class);
+                        list.add(app);
+                    }
+                    return list;
+                }
+
+                JSONArray jsonAppObject = (JSONArray)jsonAppsObject.get("app");
+                for (int i =0;i<jsonAppObject.size();i++ ){
+
+                    ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    YarnApp app = mapper.readValue((jsonAppObject.get(i)).toString(), YarnApp.class);
+                    list.add(app);
+                }
+                return list;
+            }catch (Exception ex){
+                exception = ex;
             }
-            return list;
         }
-
-        JSONArray jsonAppObject = (JSONArray)jsonAppsObject.get("app");
-        for (int i =0;i<jsonAppObject.size();i++ ){
-
-            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            YarnApp app = mapper.readValue((jsonAppObject.get(i)).toString(), YarnApp.class);
-            list.add(app);
-        }
-        return list;
+        throw exception;
     }
 
     /**
@@ -153,9 +166,9 @@ public class YarnSvc {
      * @param applicationId
      * @return
      */
-    public boolean kill(String applicationId){
+    public void kill(String applicationId) throws Exception {
         this.applicationId = applicationId;
-        return kill();
+        kill();
     }
 
     /**
@@ -163,37 +176,38 @@ public class YarnSvc {
      * applicationId
      * @return
      */
-    public boolean kill(){
-        try {
-            if (applicationId == null) {
-                logger.info("failed to kill yarn application, applicationId is empty");
-                return false;
-            }
-            String queryUrl = url + "/" + applicationId + "/state";
-            HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
-
-            String requestJson = "{\"state\": \"KILLED\"}";
-            HttpPut httpPut = new HttpPut(queryUrl);
-            StringEntity entity = new StringEntity(requestJson, "UTF-8");
-            httpPut.setEntity(entity);
-            httpPut.setHeader("Accept", MediaType.APPLICATION_JSON);
-            httpPut.setHeader("Content-type", MediaType.APPLICATION_JSON);
-
-            HttpResponse response = httpCaller.execute(httpPut);
-            String body = HttpUtil.httpEntityToString(response.getEntity());
-
-            if(body.equalsIgnoreCase(requestJson)){
-                return true;
-            }else{
-                String error = "failed to kill application, applicationId="+applicationId+", response="+body;
-                logger.info(error);
-                throw new RuntimeException(error);
-            }
-        } catch ( Exception e) {
-            StringWriter errors = new StringWriter();
-            e.printStackTrace(new PrintWriter(errors));
-            logger.error(errors.toString());
+    public void kill() throws Exception {
+        if (applicationId == null) {
+            throw new Exception("failed to kill yarn application, applicationId is empty");
         }
-        return false;
+        Arrays.stream(urls).forEach(url->{
+            try {
+                String queryUrl = url +"/ws/v1/cluster/apps/" + applicationId + "/state";
+                HttpCaller httpCaller = HttpCallerFactory.create(principle, keytab);
+
+                String requestJson = "{\"state\": \"KILLED\"}";
+                HttpPut httpPut = new HttpPut(queryUrl);
+                StringEntity entity = new StringEntity(requestJson, "UTF-8");
+                httpPut.setEntity(entity);
+                httpPut.setHeader("Accept", MediaType.APPLICATION_JSON);
+                httpPut.setHeader("Content-type", MediaType.APPLICATION_JSON);
+                httpCaller.execute(httpPut);
+
+//                HttpResponse response = httpCaller.execute(httpPut);
+//                String body = HttpUtil.httpEntityToString(response.getEntity());
+//
+//                if(body.equalsIgnoreCase(requestJson)){
+//                    return true;
+//                }else{
+//                    String error = "failed to kill application, applicationId="+applicationId+", response="+body;
+//                    logger.info(error);
+//                    throw new RuntimeException(error);
+//                }
+            } catch ( Exception e) {
+                StringWriter errors = new StringWriter();
+                e.printStackTrace(new PrintWriter(errors));
+                logger.error(errors.toString());
+            }
+        });
     }
 }

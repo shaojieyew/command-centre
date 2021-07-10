@@ -1,10 +1,11 @@
 package app.task.spark;
 
-import app.c2.service.yarn.YarnSvc;
 import app.c2.service.yarn.YarnSvcFactory;
 import app.cli.SparkCli;
-import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
+import app.util.ConsoleHelper;
+
+import static app.task.spark.StopSparkApp.YARN_RUNNING_STATE;
 
 public class ApplySparkApp extends RunSparkApp {
 
@@ -23,13 +24,27 @@ public class ApplySparkApp extends RunSparkApp {
             throw new Exception("Invalid application spec");
         }
         String appName = spec.getName();
-        YarnSvc yarnSvc = YarnSvcFactory.create(cli.getC2CliProperties());
-        yarnSvc.setStates("NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING")
+
+        YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
                 .get().stream()
                 .filter(f->f.getName().equals(appName))
                 .forEach(s->{
-                    YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
-                            .kill();
+                    try {
+                        YarnSvcFactory.create(cli.getC2CliProperties()).setApplicationId(s.getId())
+                                .kill();
+                    } catch (Exception e) {
+                        ConsoleHelper.console.display(e);
+                    }
                 });
+
+        int count = 0;
+        long runningCount = 0;
+        do{
+            runningCount = YarnSvcFactory.create(cli.getC2CliProperties()).setStates(YARN_RUNNING_STATE)
+                    .get().stream()
+                    .filter(f->f.getName().equals(appName))
+                    .count();
+            count++;
+        } while(count<3 && runningCount >0);
     }
 }

@@ -5,7 +5,7 @@ public class HadoopProperties {
     private String hdfsSite;
     private String yarnSite;
     private String webHdfsHost;
-    private String yarnHost;
+    private String [] yarnHost;
     private String username;
     private KerberosProperties kerberos;
 
@@ -25,11 +25,11 @@ public class HadoopProperties {
         this.webHdfsHost = webHdfsHost;
     }
 
-    public String getYarnHost() {
+    public String[] getYarnHost() {
         return yarnHost;
     }
 
-    public void setYarnHost(String yarnHost) {
+    public void setYarnHost(String[] yarnHost) {
         this.yarnHost = yarnHost;
     }
 

@@ -190,6 +190,8 @@ public class AppService {
                                         .kill();
                             } catch (JsonProcessingException e) {
                                 e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         });
             } catch (JsonProcessingException e) {

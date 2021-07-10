@@ -85,7 +85,9 @@ hadoopYarnProperties:
   hdfsSite : C:/Users/hdfs-site.xml
   yarnSite : C:/Users/yarn-site.xml
   webHdfsHost: "http://localhost:9001"
-  yarnHost: "http://localhost:8088"
+  yarnHost: 
+    - "http://localhost1:8088"
+    - "http://localhost2:8088"
   username: "User"
   kerberos: 
     keytab: "C:/tmp/user.keytab"

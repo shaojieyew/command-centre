@@ -14,7 +14,9 @@ hadoopYarnProperties:
   hdfsSite : C:\Users\YSJ\.c2\hdfs-site.xml
   yarnSite : C:\Users\YSJ\.c2\yarn-site.xml
   webHdfsHost: "http://localhost:9001"
-  yarnHost: "http://localhost:8088"
+  yarnHost:
+    - "http://localhost:8088"
+    - "http://localhost:8088"
   username: "YSJ"
 sparkCheckpointProperties:
   kafkaProperties:
