@@ -66,7 +66,7 @@ public class ListSparkApp extends Task {
             this.healthCheck= healthCheck;
         }
     }
-    DateFormat df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
+    DateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
 
     @Override
     protected void task() throws Exception {
