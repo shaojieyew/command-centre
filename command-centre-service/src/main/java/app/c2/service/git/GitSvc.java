@@ -62,7 +62,7 @@ public class GitSvc {
 
     /**
      * get all branches from a remoteURL repository
-     * @return list of branches eg. /ref/head/master, /ref/tag/1.0.0-release
+     * @return list of branches eg. /ref/heads/master, /ref/tag/1.0.0-release
      * @throws GitAPIException
      * @throws IOException
      */
@@ -74,7 +74,7 @@ public class GitSvc {
      * get all branches from a remoteURL repository filtered by enum BranchType and regex
      * @param patternString
      * @param type
-     * @return list of branches eg. /ref/head/master, /ref/tag/1.0.0-release
+     * @return list of branches eg. /ref/heads/master, /ref/tag/1.0.0-release
      * @throws GitAPIException
      * @throws IOException
      */
@@ -296,6 +296,9 @@ public class GitSvc {
 
         String fileName = filePath.split("/")[filePath.split("/").length-1];
         String content = getFileAsString( branch,  filePath);
+        if(content==null){
+            throw new FileNotFoundException("File not found on git repo , remoteUrl="+remoteUrl+", "+"branch="+branch+", "+"filePath="+filePath);
+        }
         byte[] bytes = content.getBytes();
         String md5 = DigestUtils.md5Hex(bytes);
         String dir = tmpDirectory+"/"+md5;

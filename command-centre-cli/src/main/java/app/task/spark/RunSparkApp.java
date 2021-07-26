@@ -118,10 +118,22 @@ public class RunSparkApp extends Task {
                 File finalFile;
 
                 if(resource.getType().equalsIgnoreCase(ResourceSourceType.GIT.name())){
+                    if( cli.getC2CliProperties().getGitProperties().size()==0){
+                        throw new IllegalStateException("No git properties found in c2 setting");
+                    }
+
+                    //set default master branch and first git setting
                     String[] sourceArr = resource.getSource().split("/-/");
-                    String remoteUrl = sourceArr[0];
-                    String branch = sourceArr[1];
-                    String path = sourceArr[2];
+                    String remoteUrl = cli.getC2CliProperties().getGitProperties().get(0).getUrl();
+                    String branch = "refs/heads/master";
+                    String path = resource.getSource();
+
+                    if(sourceArr.length>=3){
+                         remoteUrl = sourceArr[0];
+                         branch = sourceArr[1];
+                         path = sourceArr[2];
+                    }
+
                     GitSvc gitSvc = GitSvcFactory.create(cli.getC2CliProperties(),remoteUrl, cli.getC2CliProperties().getTmpDirectory());
                     file = gitSvc.getFile(branch, path);
                     FileUtils.forceMkdir(new File(basePath));

@@ -18,8 +18,13 @@ public class ConsoleHelper {
     public void display(Exception e) {
         StringWriter errors = new StringWriter();
         e.printStackTrace(new PrintWriter(errors));
-        System.out.println(e.getMessage());
-        LOG.error(errors.toString());
+        if(e.getMessage()!=null){
+            System.out.println(e.getMessage());
+            LOG.error(errors.toString());
+        }else{
+            System.out.println("An exception occurred and logged; No error message available");
+            LOG.error(errors.toString());
+        }
     }
 
     public void display(String message, LogLevel logLevel){

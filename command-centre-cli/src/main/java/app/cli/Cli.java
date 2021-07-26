@@ -1,6 +1,8 @@
 package app.cli;
 
 import app.C2CliProperties;
+import app.c2.service.git.GitSvc;
+import app.c2.service.git.GitSvcFactory;
 import app.spec.Kind;
 import app.spec.MetadataKind;
 import app.spec.SpecException;
@@ -10,6 +12,8 @@ import app.task.Housekeeper;
 import app.util.ConsoleHelper;
 import app.util.FileHelper;
 import app.util.YamlLoader;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -18,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -41,12 +47,34 @@ public abstract class Cli  implements Callable<Integer> {
     private String cliFilePath = null;
     @CommandLine.Option(names = {"-rf", "--recurse-file"}, description = "file location")
     private String cliRecursiveFilePath = null;
+    @CommandLine.Option(names = {"-gf", "--git-file"}, description = "git file location")
+    private String cliGitFile = null;
 
     public String getCliFilePath() {
         return cliFilePath;
     }
     public String getCliRecursiveFilePath() {
         return cliRecursiveFilePath;
+    }
+    public String getCliGitPath() throws GitAPIException, IOException {
+        if(cliGitFile==null){
+            return null;
+        }
+        String[] sourceArr = cliGitFile.split("/-/");
+        String remoteUrl = getC2CliProperties().getGitProperties().get(0).getUrl();
+        String branch = "refs/heads/master";
+        String path = cliGitFile;
+
+        if(sourceArr.length>=3){
+            remoteUrl = sourceArr[0];
+            branch = sourceArr[1];
+            path = sourceArr[2];
+        }
+
+        GitSvc gitSvc = GitSvcFactory.create(getC2CliProperties(),remoteUrl, getC2CliProperties().getTmpDirectory());
+
+        File file = gitSvc.getFile(branch, path);
+        return file.getAbsolutePath();
     }
 
     @CommandLine.Option(names = {"-n", "--name"}, description = "name")
@@ -146,7 +174,14 @@ public abstract class Cli  implements Callable<Integer> {
             return 0;
         }
 
-        String dir = cliFilePath==null?cliRecursiveFilePath:cliFilePath;
+        String dir = getCliFilePath();
+        if(dir==null){
+            dir = getCliRecursiveFilePath();
+        }else{
+            dir = getCliGitPath();
+        }
+
+
         boolean recursive = cliRecursiveFilePath!=null;
         specFile.addAll(loadFile(dir, recursive));
 

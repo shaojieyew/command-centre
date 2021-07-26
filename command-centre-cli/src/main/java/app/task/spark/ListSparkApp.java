@@ -9,6 +9,7 @@ import app.spec.spark.SparkDeploymentSpec;
 import app.task.Task;
 import app.util.ConsoleHelper;
 import app.util.PrintableTable;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ public class ListSparkApp extends Task {
 
 
     @Override
-    protected void preTask() throws IOException {
+    protected void preTask() throws IOException, GitAPIException {
         submittedAppSpec = SparkCli.getSpecsFromSparkKind(cli.getSubmittedAppSpec());
-        if(cli.getCliFilePath() == null && cli.getCliRecursiveFilePath()==null){
+        if(cli.getCliFilePath() == null && cli.getCliRecursiveFilePath()==null && cli.getCliGitPath()==null){
             specs = submittedAppSpec;
         }else{
             specs = SparkCli.getSpecsFromSparkKind(cli.getSpecFile().stream().filter(k->k instanceof SparkDeploymentKind)

@@ -32,7 +32,7 @@ public class StopSparkApps extends Task {
     private static Logger logger = LoggerFactory.getLogger(StopSparkApps.class);
     @Override
     protected void task() throws Exception {
-        if(cli.getCliRecursiveFilePath()==null && cli.getCliFilePath()==null){
+        if(cli.getCliRecursiveFilePath()==null && cli.getCliFilePath()==null && cli.getCliGitPath()==null){
             new StopSparkApp(cli).startTask();
         }else{
             cli.getSpecFile().stream().forEach(kind -> kind.getSpec().stream()
