@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -56,17 +58,19 @@ public class ListSparkApp extends Task {
         String yarnAppId;
         String yarnStatus;
         String startedTime;
+        String dist;
         boolean healthCheck;
 
-        public AppStatus(String name, String yarnAppId, String yarnStatus, String startedTime, boolean healthCheck) {
+        public AppStatus(String name, String yarnAppId, String yarnStatus, String startedTime, String dist, boolean healthCheck) {
             this.name = name;
             this.yarnAppId = yarnAppId;
             this.yarnStatus = yarnStatus;
             this.startedTime = startedTime;
             this.healthCheck= healthCheck;
+            this.dist= dist;
         }
     }
-    DateFormat df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
+    DateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
 
     @Override
     protected void task() throws Exception {
@@ -102,35 +106,48 @@ public class ListSparkApp extends Task {
                             }
                         }
 
+                        Optional<SparkDeploymentSpec> optionalSparkDeploymentSpec = submittedAppSpec.stream()
+                                .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(spec.getName())).findFirst();
 
-                        boolean isHealthCheckEnable = submittedAppSpec.stream()
-                                .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(spec.getName()))
-                                .anyMatch(appSpec->appSpec.getEnableHealthCheck().equalsIgnoreCase("true"));
+                        boolean isHealthCheckEnable = false;
+                        String dist = "UNKNOWN";
+                        if(optionalSparkDeploymentSpec.isPresent()){
+                            isHealthCheckEnable = optionalSparkDeploymentSpec.get().getEnableHealthCheck().equalsIgnoreCase("true");
+                            dist = optionalSparkDeploymentSpec.get().getArtifact();
+                        }
 
                         return new AppStatus(spec.getName(),
                                 appId,
                                 yarnStatus,
                                 startedTime,
+                                dist,
                                 isHealthCheckEnable);
                     }).collect(Collectors.toList());
         }else{
             Optional<SparkDeploymentSpec> submittedSpec = submittedAppSpec.stream()
                     .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName)).findFirst();
             boolean isHealthCheckEnable = false;
+            String dist = "UNKNOWN";
             if(submittedSpec.isPresent()){
                 isHealthCheckEnable = submittedAppSpec.stream()
                         .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName))
                         .anyMatch(appSpec->"true".equalsIgnoreCase(appSpec.getEnableHealthCheck()));
+                        dist = submittedSpec.get().getArtifact();
+                        if(!dist.contains(":")){
+                            Path p = Paths.get(dist);
+                            dist = p.getFileName().toString();
+                }
             }
 
             if(finalRemoteApp==null){
-                appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN", isHealthCheckEnable));
+                appStatuses.add(new AppStatus(inputName,"UNKNOWN","UNKNOWN","UNKNOWN",dist, isHealthCheckEnable));
             }else{
                 Optional<YarnApp> yarnApp = remoteApps.stream().filter(a->a.getName().equalsIgnoreCase(inputName)).findFirst();
                 if(yarnApp.isPresent()){
                     appStatuses.add(new AppStatus(yarnApp.get().getName(),
                             yarnApp.get().getId(),
                             yarnApp.get().getState(),
+                            "",
                             df.format(new Date(yarnApp.get().getStartedTime())),
                             isHealthCheckEnable));
                 }else{
