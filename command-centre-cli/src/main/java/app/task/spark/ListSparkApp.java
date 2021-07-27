@@ -115,6 +115,12 @@ public class ListSparkApp extends Task {
                         if(optionalSparkDeploymentSpec.isPresent()){
                             isHealthCheckEnable = optionalSparkDeploymentSpec.get().getEnableHealthCheck().equalsIgnoreCase("true");
                             dist = optionalSparkDeploymentSpec.get().getArtifact();
+
+                            if(!dist.contains(":")){
+                                Path p = Paths.get(dist);
+                                dist = p.getFileName().toString();
+                            }
+
                         }
 
                         return new AppStatus(spec.getName(),
@@ -134,10 +140,11 @@ public class ListSparkApp extends Task {
                         .filter(submittedApp->submittedApp.getName().equalsIgnoreCase(inputName))
                         .anyMatch(appSpec->"true".equalsIgnoreCase(appSpec.getEnableHealthCheck()));
                         dist = submittedSpec.get().getArtifact();
+
                         if(!dist.contains(":")){
                             Path p = Paths.get(dist);
                             dist = p.getFileName().toString();
-                }
+                        }
             }
 
             if(finalRemoteApp==null){
@@ -162,6 +169,7 @@ public class ListSparkApp extends Task {
         header.add("yarnAppId");
         header.add("yarnStatus");
         header.add("startedTime");
+        header.add("dist");
         header.add("healthCheck");
         new PrintableTable(appStatuses, header,"Spark Applications").show();
     }
