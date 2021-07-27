@@ -71,7 +71,7 @@ public class ListSparkApp extends Task {
             this.dist= dist;
         }
     }
-    DateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void task() throws Exception {
