@@ -119,6 +119,10 @@ Spec files are declarative templates that defines the specification of instructi
 
 Spec files can be included in a command by either specifying the file `-f C:/example/sparkEtl.yml` or directory `-f C:/example/sparkEtl`
 use `-rf` for recursive
+
+Remote spec files from git repo can also be specified via `-g or --git-file`. 
+Example absolute and relative path,`-g https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/spec.yml` or `-g spark-app/spec.yml`. When relative path is specified, the default repository used will be the first git repo configured in config file and the branch will be refs/heads/master.
+
 Only files that have the correct Spec file format will be included. Example below.
 
 ### Spark Deployment Specification 
@@ -219,6 +223,9 @@ spec:
 
 ```
 ## Examples
+
+use `-h` or `--help` to display actions and arguments options
+
 ### List Spark Application
 Only listed application name in the spec files will be display
 ```

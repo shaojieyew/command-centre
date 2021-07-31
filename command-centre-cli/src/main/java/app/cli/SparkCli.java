@@ -8,6 +8,7 @@ import app.spec.resource.Resource;
 import app.spec.spark.SparkDeploymentKind;
 import app.spec.spark.SparkDeploymentSpec;
 import app.task.spark.*;
+import app.util.ConsoleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,15 +36,36 @@ public class SparkCli extends Cli {
     }
 
     @Override
+    public void printHelp() {
+
+        ConsoleHelper.console.display("Command Actions:");
+        ConsoleHelper.console.display("ls\t\t\t\t\tList spark application submitted on yarn. When SparkDeployment spec file is provided, it will only list the application declared in the file. When no SparkDeployment spec file is provided, it will list all the spark application launched through command-centre");
+        ConsoleHelper.console.display("run\t\t\t\t\tLaunch spark application to yarn cluster specified in command-centre configuration. All the spark listed in SparkDeployment spec files specified will be launched. Each time an application launched via \"c2 spark run\",the details of the application will be stored in a snapshot folder (to be use for recovery)");
+        ConsoleHelper.console.display("stop\t\t\t\tStop spark application running on yarn cluster. All the spark listed in SparkDeployment spec files will be killed and removed from snapshot folder; this would stop the healthcheck");
+        ConsoleHelper.console.display("restart\t\t\t\tStop and launch application running on yarn cluster.");
+
+        ConsoleHelper.console.display("");
+        super.printHelp();
+        ConsoleHelper.console.display("-i\t--id\t\t\tSpecify applicationId, when specified action will only be applied to application that match the same id");
+        ConsoleHelper.console.display("-n\t--name\t\t\tSpecify application name, when specified action will only be applied to application that match the same name; non-case sensitive");
+    }
+
+    @Override
     public Integer task() throws Exception {
         if(getCliAction().equalsIgnoreCase(Action.ls.toString())){
             new ListSparkApp(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.run.toString()) || getCliAction().equalsIgnoreCase(Action.start.toString())){
-            new RunSparkApps(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.apply.toString())){
-            new ApplySparkApps(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.stop.toString())){
-            new StopSparkApps(this).startTask();
+        } else{
+            if(getCliAction().equalsIgnoreCase(Action.run.toString()) || getCliAction().equalsIgnoreCase(Action.start.toString())){
+                new RunSparkApps(this).startTask();
+            } else {
+                if(getCliAction().equalsIgnoreCase(Action.restart.toString()) || getCliAction().equalsIgnoreCase(Action.apply.toString())){
+                    new ApplySparkApps(this).startTask();
+                } else {
+                    if(getCliAction().equalsIgnoreCase(Action.stop.toString())){
+                        new StopSparkApps(this).startTask();
+                    }
+                }
+            }
         }
         return 0;
     }

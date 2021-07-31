@@ -47,8 +47,10 @@ public abstract class Cli  implements Callable<Integer> {
     private String cliFilePath = null;
     @CommandLine.Option(names = {"-rf", "--recurse-file"}, description = "file location")
     private String cliRecursiveFilePath = null;
-    @CommandLine.Option(names = {"-gf", "--git-file"}, description = "git file location")
+    @CommandLine.Option(names = {"-g", "--git-file"}, description = "git file location")
     private String cliGitFile = null;
+    @CommandLine.Option(names = {"-h", "--help"}, description = "show help command")
+    private boolean help = false;
 
     public String getCliFilePath() {
         return cliFilePath;
@@ -162,8 +164,22 @@ public abstract class Cli  implements Callable<Integer> {
         return specsKind;
     }
 
+    public void printHelp(){
+        ConsoleHelper.console.display("Command arguments:");
+        ConsoleHelper.console.display("-c\t--config\t\tConfiguration file path, default=$C2_HOME/config/setting.yml");
+        ConsoleHelper.console.display("-f\t--file\t\t\tSpecify the directory path that contains spec files or path of a single spec file");
+        ConsoleHelper.console.display("-rf\t--recurse-file\tSpecify the directory path that contains spec files, including sub directories will be loaded");
+        ConsoleHelper.console.display("-g\t--git-file\t\tSpecify absolute/relative path to a file in a git repo, eg. https://gitlab.com/c2cc1/command-centre.git/-/refs/heads/master/-/spark-app/spec.yml or spark-app/spec.yml. By default, the first git repo specified will be used if a relative path is given.");
+        ConsoleHelper.console.display("-h\t--help\t\t\tDisplay help messages");
+    }
+
     @Override
     public Integer call() throws Exception {
+        if(help){
+            printHelp();
+            return 0;
+        }
+
         if(cliConfig==null){
             ConsoleHelper.console.display(new Exception("Env variable C2_HOME not set "));
             return 0;

@@ -6,6 +6,7 @@ import app.task.nifi.ListNifiProcessors;
 import app.task.nifi.RunNifiProcessors;
 import app.task.nifi.StopNifiProcessors;
 import app.task.nifi.UpdateNifiProcessorsStatus;
+import app.util.ConsoleHelper;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
@@ -16,6 +17,21 @@ public class NifiCli extends Cli {
 
     private static org.slf4j.Logger LOG = LoggerFactory
             .getLogger(NifiCli.class);
+
+    @Override
+    public void printHelp() {
+
+        ConsoleHelper.console.display("Command Actions:");
+        ConsoleHelper.console.display("ls\t\t\t\t\tList all the NiFi component that matches the query declared inline or in NifiQuery spec file");
+        ConsoleHelper.console.display("run\t\t\t\t\tRun all the NiFi component that matches the query declared inline or in NifiQuery spec file");
+        ConsoleHelper.console.display("stop\t\t\t\t\tStop all the NiFi component that matches the query declared inline or in NifiQuery spec file");
+
+        ConsoleHelper.console.display("");
+        super.printHelp();
+        ConsoleHelper.console.display("-i\t--id\t\t\tSpecify nifi component id");
+        ConsoleHelper.console.display("-q\t--query\t\t\tSpecify inline query, support regex, eg. \"^/Test.*123/*/ListHDFS$\"");
+        ConsoleHelper.console.display("-n\t--name\t\t\tSpecify query name declared in NifiQuery spec file");
+    }
 
     @CommandLine.Option(names = {"--process-type"}, description = "processor-type")
     private String cliNifiProcessType = null;
@@ -47,10 +63,14 @@ public class NifiCli extends Cli {
     public Integer task() throws Exception {
         if(getCliAction().equalsIgnoreCase(Action.ls.toString())){
             new ListNifiProcessors(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.run.toString())){
-            new RunNifiProcessors(this).startTask();
-        } else if(getCliAction().equalsIgnoreCase(Action.stop.toString())){
-            new StopNifiProcessors(this).startTask();
+        } else {
+            if(getCliAction().equalsIgnoreCase(Action.run.toString())){
+                new RunNifiProcessors(this).startTask();
+            } else {
+                if(getCliAction().equalsIgnoreCase(Action.stop.toString())){
+                    new StopNifiProcessors(this).startTask();
+                }
+            }
         }
         return 0;
     }

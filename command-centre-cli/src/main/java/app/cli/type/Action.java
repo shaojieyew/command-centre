@@ -10,5 +10,6 @@ public enum Action {
     mv,
     check,
     restore,
-    apply
+    apply,
+    restart
 }
