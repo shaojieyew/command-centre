@@ -190,23 +190,24 @@ public abstract class Cli  implements Callable<Integer> {
             return 0;
         }
 
+        LOG.info("loading config from="+config.getAbsolutePath());
+        c2CliProperties = (C2CliProperties) new YamlLoader(C2CliProperties.class).load(config.getAbsolutePath());
+        LOG.info("init project env properties");
+        LOG.info(c2CliProperties.toString());
+
+
         String dir = getCliFilePath();
         if(dir==null){
             dir = getCliRecursiveFilePath();
-        }else{
+        }
+        if(dir==null){
             dir = getCliGitPath();
         }
-
 
         boolean recursive = cliRecursiveFilePath!=null;
         specFile.addAll(loadFile(dir, recursive));
 
         LOG.info("total file loaded="+specFile.size());
-        LOG.info("loading config from="+config.getAbsolutePath());
-        c2CliProperties = (C2CliProperties) new YamlLoader(C2CliProperties.class).load(config.getAbsolutePath());
-
-        LOG.info("init project env properties");
-        LOG.info(c2CliProperties.toString());
 
         Housekeeper.houseKeep(c2CliProperties.getTmpDirectory());
 
