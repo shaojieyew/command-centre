@@ -77,22 +77,18 @@ public class RunSparkApp extends Task {
     protected void postTask() throws Exception {
     }
 
-    @Override
-    protected void task() throws Exception {
-        String appName = spec.getName();
+    protected File getJar(String path) throws Exception {
 
-        SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
-
-        File jar = null;
-        File artifactJar = new File(spec.getArtifact());
+        File mainJar = null;
+        File artifactJar = new File(path);
         if(artifactJar.exists() && artifactJar.isFile()){
-            jar = artifactJar;
+            mainJar = artifactJar;
         }else{
             Package pkg = new Package();
 
-            String[] artifactParam = spec.getArtifact().split(":");
+            String[] artifactParam = path.split(":");
             if(artifactParam.length<3){
-                throw new Exception("Invalid artifact '"+spec.getArtifact()+"'");
+                throw new Exception("Invalid artifact '"+path+"'");
             }
             pkg.setGroup(artifactParam[0]);
             pkg.setArtifact(artifactParam[1]);
@@ -100,16 +96,37 @@ public class RunSparkApp extends Task {
             pkg.setPackage_type(Package.PackageType.MAVEN);
 
             for (AbstractRegistrySvc abstractRegistrySvc : MavenSvcFactory.create(cli.getC2CliProperties(), cli.getC2CliProperties().getTmpDirectory())) {
-                jar = abstractRegistrySvc.download(pkg);
-                if(jar!=null){
+                mainJar = abstractRegistrySvc.download(pkg);
+                if(mainJar!=null){
                     break;
                 }
             }
         }
+        return mainJar;
+    }
 
-        if(jar==null){
+    @Override
+    protected void task() throws Exception {
+        String appName = spec.getName();
+
+        SparkSvc sparkSvc = SparkSvcFactory.create(cli.getC2CliProperties().getSparkHome(),cli.getC2CliProperties());
+
+        File mainJarFile = getJar(spec.getArtifact());
+
+        if(mainJarFile==null){
             throw new Exception("Artifact not found");
         }
+
+        List<File> jarFiles = new ArrayList<>();
+        if(spec.getJars()!=null) {
+            for (String jar : spec.getJars()) {
+                File jarFile = getJar(jar);
+                if (jarFile != null) {
+                    jarFiles.add(jarFile);
+                }
+            }
+        }
+
         List<File> resources = new ArrayList<>();
         if(spec.getResources()!=null) {
             for (Resource resource : spec.getResources()) {
@@ -168,39 +185,31 @@ public class RunSparkApp extends Task {
                 }
             }
         }
-        sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), jar, spec.getJarArgs(), spec.getSparkArgs(), resources);
+        sparkSvc.submitSpark(spec.getName(), spec.getMainClass(), mainJarFile, spec.getJarArgs(), spec.getSparkArgs(), jarFiles,  resources);
         if(saveSnapshot){
-            saveSnapshot(cli, spec,jar, resources);
+            saveSnapshot(cli, spec,mainJarFile, jarFiles, resources);
         }
     }
 
-    private void saveSnapshot(SparkCli cli, SparkDeploymentSpec spec, File jar, List<File> resources) throws IOException {
+    private String copyArtifactToSnapshot(String sparkAppSnapshotDirectory, File artifactJar) throws IOException {
+        if(!artifactJar.getAbsolutePath().contains(new File(cli.getSparkSubmitJarDir()).getAbsolutePath())){
+            File newJar = new File(String.format("%s/%s", sparkAppSnapshotDirectory,artifactJar.getName()));
+            FileUtils.copyFile(artifactJar, newJar);
+            return newJar.getAbsolutePath();
+        }else{
+            return artifactJar.getAbsolutePath();
+        }
+    }
+
+    private void saveSnapshot(SparkCli cli, SparkDeploymentSpec spec, File mainJar,  List<File> jars, List<File> resources) throws IOException {
         String sparkAppSnapshotDirectory = String.format("%s/%s/%s", cli.getSparkSubmitDir(),spec.getName(), DateHelper.getDateString() );
         //copy artifact
-        File artifactJar = new File(spec.getArtifact());
-        if(artifactJar.exists() && artifactJar.isFile()){
-            if(!artifactJar.getAbsolutePath().contains(new File(cli.getSparkSubmitJarDir()).getAbsolutePath())){
-                File newJar = new File(String.format("%s/%s", sparkAppSnapshotDirectory,jar.getName()));
-                FileUtils.copyFile(jar, newJar);
-                spec.setArtifact(newJar.getAbsolutePath());
-            }
-        }else{
-            String jarDirectory = cli.getSparkSubmitJarDir();
-            int index = 0;
-            for (String s : spec.getArtifact().split(":")) {
-                if(index==0){
-                    for (String s1 : s.split("\\.")) {
-                        jarDirectory = jarDirectory +"/"+s1;
-                    }
-                }else{
-                    jarDirectory = jarDirectory +"/"+s;
-                }
-                index++;
-            }
-            File newJar = new File(String.format("%s/%s/%s", cli.getSparkSubmitJarDir(),jarDirectory,jar.getName()));
-            FileUtils.copyFile(jar, newJar);
-            spec.setArtifact(newJar.getAbsolutePath());
+        spec.setArtifact(copyArtifactToSnapshot(sparkAppSnapshotDirectory, mainJar));
+        List<String> jarsLocation = new ArrayList<>();
+        for(File jar: jars){
+            jarsLocation.add(copyArtifactToSnapshot(sparkAppSnapshotDirectory, jar));
         }
+        spec.setJars(jarsLocation);
 
         // copy resources
         List<Resource> resourcesList = new ArrayList<>();

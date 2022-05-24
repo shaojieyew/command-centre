@@ -148,6 +148,13 @@ public class SparkCli extends Cli {
                             if(spec.getArtifact()==null && kind.getArtifact()!=null){
                                 spec.setArtifact(kind.getArtifact());
                             }
+                            if(spec.getJars()==null && kind.getJars()!=null){
+                                spec.setJars(kind.getJars());
+                            }else{
+                                if(spec.getJars()!=null && kind.getJars()!=null){
+                                    spec.getJars().addAll(kind.getJars());
+                                }
+                            }
                             if(spec.getMainClass()==null && kind.getMainClass()!=null){
                                 spec.setMainClass(kind.getMainClass());
                             }

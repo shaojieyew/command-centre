@@ -21,8 +21,8 @@ public class SparkSvc {
         this.hadoopConfDir = hadoopConfDir;
     }
 
-    public String submitSpark(String appName, String main, File jar, List<String> args, Set<SparkArgKeyValuePair> sparkArgs, List<File> files) throws Exception {
-        if (jar == null) {
+    public String submitSpark(String appName, String main, File mainJar, List<String> args, Set<SparkArgKeyValuePair> sparkArgs, List<File> jars, List<File> files) throws Exception {
+        if (mainJar == null) {
             throw new Exception("Jar not found.");
         }
 
@@ -34,7 +34,7 @@ public class SparkSvc {
                 .setSparkHome(sparkHome)
                 .setMaster("yarn")
                 .setDeployMode("cluster")
-                .setAppResource(jar.getAbsolutePath())
+                .setAppResource(mainJar.getAbsolutePath())
                 .setMainClass(main)
                 .setAppName(appName);
 
@@ -48,7 +48,11 @@ public class SparkSvc {
                 launcher = launcher.addSparkArg(kv.getName(), kv.getValue());
             }
         }
-
+        if(jars!=null && !jars.isEmpty()){
+            for(File jar: jars){
+                launcher = launcher.addJar(jar.getAbsolutePath());
+            }
+        }
         if(files!=null && files.size()>0){
             for(File file: files){
                 launcher = launcher.addFile(file.getAbsolutePath());

@@ -201,7 +201,7 @@ public class SparkService {
         applicationId = sparkSvc.submitSpark(sparkAppNameToSubmit,
                 appInstance.getJarMainClass(),
                 jar,appInstance.getJarArgs(),
-                appInstance.getSparkArgs(),resources);
+                appInstance.getSparkArgs(),null,resources);
 
         if(saveSnapshot){
             try {
@@ -228,7 +228,7 @@ public class SparkService {
                     applicationId = sparkSvc.submitSpark(sparkAppNameToSubmit,
                             appInstance.getJarMainClass(),
                             jar,appInstance.getJarArgs(),
-                            appInstance.getSparkArgs(),resources);
+                            appInstance.getSparkArgs(),null,resources);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

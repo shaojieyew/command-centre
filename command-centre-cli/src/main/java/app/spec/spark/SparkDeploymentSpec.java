@@ -11,6 +11,7 @@ public class SparkDeploymentSpec implements Spec {
     private String name;
     private String artifact;
     private String mainClass;
+    private List<String> jars;
     private List<String> jarArgs;
     private Set<SparkArgKeyValuePair> sparkArgs;
     private List<Resource> resources;
@@ -81,15 +82,27 @@ public class SparkDeploymentSpec implements Spec {
         this.enableHealthCheck = enableHealthCheck;
     }
 
+
+    public List<String> getJars() {
+        return jars;
+    }
+
+    public void setJars(List<String> jars) {
+        this.jars = jars;
+    }
+
     @Override
     public String toString() {
         return "SparkDeploymentSpec{" +
                 "name='" + name + '\'' +
+                ", artifact='" + artifact + '\'' +
                 ", mainClass='" + mainClass + '\'' +
+                ", jars=" + jars +
                 ", jarArgs=" + jarArgs +
                 ", sparkArgs=" + sparkArgs +
                 ", resources=" + resources +
                 ", namespace='" + namespace + '\'' +
+                ", enableHealthCheck='" + enableHealthCheck + '\'' +
                 '}';
     }
 }

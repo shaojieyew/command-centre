@@ -13,6 +13,8 @@ import java.util.Set;
 public class SparkDeploymentKind extends Kind<SparkDeploymentSpec> {
     private String artifact;
     private String mainClass;
+
+    private List<String> jars;
     private List<String> jarArgs;
     private Set<SparkArgKeyValuePair> sparkArgs;
     private List<Resource> resources;
@@ -73,6 +75,14 @@ public class SparkDeploymentKind extends Kind<SparkDeploymentSpec> {
 
     public void setEnableHealthCheck(String enableHealthCheck) {
         this.enableHealthCheck = enableHealthCheck;
+    }
+
+    public List<String> getJars() {
+        return jars;
+    }
+
+    public void setJars(List<String> jars) {
+        this.jars = jars;
     }
 
     public void validate() throws SpecException {

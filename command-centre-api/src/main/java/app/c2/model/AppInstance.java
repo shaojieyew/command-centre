@@ -20,7 +20,6 @@ public class AppInstance {
   @Id
   private String appId;
 
-
   private String fileIds;
 
   private String lastState;
@@ -75,8 +74,17 @@ public class AppInstance {
   private String jarMainClass;
 
   private String jarArgs;
+  private String jars;
 
   private String sparkArgs;
+
+  public String getJars() {
+    return jars;
+  }
+
+  public void setJars(String jars) {
+    this.jars = jars;
+  }
 
   public long getProjectId() {
     return projectId;
