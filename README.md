@@ -1,3 +1,5 @@
+⚠️This is a project made to improve our provisioning on big data tools such as NiFi, Kafka, Spark. This has been moved to an private repository and will not be maintained.
+
 # Command Centre Modules
 
 | Project     | Description |
